@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">MainToDo</string>
+    <string name="app_language">English</string>
+    <string name="app_welcome">What we do?</string>
+    <string name="app_settings">Settings</string>
+    <string name="settings_changemode">Dark Theme</string>
+    <string name="settings_change_acc_question">Confirmation question</string>
+    <string name="settings_additional_info">Additional information</string>
+    <string name="settings_adjust">Adjust settings</string>
+    <string name="day1">Monday</string>
+    <string name="day2">Tuesday</string>
+    <string name="day3">Wednesday</string>
+    <string name="day4">Thursday</string>
+    <string name="day5">Friday</string>
+    <string name="day6">Saturday</string>
+    <string name="day7">Sunday</string>
+    <string name="settings_theme_mode0">System default</string>
+    <string name="settings_theme_mode1">Light theme</string>
+    <string name="settings_theme_mode2">Dark theme</string>
+    <string name="app_addcategory">Add Category</string>
+    <string name="addcategory_name">Category name</string>
+    <string name="addcategory_icon">Select icon</string>
+    <string name="addcategory_add">Add Category</string>
+    <string name="addcategory_desc">Add category description if you need it</string>
+    <string name="addcategory_form_error_name">Enter the category name</string>
+    <string name="addcategory_form_error_icon">Select an icon for the new category</string>
+    <string name="addcategory_form_save">You have created a new category</string>
 </resources>

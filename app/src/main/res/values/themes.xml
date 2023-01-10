@@ -2,6 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Allows us to override night specific attributes in the values-night folder. -->
     <style name="NightAdjusted.Theme.MainToDo" parent="android:Theme.Material.Light.NoActionBar">
+
         <item name="android:windowLightStatusBar" >true</item>
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
@@ -18,12 +19,15 @@
 
     <!-- Splash Screen -->
     <style name="NightAdjusted.Theme.Splash" parent="Theme.SplashScreen">
+
         <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
     </style>
 
     <style name="Theme.MainToDo.Splash" parent="NightAdjusted.Theme.Splash">
+
         <item name="windowSplashScreenAnimatedIcon">@drawable/tasks</item>
         <item name="postSplashScreenTheme">@style/Theme.MainToDo</item>
+        <item name="android:colorBackground">#FFFFD6FA</item>
     </style>
 
 

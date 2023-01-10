@@ -1,25 +1,37 @@
 package com.arturlasok.maintodo
 
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings.System.getConfiguration
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +39,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.arturlasok.maintodo.navigation.NavigationComponent
 import com.arturlasok.maintodo.ui.theme.MainToDoTheme
+import com.arturlasok.maintodo.util.DefaultSnackbar
+import com.arturlasok.maintodo.util.SnackbarController
 import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.isOnline
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -49,29 +63,33 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var isOnline: isOnline
     //viewModel
-    val viewModel: MainActivityViewModel by viewModels()
+    private val viewModel: MainActivityViewModel by viewModels()
+    //snackbar controller
+    private val snackbarController = SnackbarController(lifecycleScope)
 
-
+    @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
         //ui State
-        var thisuiState: MainActivityUiState by mutableStateOf(MainActivityUiState.Loading)
+        var thisuiState: MainActivityUiState by mutableStateOf(MainActivityUiState.SplashScreen)
 
 
         //Splash screen
         splashScreen.setKeepOnScreenCondition {
           when(thisuiState) {
-              MainActivityUiState.Loading -> true
+              MainActivityUiState.SplashScreen -> true
+              is MainActivityUiState.Loading -> false
               is MainActivityUiState.ScreenReady -> false
+
           }
         }
 
-        //Data Store
-        val IS_DARK_THEME = booleanPreferencesKey("dark_theme_on")
-        val dataFromStore : Flow<Boolean> =  applicationContext.dataStore.data.map { pref->
-            pref[IS_DARK_THEME] ?: false
+        //Data Store dark theme // 0 - default, 1 - light, 2 - dark
+        val IS_DARK_THEME = intPreferencesKey("dark_theme_on")
+        val dataFromStore : Flow<Int> =  applicationContext.dataStore.data.map { pref->
+            pref[IS_DARK_THEME] ?: 0
         }
         //Internet On?
         isOnline.runit()
@@ -87,58 +105,166 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        //gradient for themes
+        val lightGradient = Brush.verticalGradient(
+            listOf(Color(0xFFFFD6FA), Color(0xFFFFEBFA))
+        )
+        val darkGradient = Brush.verticalGradient(
+            listOf( Color(0xFF0A0A0A), Color(0xFF181414))
+        )
+        //gradient for selected theme
+        var selectedGradient = lightGradient
+
+        //padding top when landscape only
+        var statusBarPaddingTop = 0
+        var statusBarPaddingLeft = 0
+        if(this.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            statusBarPaddingTop = 16
+            statusBarPaddingLeft = 48
+        }
+
         setContent {
             //navController
             val navController = rememberNavController()
             //accompanist for system bars controller
             val systemUiController = rememberSystemUiController()
             // data store for dark theme
-            val dataStoreDarkTheme = dataFromStore.collectAsState(false)
+            val dataStoreDarkTheme = dataFromStore.collectAsState(0)
             MainToDoTheme(dataStoreDarkTheme.value) {
                 //theme?
                 when(dataStoreDarkTheme.value) {
-                    false -> {
-                        systemUiController.setSystemBarsColor(Color(0xFF072C49))
+
+                    //default
+                    0 -> {
+                        if(isSystemInDarkTheme()) {
+                            selectedGradient = darkGradient
+                            systemUiController.setStatusBarColor(Color(0xFF0A0A0A))
+                            systemUiController.setNavigationBarColor(Color(0xFF181414))
+                        }
+                        else {
+                            selectedGradient = lightGradient
+                            systemUiController.setStatusBarColor(Color(0xFFFFD6FA))
+                            systemUiController.setNavigationBarColor(Color(0xFFFFEBFA))
+                        }
                     }
-                    true -> {
-                        systemUiController.setSystemBarsColor(Color(0xFF2E2828))
+                    //light
+                    1 -> {
+                        selectedGradient = lightGradient
+                        systemUiController.setStatusBarColor(Color(0xFFFFD6FA))
+                        systemUiController.setNavigationBarColor(Color(0xFFFFEBFA))
+
+                    }
+                    //dark
+                    2 -> {
+                        selectedGradient = darkGradient
+                        systemUiController.setStatusBarColor(Color(0xFF0A0A0A))
+                        systemUiController.setNavigationBarColor(Color(0xFF181414))
                     }
                 }
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    LaunchedEffect(key1 = true, block = {
-                        delay(3000)
-                        viewModel.setScreenIsReady(true)
 
-                    } )
-                    Column() {
-                        Text(text = "Theme_dark: "+ dataStoreDarkTheme.value.toString() + " Network avilable: ${isOnline.isNetworkAvailable.value}" + " UiState: "+thisuiState.toString() + " currentR: "+viewModel.getCurrentDestinationRoute())
-                        Button(onClick = {
-                            lifecycleScope.launch {
-                                applicationContext.dataStore.edit { settings->
-                                    val currentStoreValue = settings[IS_DARK_THEME] ?: false
-                                    settings[IS_DARK_THEME] = !currentStoreValue
-                                    viewModel.setDarkActiveTo(settings[IS_DARK_THEME] ?: false)
-                                }
-                            }
+                LaunchedEffect(key1 = true, block = {
+                    delay(3000)
+                    viewModel.setScreenIsReady(true)
 
-                        }) {
-                            Text("change light/dark")
-                        }
-                        NavigationComponent(
-                            navController = navController,
-                            setCurrentDestination = { newDestination ->
-                                viewModel.setCurrentDestinationRoute(newDestination)
-                            },
-                            currentDestination = navController.currentDestination?.route ?: "Start"
+                } )
+                //scaffoldState init
+                val scaffoldState = rememberScaffoldState()
+
+                Scaffold(
+                    scaffoldState = scaffoldState,
+                    snackbarHost = {scaffoldState.snackbarHostState}
+                )
+                {
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                selectedGradient
                             )
+                            .padding(
+                                top = statusBarPaddingTop.dp,
+                                start = statusBarPaddingLeft.dp,
+                                end = statusBarPaddingLeft.dp
+                            )
+
+                    ) {
+                        DefaultSnackbar(
+                            snackbarHostState = scaffoldState.snackbarHostState,
+                            onDismiss = { scaffoldState.snackbarHostState.currentSnackbarData?.dismiss() },
+                            modifier = Modifier.zIndex(1.0f).padding(
+                                top = statusBarPaddingTop.dp
+                            )
+                        )
+                        /*
+                      Box(
+                          modifier = Modifier
+                              .fillMaxSize()
+                              .zIndex(0.1f),
+                          contentAlignment = Alignment.BottomStart
+                      ) {
+                          Text(
+                              text = "Theme_dark: " + dataStoreDarkTheme.value.toString() + " \nNetwork avilable: ${isOnline.isNetworkAvailable.value}" + " \nUiState: " + thisuiState.toString() + " \ncurrentR: " + viewModel.getCurrentDestinationRoute().collectAsState().value + "\nLang: " + UiText.StringResource(
+                                  R.string.app_language,
+                                  "asd"
+                              ).asString(),color = MaterialTheme.colors.primary,
+                              style = MaterialTheme.typography.h5
+                          )
+                      }
+
+                       */
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                //.zIndex(0.9f)
+                                .padding(16.dp)
+                        ) {
+
+                            NavigationComponent(
+                                navController = navController,
+                                snackMessage = {
+
+                                    messageToShow: String -> snackbarController.getScope().launch {
+
+
+                                    launch {
+
+                                        snackbarController.showSnackbar(
+                                            scaffoldState = scaffoldState,
+                                            message = messageToShow,
+                                            actionLabel = "OK"
+                                        )
+
+                                    }
+                                }
+                                },
+                                setCurrentDestination = { newDestination ->
+                                    viewModel.setCurrentDestinationRoute(newDestination)
+                                },
+                                currentDestination = navController.currentDestination?.route
+                                    ?: "Start",
+                                isDarkModeOn = dataStoreDarkTheme.value,
+                                changeDarkMode = { newVal ->
+                                    lifecycleScope.launch {
+                                        applicationContext.dataStore.edit { settings ->
+                                            val currentStoreValue = newVal
+                                            settings[IS_DARK_THEME] = currentStoreValue
+                                            viewModel.setDarkActiveTo(
+                                                settings[IS_DARK_THEME] ?: 0
+                                            )
+                                        }
+                                    }
+                                },
+                                runLink = { link ->
+                                    val intentLink = Intent(Intent.ACTION_VIEW)
+                                    intentLink.data = Uri.parse(link)
+                                    startActivity(intentLink)
+
+                                },
+                            )
+                        }
                     }
-
-
-
                 }
             }
         }

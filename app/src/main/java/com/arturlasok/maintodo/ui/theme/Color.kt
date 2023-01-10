@@ -68,41 +68,47 @@ internal val Teal40 = Color(0xFF3A656F)
 internal val Teal80 = Color(0xFFA2CED9)
 internal val Teal90 = Color(0xFFBEEAF6)
 
-val Purple200 = Color(0xFFBB86FC)
-val Purple500 = Color(0xFFBEC1E6)
-val Purple700 = Color(0xFF3700B3)
-val Teal200 = Color(0xFF473C3C)
-val BlueOne = Color(0xFF3F51B5)
 
-val BlueBackground = Color(0xFF072C49)
-val DarkBackground = Color(0xFF2E2828)
+
+val Light_background = Color(0xFFFFD6FA)
+val Light_primary = Color(0xFF13172E)
+val Light_primary_variant = Color(0xFF7F59D5)
+val Light_secondary = Color(0xFF36003C)
+val Light_on_secondary = Color(0xFFFFD6FA)
+
+val Dark_background = Color(0xFF181414)
+val Dark_primary_variant = Color(0xFFBB86FC)
+val Dark_primary = Color(0xFFFFEBFA)
+val Dark_secondary = Color(0xFFFFD6FA)
+val Dark_on_secondary = Color(0xFF281D29)
+val Dark_surface = Color(0xFF030303)
 
 // LightColors
-val primary = BlueOne
+val primary = Light_primary
 val onPrimary = Color.White
 
-val primaryVariant = Purple700
+val primaryVariant = Light_primary_variant
 
-val secondary = Purple500
-val onSecondary = Color.Black
+val secondary = Light_secondary
+val onSecondary = Light_on_secondary
 
-val background = BlueBackground
-val onBackground = Color.White
+val background = Light_background
+val onBackground = Color.Black
 
 val surface = Color.White
-val onSurface = Color.DarkGray
+val onSurface = Color.Black
 
 // DarkColors
-val primaryDark = Purple200
-val onPrimaryDark = Color.White
+val primaryDark = Dark_primary
+val onPrimaryDark = Color.Black
 
-val primaryVariantDark = Purple200
+val primaryVariantDark = Dark_primary_variant
 
-val secondaryDark = Teal200
-val onSecondaryDark = Color.Black
+val secondaryDark = Dark_secondary
+val onSecondaryDark = Dark_on_secondary
 
-val backgroundDark = DarkBackground
+val backgroundDark = Dark_background
 val onBackgroundDark =  Color.White
 
-val surfaceDark =Color.Black
+val surfaceDark = Dark_surface
 val onSurfaceDark = Color.White
