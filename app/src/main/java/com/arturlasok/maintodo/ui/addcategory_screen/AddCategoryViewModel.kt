@@ -1,11 +1,16 @@
 package com.arturlasok.maintodo.ui.addcategory_screen
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.arturlasok.maintodo.BaseApplication
 import com.arturlasok.maintodo.R
+import com.arturlasok.maintodo.domain.model.CategoryToDo
+import com.arturlasok.maintodo.interactors.RoomInter
+import com.arturlasok.maintodo.interactors.util.RoomDataState
 import com.arturlasok.maintodo.util.FormDataState
+import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -14,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AddCategoryViewModel @Inject constructor(
     private val application: BaseApplication,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val roomInter: RoomInter
 ): ViewModel() {
 
     //categoryName
@@ -80,11 +86,11 @@ class AddCategoryViewModel @Inject constructor(
         savedStateHandle["categoryDescription"] = text
     }
     //get icon error
-    fun getIconError() : String {
+    private fun getIconError() : String {
         return savedStateHandle["categoryIconError"] ?:""
     }
     //get name error
-    fun getNameError() : String {
+    private fun getNameError() : String {
         return savedStateHandle["categoryNameError"] ?:""
     }
     //get application
@@ -104,11 +110,63 @@ class AddCategoryViewModel @Inject constructor(
                 emit(FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_icon,"asd").asString(application.applicationContext)))
             }
 
-        } else { emit(FormDataState(true)) }
+        } else {
+
+            val result = createCategoryInRoom(
+                CategoryToDo(
+                    dCatId = null,
+                    dCatName = newCategoryState.value.categoryName,
+                    dCatDescription = newCategoryState.value.categoryDescription,
+                    dCatIcon = newCategoryState.value.categoryIcon,
+                    dCatToken = "empty",
+                    dCatSort = 0,
+                    dCatFav = false
+                )
+            )
+
+            //store result:
+
+            result.data_stored.let {
+                //stored
+                if(it == true) {  emit(FormDataState(true))}
+
+            }
+
+            result.data_recived.let {
+                //do nothing = nothing received
+            }
+            result.data_error.let {
+                if(!it.isNullOrBlank()) {
+                    emit(
+                        FormDataState.error<Boolean>(
+                            UiText.StringResource(
+                                R.string.addcategory_form_error_room,
+                                "asd"
+                            ).asString(application.applicationContext)
+                        )
+                    )
+                }
+            }
+
+        }
+
+    }
+    private suspend fun createCategoryInRoom(categoryToDo: CategoryToDo) : RoomDataState<Boolean> {
+
+        var data = RoomDataState.data_stored<Boolean>(true)
+
+        roomInter.insertCategoryToRoom(categoryToDo).onEach { roomDataState ->
+
+            Log.i(TAG,"Recived in vm from inter:"+" Error:" + roomDataState.data_error+ "stored:"+roomDataState.data_stored)
+           data = roomDataState
+
+        }.launchIn(viewModelScope).join()
+
+        return data
+
 
 
     }
-
 
 
 }

@@ -2,9 +2,11 @@ package com.arturlasok.maintodo.cache.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-/*
-@Database(entities = arrayOf(
+import com.arturlasok.maintodo.cache.CategoryDao
+import com.arturlasok.maintodo.cache.model.CategoryToDoEntity
 
+@Database(entities = arrayOf(
+CategoryToDoEntity::class
 ),
     version = 1,
     exportSchema = true,
@@ -12,9 +14,10 @@ import androidx.room.RoomDatabase
 
 
 )
-*/
+
 abstract class AppDatabase : RoomDatabase() {
 
+    abstract fun categoryDao() : CategoryDao
 
     companion object{
         val DATABASE_NAME: String = "maintodo_db"

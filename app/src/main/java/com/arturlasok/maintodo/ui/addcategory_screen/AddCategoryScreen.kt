@@ -1,6 +1,5 @@
 package com.arturlasok.maintodo.ui.addcategory_screen
 
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -208,6 +207,7 @@ fun AddCategoryScreen(
                                     "no"
                                 ).asString(addCategoryViewModel.getApplication().applicationContext)
                             )
+                            navigateTo(Screen.Start.route)
                         }
                         formDataState.error?.let {
                             snackMessage(it)
