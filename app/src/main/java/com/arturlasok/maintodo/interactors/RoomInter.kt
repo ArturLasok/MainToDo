@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 class RoomInter(
     private val categoryDao: CategoryDao
 ) {
-
+    //category domain to entity
     fun categoryFromDomainToEntity(categoryToDo: CategoryToDo) : CategoryToDoEntity {
         return CategoryToDoEntity(
             category_id_room = categoryToDo.dCatId,
@@ -22,6 +22,7 @@ class RoomInter(
             category_fav_room = categoryToDo.dCatFav
         )
     }
+    //category entity to domain
     fun categoryFromEntityToDomain(categoryToDoEntity: CategoryToDoEntity) : CategoryToDo {
         return CategoryToDo(
              dCatId = categoryToDoEntity.category_id_room,
@@ -34,11 +35,27 @@ class RoomInter(
         )
     }
 
+    //category entity list to domain list
+    fun categoryFromListEntityToListDomain(categoryListEntity: List<CategoryToDoEntity>) : List<CategoryToDo> {
+        return categoryListEntity.map {
+            categoryFromEntityToDomain(it)
+        }
+    }
+    //category domain list to entity list
+    fun categoryFromListDomainToListEntity(categoryListDomain: List<CategoryToDo>) : List<CategoryToDoEntity> {
+        return categoryListDomain.map {
+            categoryFromDomainToEntity(it)
+        }
+    }
+
+    //insert category to Database
     fun insertCategoryToRoom(categoryToDo: CategoryToDo) : Flow<RoomDataState<Boolean>> = flow {
 
         try {
 
-            categoryDao.insertCategoryToRoom(categoryFromDomainToEntity(categoryToDo))
+            categoryDao.insertCategoryToRoom(categoryFromDomainToEntity(categoryToDo)
+                .copy(category_token_room = "${System.currentTimeMillis()}"+"added")
+            )
 
             emit(RoomDataState.data_stored(true))
 
@@ -47,6 +64,44 @@ class RoomInter(
 
             emit(RoomDataState.data_error("room_error"))
         }
+
+    }
+
+    //get all category from database
+    fun getCategoryFromRoom() : Flow<RoomDataState<Boolean>> = flow {
+
+        try {
+
+            val categoryList = categoryDao.selectAllFromCategoryRoom()
+
+            if(categoryList.isNotEmpty()) {
+                emit(RoomDataState.data_recived(categoryFromListEntityToListDomain(categoryList)))
+            } else emit(RoomDataState.data_recived(emptyList<CategoryToDo>()))
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+
+    }
+
+    //get one category from database
+    fun getOneCategoryFromRoom(categoryId: Long) : Flow<RoomDataState<Boolean>> = flow {
+
+        try {
+
+            val oneCategory = categoryDao.selectOneCategory(categoryId)
+
+            if(oneCategory.category_id_room!=null) {
+                emit(RoomDataState.data_recived(categoryFromEntityToDomain(oneCategory)))
+            } else emit(RoomDataState.data_error("room_error"))
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
 
     }
 

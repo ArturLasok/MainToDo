@@ -97,6 +97,7 @@ class AddCategoryViewModel @Inject constructor(
     fun getApplication() : BaseApplication {
         return application
     }
+    //form verification
     fun verifyForm() : Flow<FormDataState<Boolean>> = flow {
 
         if(getNameError().isNotEmpty() || getIconError().isNotEmpty()) {
@@ -124,18 +125,19 @@ class AddCategoryViewModel @Inject constructor(
                 )
             )
 
-            //store result:
+            // result:
 
             result.data_stored.let {
                 //stored
                 if(it == true) {  emit(FormDataState(true))}
-
             }
 
             result.data_recived.let {
                 //do nothing = nothing received
             }
+
             result.data_error.let {
+                //error to ui
                 if(!it.isNullOrBlank()) {
                     emit(
                         FormDataState.error<Boolean>(

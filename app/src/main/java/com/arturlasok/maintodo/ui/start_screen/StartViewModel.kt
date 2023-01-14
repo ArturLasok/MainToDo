@@ -2,20 +2,37 @@ package com.arturlasok.maintodo.ui.start_screen
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.arturlasok.maintodo.BaseApplication
 import com.arturlasok.maintodo.R
+import com.arturlasok.maintodo.domain.model.CategoryToDo
+import com.arturlasok.maintodo.interactors.RoomInter
 import com.arturlasok.maintodo.util.UiText
 import com.arturlasok.maintodo.util.milisToDayOfWeek
 import com.arturlasok.maintodo.util.millisToDate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
 class StartViewModel @Inject constructor(
     private val application: BaseApplication,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
+    private val roomInter: RoomInter
 ) : ViewModel() {
 
+
+    init {
+        getCategoriesFromRoom()
+    }
+
+    //selected category -1 All visible
+    val selectedCategory = savedStateHandle.getStateFlow("selectedCategory",-1L)
+    // category list from db
+    val categoriesFromRoom = savedStateHandle.getStateFlow("categories", emptyList<CategoryToDo>())
+
+    //current date to start screen ui
     fun dateWithNameOfDayWeek() : String {
         val timeInMilis =  System.currentTimeMillis()
         val dayOfWeek = milisToDayOfWeek(timeInMilis)
@@ -34,4 +51,31 @@ class StartViewModel @Inject constructor(
         return millisToDate(timeInMilis) + " " + dayNames[dayOfWeek-1]
 
     }
+    //get categories list
+    private fun getCategoriesFromRoom() {
+
+        roomInter.getCategoryFromRoom().onEach { roomDataState ->
+
+            roomDataState.data_recived.let {
+                savedStateHandle["categories"] = it
+            }
+
+        }.launchIn(viewModelScope)
+
+    }
+    //selected category
+    fun setSelectedCategory(categoryId: Long) {
+
+        savedStateHandle["selectedCategory"] = categoryId
+
+    }
+    //get one from category list
+    fun getOneFromCategoryList(categoryId: Long) : CategoryToDo {
+
+       return categoriesFromRoom.value.find {
+            it.dCatId == categoryId
+        } ?: CategoryToDo()
+
+    }
+
 }

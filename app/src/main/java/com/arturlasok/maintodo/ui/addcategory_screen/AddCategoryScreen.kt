@@ -100,14 +100,14 @@ fun AddCategoryScreen(
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(13.dp)
+                        .padding(0.dp)
                         .fillMaxSize()
 
                 ) {
                     CategoryNameForm(
                         nameValue = state.categoryName,
                         onValueChange = addCategoryViewModel::onCategoryNameChange,
-                        onDone = { keyboardController?.hide() }
+                        onDone = { keyboardController?.hide(); focusManager.clearFocus() }
                     )
                 }
             }
@@ -171,14 +171,14 @@ fun AddCategoryScreen(
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(13.dp)
+                        .padding(0.dp)
                         .fillMaxSize()
 
                 ) {
                     CategoryDescForm(
                         nameValue = state.categoryDescription,
                         onValueChange = addCategoryViewModel::onCategoryDescriptionChange,
-                        onDone = { keyboardController?.hide() }
+                        onDone = { keyboardController?.hide(); focusManager.clearFocus() }
                     )
                 }
             }

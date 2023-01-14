@@ -1,11 +1,15 @@
 package com.arturlasok.maintodo.ui.start_screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -13,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.navigation.Screen
+import com.arturlasok.maintodo.util.CategoryIconList
 import com.arturlasok.maintodo.util.UiText
 
 @Composable
@@ -23,7 +28,8 @@ fun StartScreen(
 ) {
 
     val scaffoldState = rememberScaffoldState()
-
+    val items = startViewModel.categoriesFromRoom.collectAsState(initial = listOf()).value
+    val selectedCategory = startViewModel.selectedCategory.collectAsState(initial = -1L).value
 
     Scaffold(
         scaffoldState =  scaffoldState,
@@ -67,7 +73,7 @@ fun StartScreen(
                 //Settings Button
                 Column {
 
-                    SettingButton(
+                    SettingsButton(
                         isDarkModeOn = isDarkModeOn,
                         modifier = Modifier,
                         onClick = {navigateTo(Screen.Settings.route)}
@@ -76,16 +82,58 @@ fun StartScreen(
                 }
 
             }
+            //Category row
+            LazyRow(
+                state = rememberLazyListState(),
+                modifier = Modifier.padding(bottom = 10.dp)
+            ) {
 
-        CategoryAddButton(
-            modifier = Modifier.padding(top = 24.dp, start = 12.dp),
-            sizeImage = 42,
-            sizeCircle = 64,
-            image = if(isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
-            imageModifier = Modifier,
-            isDarkModeOn = isDarkModeOn,
-            clicked = { navigateTo(Screen.AddCategory.route)}
-        )
+                itemsIndexed(items = items) { index, item ->
+                    //Category from db
+                    StartCategoryButton(
+                        modifier = Modifier.padding(top = 24.dp, start = 12.dp),
+                        sizeImage = 42,
+                        sizeCircle = 64,
+                        image = if(isDarkModeOn) CategoryIconList.getIconsDark()[item.dCatIcon ?: 0] else CategoryIconList.getIconsLight()[item.dCatIcon ?: 0],
+                        imageDesc = "Add icon image",
+                        text = item.dCatName ?: "",
+                        imageModifier = Modifier,
+                        isDarkModeOn = isDarkModeOn,
+                        clicked = { startViewModel.setSelectedCategory(item.dCatId ?: -1) },
+                        selected = selectedCategory==item.dCatId
+                    )
+                    //Add category button to end of row. Navigation to AddCategory Screen.
+                    if(items.size==index+1) {
+                        StartCategoryButton(
+                            modifier = Modifier.padding(top = 24.dp, start = 12.dp),
+                            sizeImage = 42,
+                            sizeCircle = 64,
+                            image = if(isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
+                            imageDesc = "Add icon image",
+                            text = "Add new category",
+                            imageModifier = Modifier,
+                            isDarkModeOn = isDarkModeOn,
+                            clicked = { navigateTo(Screen.AddCategory.route)},
+                            selected = false
+                        )
+                    }
+
+
+                }
+
+
+            }
+            //Category details for selected category
+            if(startViewModel.getOneFromCategoryList(selectedCategory).dCatId != null) {
+                CategoryDetails(
+                    selectedCategoryDetails = startViewModel.getOneFromCategoryList(selectedCategory),
+                    navigateTo = { route -> navigateTo(route) },
+                    isDarkModeOn = isDarkModeOn,
+                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
+                )
+            }
+
+
 
         }
 

@@ -16,5 +16,8 @@ interface CategoryDao {
     suspend fun deleteFromCategoryRoomById(category_id: Long)
 
     @Query("SELECT * FROM category_room")
-    suspend fun selectAllFromCategoryRoom() : CategoryToDoEntity
+    suspend fun selectAllFromCategoryRoom() : List<CategoryToDoEntity>
+
+    @Query("SELECT * FROM category_room WHERE category_id_room=:category_id")
+    suspend fun selectOneCategory(category_id: Long) : CategoryToDoEntity
 }

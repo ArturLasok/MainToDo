@@ -1,9 +1,7 @@
 package com.arturlasok.maintodo.ui.start_screen
 
-import android.util.Log.i
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -17,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 
 @Composable
-fun SettingButton(
+fun SettingsButton(
     isDarkModeOn: Boolean,
     modifier: Modifier,
     onClick:() -> Unit
@@ -33,7 +31,6 @@ fun SettingButton(
                     24.dp
                 )
                 .padding(0.dp)
-                .alpha(0.8f)
                 .clickable(onClick = { onClick() })
             ,
             contentDescription = "Ustawienia",

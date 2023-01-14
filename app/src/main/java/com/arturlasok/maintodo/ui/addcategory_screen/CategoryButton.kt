@@ -31,12 +31,7 @@ fun CategoryButton(
 
     Column(
         modifier = modifier
-            .width((sizeCircle + 3).dp)
-            .clickable(onClick = {
-
-                clicked()
-            }
-            ),
+            .width((sizeCircle + 3).dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
 
@@ -60,6 +55,10 @@ fun CategoryButton(
                             MaterialTheme.colors.secondary
                         }
                     }
+                ) .clickable(onClick = {
+
+                    clicked()
+                }
                 )
         ) {
         Box(

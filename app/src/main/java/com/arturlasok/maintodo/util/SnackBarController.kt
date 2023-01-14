@@ -26,7 +26,7 @@ class SnackbarController (
                 scaffoldState.snackbarHostState.showSnackbar(
                     message = message,
                     actionLabel = actionLabel,
-                    duration = SnackbarDuration.Long
+                    duration = SnackbarDuration.Short
                 )
                 cancelActiveJob()
             }
@@ -39,7 +39,7 @@ class SnackbarController (
                 scaffoldState.snackbarHostState.showSnackbar(
                     message = message,
                     actionLabel = actionLabel,
-                    duration = SnackbarDuration.Long
+                    duration = SnackbarDuration.Short
                 )
                 cancelActiveJob()
             }

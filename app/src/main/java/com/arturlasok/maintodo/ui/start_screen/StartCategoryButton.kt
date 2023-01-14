@@ -2,12 +2,11 @@ package com.arturlasok.maintodo.ui.start_screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,23 +20,23 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.arturlasok.maintodo.R
 
 @Composable
-fun CategoryAddButton(
+fun StartCategoryButton(
     modifier: Modifier,
     sizeImage: Int,
     sizeCircle: Int,
     image: Int,
+    imageDesc: String,
+    text: String,
     imageModifier: Modifier,
     isDarkModeOn: Boolean,
-    clicked:() -> Unit
-
-
+    clicked:() -> Unit,
+    selected: Boolean
 ) {
 
     Column(
-        modifier = modifier.width((sizeCircle).dp).clickable(onClick = {clicked()}),
+        modifier = modifier.width((sizeCircle).dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
 
@@ -50,13 +49,14 @@ fun CategoryAddButton(
                 .clip(CircleShape)
                 .background(
                     if(isDarkModeOn) { MaterialTheme.colors.onSecondary } else { MaterialTheme.colors.onPrimary}
-                ),
+                ).clickable(onClick = {clicked()})
+                .border(if(selected) { 1.dp } else { 0.dp }, if(selected) { MaterialTheme.colors.secondary} else { Color.Transparent }, CircleShape),
 
         ) {
             Image(
                 contentScale = ContentScale.Crop,
                 bitmap = ImageBitmap.imageResource(id = image),
-                contentDescription = "Add new category",
+                contentDescription = imageDesc,
                 modifier = imageModifier
                     .size(sizeImage.dp)
                     .zIndex(0.9f),
@@ -66,8 +66,8 @@ fun CategoryAddButton(
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Add new category",
+            modifier = Modifier.fillMaxWidth().height(24.dp),
+            text = text,
             style = MaterialTheme.typography.h5,
             color = MaterialTheme.colors.primary,
             textAlign = TextAlign.Center

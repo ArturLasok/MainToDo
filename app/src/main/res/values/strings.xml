@@ -26,4 +26,5 @@
     <string name="addcategory_form_error_icon">Select an icon for the new category</string>
     <string name="addcategory_form_error_room">Database failure. Try it in a moment</string>
     <string name="addcategory_form_save">You have created a new category</string>
+    <string name="app_editcategory">Edit Category</string>
 </resources>
