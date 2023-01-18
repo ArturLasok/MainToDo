@@ -12,17 +12,24 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -39,10 +46,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.arturlasok.maintodo.navigation.NavigationComponent
 import com.arturlasok.maintodo.ui.theme.MainToDoTheme
-import com.arturlasok.maintodo.util.DefaultSnackbar
-import com.arturlasok.maintodo.util.SnackbarController
-import com.arturlasok.maintodo.util.TAG
-import com.arturlasok.maintodo.util.isOnline
+import com.arturlasok.maintodo.util.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -164,7 +168,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 LaunchedEffect(key1 = true, block = {
-                    delay(3000)
                     viewModel.setScreenIsReady(true)
 
                 } )
@@ -173,7 +176,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     scaffoldState = scaffoldState,
-                    snackbarHost = {scaffoldState.snackbarHostState}
+                    snackbarHost = {scaffoldState.snackbarHostState},
                 )
                 {
 
@@ -193,27 +196,12 @@ class MainActivity : ComponentActivity() {
                         DefaultSnackbar(
                             snackbarHostState = scaffoldState.snackbarHostState,
                             onDismiss = { scaffoldState.snackbarHostState.currentSnackbarData?.dismiss() },
-                            modifier = Modifier.zIndex(1.0f).padding(
-                                top = statusBarPaddingTop.dp
-                            )
+                            modifier = Modifier
+                                .zIndex(1.0f)
+                                .padding(
+                                    top = statusBarPaddingTop.dp
+                                )
                         )
-                        /*
-                      Box(
-                          modifier = Modifier
-                              .fillMaxSize()
-                              .zIndex(0.1f),
-                          contentAlignment = Alignment.BottomStart
-                      ) {
-                          Text(
-                              text = "Theme_dark: " + dataStoreDarkTheme.value.toString() + " \nNetwork avilable: ${isOnline.isNetworkAvailable.value}" + " \nUiState: " + thisuiState.toString() + " \ncurrentR: " + viewModel.getCurrentDestinationRoute().collectAsState().value + "\nLang: " + UiText.StringResource(
-                                  R.string.app_language,
-                                  "asd"
-                              ).asString(),color = MaterialTheme.colors.primary,
-                              style = MaterialTheme.typography.h5
-                          )
-                      }
-
-                       */
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()

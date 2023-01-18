@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.ui.settings_screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
@@ -15,18 +16,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.navigation.Screen
+import com.arturlasok.maintodo.util.BackButton
 import com.arturlasok.maintodo.util.UiText
 
 @Composable
 fun SettingsScreen(
     navigateTo: (route: String) -> Unit,
+    navigateUp:() -> Unit,
+    categoryId: Long,
     isDarkModeOn: Int,
     changeDarkMode:(newVal: Int) -> Unit,
     runLink:(runlink :String) -> Unit,
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
 
-
+    BackHandler(enabled = true) {
+        navigateTo(Screen.Start.route+"/${categoryId}")
+    }
     Column {
 
         Box() {
@@ -36,7 +42,8 @@ fun SettingsScreen(
                 BackButton(
                     isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                     modifier = Modifier,
-                    onClick = {navigateTo(Screen.Start.route)}
+                    onClick = { navigateTo(Screen.Start.route+"/${categoryId}") }
+                    //onClick = { navigateUp() }
                 )
             }
             //Screen title

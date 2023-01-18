@@ -3,6 +3,7 @@ package com.arturlasok.maintodo.di
 import androidx.room.Room
 import com.arturlasok.maintodo.BaseApplication
 import com.arturlasok.maintodo.cache.CategoryDao
+import com.arturlasok.maintodo.cache.ItemDao
 import com.arturlasok.maintodo.cache.database.AppDatabase
 import dagger.Module
 import dagger.Provides
@@ -29,6 +30,12 @@ object CacheModule {
     @Provides
     fun provideCategoryDao(db: AppDatabase): CategoryDao {
         return db.categoryDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideItemDao(db: AppDatabase): ItemDao {
+        return db.itemDao()
     }
 
 

@@ -1,4 +1,4 @@
-package com.arturlasok.maintodo.ui.settings_screen
+package com.arturlasok.maintodo.util
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

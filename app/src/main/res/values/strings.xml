@@ -27,4 +27,12 @@
     <string name="addcategory_form_error_room">Database failure. Try it in a moment</string>
     <string name="addcategory_form_save">You have created a new category</string>
     <string name="app_editcategory">Edit Category</string>
+    <string name="editcategory_save">Save</string>
+    <string name="editcategory_saved">Category updated</string>
+    <string name="floating_button_add">Add new task</string>
+    <string name="addnewtask">Add new task</string>
+    <string name="edit_alert_yes">Yes</string>
+    <string name="edit_alert_cancel">Cancel</string>
+    <string name="edit_alert_question">Do you want to delete the category and all tasks it contains?</string>
+    <string name="editcategory_snack_deleted">The category and associated tasks have been removed</string>
 </resources>

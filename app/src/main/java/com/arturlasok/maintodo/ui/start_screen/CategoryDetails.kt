@@ -1,6 +1,5 @@
 package com.arturlasok.maintodo.ui.start_screen
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -14,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.navigation.Screen
-
+import com.arturlasok.maintodo.R
 @Composable
 fun CategoryDetails(
     selectedCategoryDetails: CategoryToDo,
@@ -26,7 +25,7 @@ fun CategoryDetails(
     Surface(
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
-        elevation = 10.dp,
+        elevation = 4.dp,
         color = if(isDarkModeOn) { MaterialTheme.colors.onSecondary } else { Color.White }
     ) {
         Row(
@@ -36,21 +35,31 @@ fun CategoryDetails(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.fillMaxWidth(fraction = 0.9f)) {
+            Column(
+                modifier = Modifier.fillMaxWidth(fraction = 0.9f),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.Start
+                ) {
                 Text(
                     text = selectedCategoryDetails.dCatName ?: "",
                     style = MaterialTheme.typography.h3,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
-                    text = selectedCategoryDetails.dCatDescription ?: "",
-                    style = MaterialTheme.typography.h4
+                if (selectedCategoryDetails.dCatDescription?.isNotEmpty() == true) {
+                    Text(
+                        text = selectedCategoryDetails.dCatDescription ?: "",
+                        style = MaterialTheme.typography.h4
 
-                )
+                    )
+                }
             }
-            SettingsButton(isDarkModeOn = isDarkModeOn, modifier = Modifier.padding(2.dp).alpha(0.3f)) {
-                navigateTo(Screen.EditCategory.route+"/${selectedCategoryDetails.dCatId}")
-            }
+            SettingsButton(
+                isDarkModeOn = isDarkModeOn,
+                modifier = Modifier.padding(2.dp).alpha(0.5f),
+                light_img = R.drawable.edit_light,
+                dark_img = R.drawable.edit_light,
+                onClick =  { navigateTo(Screen.EditCategory.route+"/${selectedCategoryDetails.dCatId}") }
+            )
 
         }
     }

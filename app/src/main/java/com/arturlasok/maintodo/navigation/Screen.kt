@@ -9,4 +9,8 @@ sealed class Screen(val route: String) {
     object AddCategory : Screen("AddCategory")
 
     object EditCategory : Screen("EditCategory")
+
+    object AddTask : Screen("AddTask")
+
+    object EditTask : Screen("EditTask")
 }

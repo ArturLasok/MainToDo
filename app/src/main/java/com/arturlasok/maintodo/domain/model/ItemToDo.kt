@@ -1,7 +1,7 @@
 package com.arturlasok.maintodo.domain.model
 
 data class ItemToDo(
-    val dItemId: Int? = null,
+    val dItemId: Long? = null,
     val dItemTitle: String = "",
     val dItemAuthor: String = "",
     val dItemDescription: String = "",

@@ -28,29 +28,48 @@ fun NavigationComponent(
 
     NavHost(
     navController = navController,
-    startDestination = Screen.Start.route
+    startDestination = Screen.Start.route+"/{categoryId}"
     ) {
         //--
         // Main Screen
-        composable(Screen.Start.route) {
+        composable(
+            route= Screen.Start.route+"/{categoryId}",
+            arguments = listOf(navArgument(name = "categoryId") {
+                type = NavType.LongType
+                defaultValue = -1
+            })
+            ) { backStackEntry ->
+
+            val categoryId = backStackEntry.arguments?.getLong("categoryId") ?: -1L
 
             navController.currentDestination?.route?.let { newRoute->
                 setCurrentDestination(newRoute)
             }
             StartScreen(
                 navigateTo = { route -> navController.navigate(route) },
-                isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme()
+                isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
+                selectedFromNav = categoryId
             )
         }
         //--
         // Settings Screen
-        composable(Screen.Settings.route) {
+        composable(
+            route=Screen.Settings.route+"/{categoryId}",
+            arguments = listOf(navArgument(name = "categoryId") {
+                type = NavType.LongType
+                defaultValue = -1
+            })
+            ) { backStackEntry ->
+
+            val categoryId = backStackEntry.arguments?.getLong("categoryId") ?: -1L
 
             navController.currentDestination?.route?.let { newRoute->
                 setCurrentDestination(newRoute)
             }
             SettingsScreen(
                 navigateTo = { route -> navController.navigate(route) },
+                navigateUp = { navController.popBackStack()},
+                categoryId = categoryId,
                 isDarkModeOn = isDarkModeOn,
                 changeDarkMode = { newVal-> changeDarkMode(newVal) },
                 runLink  = { runlink -> runLink(runlink) }

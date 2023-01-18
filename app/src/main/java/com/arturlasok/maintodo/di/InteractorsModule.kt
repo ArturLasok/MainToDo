@@ -1,6 +1,7 @@
 package com.arturlasok.maintodo.di
 
 import com.arturlasok.maintodo.cache.CategoryDao
+import com.arturlasok.maintodo.cache.ItemDao
 import com.arturlasok.maintodo.interactors.RoomInter
 import dagger.Module
 import dagger.Provides
@@ -15,10 +16,12 @@ object InteractorsModule {
     @ViewModelScoped
     @Provides
     fun providesRoomInter(
-        categoryDao: CategoryDao
+        categoryDao: CategoryDao,
+        itemDao: ItemDao
     ) : RoomInter {
         return RoomInter(
-            categoryDao = categoryDao
+            categoryDao = categoryDao,
+            itemDao = itemDao
         )
     }
 

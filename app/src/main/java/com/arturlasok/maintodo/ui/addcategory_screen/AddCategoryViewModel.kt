@@ -98,17 +98,17 @@ class AddCategoryViewModel @Inject constructor(
         return application
     }
     //form verification
-    fun verifyForm() : Flow<FormDataState<Boolean>> = flow {
+    fun verifyForm() : Flow<Pair<Long,FormDataState<Boolean>>> = flow {
 
         if(getNameError().isNotEmpty() || getIconError().isNotEmpty()) {
 
             if(getNameError().isNotEmpty())
             {
-                emit(FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_name,"asd").asString(application.applicationContext)))
+                emit(Pair(-1L,FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_name,"asd").asString(application.applicationContext))))
             }
             else
             {
-                emit(FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_icon,"asd").asString(application.applicationContext)))
+                emit(Pair(-1L,FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_icon,"asd").asString(application.applicationContext))))
             }
 
         } else {
@@ -129,7 +129,11 @@ class AddCategoryViewModel @Inject constructor(
 
             result.data_stored.let {
                 //stored
-                if(it == true) {  emit(FormDataState(true))}
+                if(it == true) {
+                    val lastCategoryId =  getLastCategoryId()
+                    emit(Pair(lastCategoryId,FormDataState(true)))
+
+                }
             }
 
             result.data_recived.let {
@@ -139,13 +143,14 @@ class AddCategoryViewModel @Inject constructor(
             result.data_error.let {
                 //error to ui
                 if(!it.isNullOrBlank()) {
-                    emit(
+                    emit(Pair(-1L,
                         FormDataState.error<Boolean>(
                             UiText.StringResource(
                                 R.string.addcategory_form_error_room,
                                 "asd"
                             ).asString(application.applicationContext)
                         )
+                    )
                     )
                 }
             }
@@ -167,6 +172,25 @@ class AddCategoryViewModel @Inject constructor(
         return data
 
 
+
+    }
+    suspend fun getLastCategoryId() : Long {
+
+         var data = -1L
+
+        roomInter.getLastCategoryId().onEach {
+
+            it.data_recived.let { id->
+                data =id as Long
+            }
+            it.data_error.let { error_string ->
+                if(error_string=="room_error") { data = -1L }
+            }
+
+
+        }.launchIn(viewModelScope).join()
+
+        return data
 
     }
 

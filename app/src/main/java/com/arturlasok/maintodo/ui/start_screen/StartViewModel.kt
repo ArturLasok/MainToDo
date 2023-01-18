@@ -1,5 +1,8 @@
 package com.arturlasok.maintodo.ui.start_screen
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,8 +14,11 @@ import com.arturlasok.maintodo.util.UiText
 import com.arturlasok.maintodo.util.milisToDayOfWeek
 import com.arturlasok.maintodo.util.millisToDate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.nio.file.Files.find
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,11 +32,14 @@ class StartViewModel @Inject constructor(
     init {
         getCategoriesFromRoom()
     }
-
+    val selectedCategoryRowIndex =  mutableStateOf(0)
     //selected category -1 All visible
     val selectedCategory = savedStateHandle.getStateFlow("selectedCategory",-1L)
     // category list from db
     val categoriesFromRoom = savedStateHandle.getStateFlow("categories", emptyList<CategoryToDo>())
+    //start screen ui stat
+    val startScreenUiState :MutableState<StartScreenState> = mutableStateOf(StartScreenState.Welcome)
+
 
     //current date to start screen ui
     fun dateWithNameOfDayWeek() : String {
@@ -68,6 +77,10 @@ class StartViewModel @Inject constructor(
 
         savedStateHandle["selectedCategory"] = categoryId
 
+    }
+    //set start screen UI state
+    fun setStartScreenUiState(newState: StartScreenState) {
+        startScreenUiState.value = newState
     }
     //get one from category list
     fun getOneFromCategoryList(categoryId: Long) : CategoryToDo {

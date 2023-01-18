@@ -1,5 +1,9 @@
 package com.arturlasok.maintodo.ui.start_screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,46 +36,64 @@ fun StartCategoryButton(
     imageModifier: Modifier,
     isDarkModeOn: Boolean,
     clicked:() -> Unit,
-    selected: Boolean
+    selected: Boolean,
+    ifSelected:() -> Unit,
+    startScreenState : StartScreenState
 ) {
-
-    Column(
-        modifier = modifier.width((sizeCircle).dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-
+    if(selected) { ifSelected() }
+    AnimatedVisibility(
+        visible = startScreenState==StartScreenState.Welcome,
+        enter = fadeIn(),
+        exit = fadeOut()
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
 
-                .size(sizeCircle.dp)
-                .clip(CircleShape)
-                .background(
-                    if(isDarkModeOn) { MaterialTheme.colors.onSecondary } else { MaterialTheme.colors.onPrimary}
-                ).clickable(onClick = {clicked()})
-                .border(if(selected) { 1.dp } else { 0.dp }, if(selected) { MaterialTheme.colors.secondary} else { Color.Transparent }, CircleShape),
+
+        Column(
+            modifier = modifier.width((sizeCircle).dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
-            Image(
-                contentScale = ContentScale.Crop,
-                bitmap = ImageBitmap.imageResource(id = image),
-                contentDescription = imageDesc,
-                modifier = imageModifier
-                    .size(sizeImage.dp)
-                    .zIndex(0.9f),
-                colorFilter =if(isDarkModeOn) ColorFilter.tint(MaterialTheme.colors.primaryVariant) else null
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(sizeCircle.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isDarkModeOn) {
+                            MaterialTheme.colors.onSecondary
+                        } else {
+                            MaterialTheme.colors.onPrimary
+                        }
+                    )
+                    .clickable(onClick = { clicked() })
+
+
+                ) {
+                Image(
+                    contentScale = ContentScale.Crop,
+                    bitmap = ImageBitmap.imageResource(id = image),
+                    contentDescription = imageDesc,
+                    modifier = imageModifier
+                        .size(sizeImage.dp)
+                        .zIndex(0.9f),
+                    colorFilter = if (isDarkModeOn) {
+                        if(selected) { ColorFilter.tint(MaterialTheme.colors.primaryVariant) } else {ColorFilter.tint(Color.Black) }
+                    } else null
+                )
+
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(28.dp),
+                text = text,
+                style = MaterialTheme.typography.h5,
+                color = MaterialTheme.colors.primary,
+                textAlign = TextAlign.Center
+
             )
-
         }
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            modifier = Modifier.fillMaxWidth().height(24.dp),
-            text = text,
-            style = MaterialTheme.typography.h5,
-            color = MaterialTheme.colors.primary,
-            textAlign = TextAlign.Center
-
-        )
     }
 }

@@ -18,12 +18,14 @@ import com.arturlasok.maintodo.R
 fun SettingsButton(
     isDarkModeOn: Boolean,
     modifier: Modifier,
-    onClick:() -> Unit
+    onClick:() -> Unit,
+    light_img: Int,
+    dark_img: Int
     )
     {
         Image(
             bitmap = ImageBitmap.imageResource(
-                id = if(isDarkModeOn) {R.drawable.settings_dark } else {  R.drawable.settings }
+                id = if(isDarkModeOn) { dark_img } else {  light_img }
             ),
             modifier = modifier
                 .size(

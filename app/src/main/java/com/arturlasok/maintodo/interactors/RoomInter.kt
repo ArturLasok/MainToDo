@@ -1,15 +1,76 @@
 package com.arturlasok.maintodo.interactors
 
 import com.arturlasok.maintodo.cache.CategoryDao
+import com.arturlasok.maintodo.cache.ItemDao
 import com.arturlasok.maintodo.cache.model.CategoryToDoEntity
+import com.arturlasok.maintodo.cache.model.ItemToDoEntity
 import com.arturlasok.maintodo.domain.model.CategoryToDo
+import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.util.RoomDataState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class RoomInter(
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val itemDao: ItemDao
 ) {
+    //item from domain to entity
+    fun itemFromDomainToEntity(itemToDo: ItemToDo) : ItemToDoEntity {
+        return ItemToDoEntity(
+         item_id_room = itemToDo.dItemId,
+         item_title_room = itemToDo.dItemTitle,
+         item_author_room = itemToDo.dItemAuthor,
+         item_desc_room = itemToDo.dItemDescription,
+         item_importance_room = itemToDo.dItemImportance,
+         item_completed_room = itemToDo.dItemCompleted,
+         item_added_room = itemToDo.dItemAdded,
+         item_edited_room = itemToDo.dItemEdited,
+         item_imported_room = itemToDo.dItemImported,
+         item_exported_room= itemToDo.dItemExported,
+         item_token_room = itemToDo.dItemToken,
+         item_group_room = itemToDo.dItemGroup,
+         item_info_room = itemToDo.dItemInfo,
+         item_why_failed_room = itemToDo.dItemWhyFailed,
+         item_delivery_time_room = itemToDo.dItemDeliveryTime,
+         item_remind_time_room = itemToDo.dItemRemindTime,
+         item_limit_time_room = itemToDo.dItemLimitTime
+        )
+    }
+    //item from entity to domain
+    fun itemFromEntityToDomain(itemEntity: ItemToDoEntity) : ItemToDo {
+        return ItemToDo(
+        dItemId = itemEntity.item_id_room,
+        dItemTitle = itemEntity.item_title_room,
+        dItemAuthor = itemEntity.item_author_room,
+        dItemDescription = itemEntity.item_desc_room,
+        dItemImportance = itemEntity.item_importance_room,
+        dItemCompleted = itemEntity.item_completed_room,
+        dItemAdded = itemEntity.item_added_room,
+        dItemEdited = itemEntity.item_edited_room,
+        dItemImported = itemEntity.item_imported_room,
+        dItemExported = itemEntity.item_exported_room,
+        dItemToken = itemEntity.item_token_room,
+        dItemGroup = itemEntity.item_group_room,
+        dItemInfo = itemEntity.item_info_room,
+        dItemWhyFailed = itemEntity.item_why_failed_room,
+        dItemDeliveryTime = itemEntity.item_delivery_time_room,
+        dItemRemindTime = itemEntity.item_remind_time_room,
+        dItemLimitTime =itemEntity.item_limit_time_room
+        )
+    }
+    //item from entity list to domain list
+    fun itemFromEntityListToDomainList(itemEntityList: List<ItemToDoEntity>) : List<ItemToDo> {
+        return itemEntityList.map {
+            itemFromEntityToDomain(it)
+        }
+    }
+    //item from domain list to entity list
+    fun itemFromDomainListToEntityList(itemDomainList: List<ItemToDo>) : List<ItemToDoEntity> {
+        return itemDomainList.map {
+            itemFromDomainToEntity(it)
+        }
+    }
+
     //category domain to entity
     fun categoryFromDomainToEntity(categoryToDo: CategoryToDo) : CategoryToDoEntity {
         return CategoryToDoEntity(
@@ -56,7 +117,6 @@ class RoomInter(
             categoryDao.insertCategoryToRoom(categoryFromDomainToEntity(categoryToDo)
                 .copy(category_token_room = "${System.currentTimeMillis()}"+"added")
             )
-
             emit(RoomDataState.data_stored(true))
 
         }
@@ -66,7 +126,37 @@ class RoomInter(
         }
 
     }
+    //update category in room
+    fun updateCategoryInRoom(categoryToDo: CategoryToDo) : Flow<RoomDataState<Boolean>> = flow {
 
+        try {
+
+            categoryDao.insertCategoryToRoom(categoryFromDomainToEntity(categoryToDo)
+                .copy(category_token_room = "${System.currentTimeMillis()}"+"added")
+            )
+            emit(RoomDataState.data_stored(true))
+
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+    }
+    //delete category
+    fun deleteCategory(categoryId: Long) : Flow<RoomDataState<Boolean>> = flow {
+        try {
+            categoryDao.deleteFromCategoryRoomById(categoryId)
+            emit(RoomDataState.data_stored(true))
+            //ToDo delete all task from this category
+
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+    }
     //get all category from database
     fun getCategoryFromRoom() : Flow<RoomDataState<Boolean>> = flow {
 
@@ -103,6 +193,23 @@ class RoomInter(
         }
 
 
+    }
+    //get last added category
+    fun getLastCategoryId() : Flow<RoomDataState<Boolean>> = flow {
+
+        try {
+            val lastId = categoryDao.selectLastAddedCategoryId()
+            if(lastId!=0L) {
+                emit(RoomDataState.data_recived(lastId))
+            } else {
+                emit(RoomDataState.data_error("room_error"))
+            }
+
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
     }
 
 

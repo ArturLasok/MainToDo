@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.navigation.Screen
-import com.arturlasok.maintodo.ui.settings_screen.BackButton
+import com.arturlasok.maintodo.util.BackButton
 import com.arturlasok.maintodo.util.UiText
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -48,7 +48,7 @@ fun AddCategoryScreen(
                 BackButton(
                     isDarkModeOn = isDarkModeOn,
                     modifier = Modifier,
-                    onClick = { navigateTo(Screen.Start.route) }
+                    onClick = { navigateTo(Screen.Start.route+"/-1L") }
                 )
             }
             //Screen title
@@ -196,20 +196,25 @@ fun AddCategoryScreen(
                     addButtonEnabled.value = false
                     addCategoryViewModel.onCategoryNameChange(state.categoryName)
                     addCategoryViewModel.onIconSelectionChange(state.categoryIcon)
+                    addCategoryViewModel.onCategoryDescriptionChange(state.categoryDescription)
                     keyboardController?.hide()
 
+                    //verify form
                     addCategoryViewModel.verifyForm().onEach { formDataState ->
-
-                        formDataState.ok?.let {
+                        // ok
+                        formDataState.second.ok?.let {
                             snackMessage(
                                 UiText.StringResource(
                                     R.string.addcategory_form_save,
                                     "no"
                                 ).asString(addCategoryViewModel.getApplication().applicationContext)
                             )
-                            navigateTo(Screen.Start.route)
+                            //nav to start and last added category
+                            navigateTo(Screen.Start.route+"/"+formDataState.first)
                         }
-                        formDataState.error?.let {
+                        // error
+                        formDataState.second.error?.let {
+                            //snack message with error
                             snackMessage(it)
                             addButtonEnabled.value = true
                         }

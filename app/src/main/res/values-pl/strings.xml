@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">MainToDoPL</string>
     <string name="app_language">Polski</string>
-    <string name="app_welcome">Co jest do zrobienia?</string>
+    <string name="app_welcome">Co mam do zrobienia?</string>
 </resources>
