@@ -6,7 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.MaterialTheme
@@ -15,19 +15,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.arturlasok.maintodo.R
-import com.arturlasok.maintodo.util.BackButton
+import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.UiText
 
 @Composable
-fun AddTaskTopBar(
+fun TopAndSettings(
     startScreenUiState: StartScreenState,
-    isDarkModeOn: Boolean,
-    navigateTo: (route: String) -> Unit,
-    categoryId: Long,
-    close:() -> Unit
-) {
+    dateAndNameOfDay:String,
+    navigateTo:(route:String)->Unit,
+    selectedCategory: Long,
+    isDarkModeOn: Boolean
+){
+    //title and settings
     AnimatedVisibility(
-        visible = startScreenUiState == StartScreenState.AddTask,
+        visible = startScreenUiState == StartScreenState.Welcome,
         enter = slideInVertically(
             initialOffsetY = {
                 it - 3*it
@@ -35,6 +36,7 @@ fun AddTaskTopBar(
             animationSpec = tween(
                 durationMillis = 500,
                 easing = LinearOutSlowInEasing,
+                delayMillis = 0
             )
         ),
         exit = slideOutVertically(
@@ -42,39 +44,48 @@ fun AddTaskTopBar(
                 it - 3 * it
             },
             animationSpec = tween(
-                durationMillis = 50,
+                durationMillis = 500,
                 easing = LinearOutSlowInEasing
             )
         )
 
     ) {
-        Box() {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
-            //Back button
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth())
-                {
-                    BackButton(
-                        isDarkModeOn = isDarkModeOn,
-                        modifier = Modifier,
-                        onClick = { close() }
-                    )
-                   //add button TODO
-                }
-            }
-            //Screen title
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            //Hi Text
+            Column {
 
                 Text(
                     text = UiText.StringResource(
-                        R.string.addnewtask,
-                        "no"
+                        R.string.app_welcome,
+                        "asd"
                     ).asString(),
-                    style = MaterialTheme.typography.h3,
+                    style = MaterialTheme.typography.body2,
                     color = MaterialTheme.colors.primary
                 )
+                Text(
+                    text = dateAndNameOfDay,
+                    style = MaterialTheme.typography.h5,
+                    color = MaterialTheme.colors.primary
+
+                )
+            }
+            //Settings Button
+            Column {
+
+                SettingsButton(
+                    isDarkModeOn = isDarkModeOn,
+                    modifier = Modifier,
+                    onClick = { navigateTo(Screen.Settings.route + "/${selectedCategory}") },
+                    light_img = R.drawable.settings,
+                    dark_img = R.drawable.settings_dark
+                )
+
+
             }
 
         }
