@@ -20,5 +20,12 @@ interface ItemDao {
     @Query("SELECT * FROM item_room WHERE item_id_room=:item_id")
     suspend fun selectOneItem(item_id: Long) : ItemToDoEntity
 
+    @Query("SELECT * FROM item_room WHERE item_info=:category_token")
+    suspend fun selectAllFromItemRoomWithCategoryToken(category_token:String) : List<ItemToDoEntity>
+
+    @Query("UPDATE item_room SET item_completed=:new_completed_value WHERE item_token=:item_token")
+    suspend fun updateItemCompleteInRoom(new_completed_value: Boolean,item_token: String)
+
+
 
 }

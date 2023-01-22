@@ -52,7 +52,7 @@ fun AddCategoryScreen(
                 )
             }
             //Screen title
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
 
                 Text(
                     text = UiText.StringResource(

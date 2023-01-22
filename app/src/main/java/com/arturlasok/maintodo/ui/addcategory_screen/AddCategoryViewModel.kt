@@ -56,7 +56,7 @@ class AddCategoryViewModel @Inject constructor(
 
     // on category name change
     fun onCategoryNameChange(text: String) {
-        savedStateHandle["categoryName"] = text.trim()
+        savedStateHandle["categoryName"] = text
         if(text.trim().isEmpty())
         {
             savedStateHandle["categoryNameError"] = "Too short"
@@ -119,7 +119,7 @@ class AddCategoryViewModel @Inject constructor(
                     dCatName = newCategoryState.value.categoryName,
                     dCatDescription = newCategoryState.value.categoryDescription,
                     dCatIcon = newCategoryState.value.categoryIcon,
-                    dCatToken = "empty",
+                    dCatToken = getRandomToken(),
                     dCatSort = 0,
                     dCatFav = false
                 )
@@ -192,6 +192,16 @@ class AddCategoryViewModel @Inject constructor(
 
         return data
 
+    }
+    private fun getRandomToken() :String {
+        val unixTime = System.currentTimeMillis() / 1000L
+        val allowedChars = ('A'..'Z') + ('a'..'s') + ('0'..'9')
+        val random : () -> String = fun() : String {
+            return (1..32)
+                .map { allowedChars.random() }
+                .joinToString("")
+        }
+        return "$unixTime"+"time"+random.invoke()
     }
 
 

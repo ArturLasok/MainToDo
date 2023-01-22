@@ -104,6 +104,7 @@ fun EditCategoryScreen(
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth())
                 {
                     BackButton(
@@ -119,7 +120,7 @@ fun EditCategoryScreen(
                 }
             }
             //Screen title
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
 
                 Text(
                     text = UiText.StringResource(

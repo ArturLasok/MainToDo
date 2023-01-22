@@ -38,7 +38,8 @@ fun SettingsScreen(
         Box() {
 
             //Back button
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopStart) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+
                 BackButton(
                     isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                     modifier = Modifier,
@@ -47,7 +48,7 @@ fun SettingsScreen(
                 )
             }
             //Screen title
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
 
                 Text(text= UiText.StringResource(
                     R.string.app_settings,

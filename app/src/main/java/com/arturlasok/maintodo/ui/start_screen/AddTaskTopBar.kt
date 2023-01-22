@@ -5,18 +5,20 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.util.BackButton
 import com.arturlasok.maintodo.util.UiText
+import kotlinx.coroutines.delay
 
 @Composable
 fun AddTaskTopBar(
@@ -24,16 +26,30 @@ fun AddTaskTopBar(
     isDarkModeOn: Boolean,
     navigateTo: (route: String) -> Unit,
     categoryId: Long,
-    close:() -> Unit
+    close:() -> Unit,
+    closeKeyboard:() -> Unit,
+    verifyForm:() -> Unit
 ) {
+    val localVisible = rememberSaveable{ mutableStateOf(false) }
+    LaunchedEffect(key1 = startScreenUiState, block = {
+
+        if(localVisible.value) {
+            localVisible.value = startScreenUiState == StartScreenState.AddTask
+        } else {
+            delay(1000)
+            localVisible.value = startScreenUiState == StartScreenState.AddTask
+        }
+    })
+
     AnimatedVisibility(
-        visible = startScreenUiState == StartScreenState.AddTask,
+        visible = localVisible.value,
         enter = slideInVertically(
             initialOffsetY = {
                 it - 3*it
             },
             animationSpec = tween(
                 durationMillis = 500,
+                delayMillis = 0,
                 easing = LinearOutSlowInEasing,
             )
         ),
@@ -42,7 +58,7 @@ fun AddTaskTopBar(
                 it - 3 * it
             },
             animationSpec = tween(
-                durationMillis = 50,
+                durationMillis = 500,
                 easing = LinearOutSlowInEasing
             )
         )
@@ -54,6 +70,7 @@ fun AddTaskTopBar(
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth())
                 {
                     BackButton(
@@ -61,11 +78,18 @@ fun AddTaskTopBar(
                         modifier = Modifier,
                         onClick = { close() }
                     )
-                   //add button TODO
+                   //add button
+                   AddTaskButton(
+                       hideKeyboard = { closeKeyboard() },
+                       verifyForm = { verifyForm() }
+                   )
                 }
             }
             //Screen title
-            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp), contentAlignment = Alignment.Center) {
 
                 Text(
                     text = UiText.StringResource(
@@ -78,5 +102,6 @@ fun AddTaskTopBar(
             }
 
         }
+
     }
 }

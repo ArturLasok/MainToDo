@@ -150,9 +150,8 @@ class EditCategoryViewModel @Inject constructor(
 
         var data = RoomDataState.data_stored<Boolean>(true)
 
-        roomInter.insertCategoryToRoom(categoryToDo).onEach { roomDataState ->
+        roomInter.insertCategoryToRoomWithOldToken(categoryToDo).onEach { roomDataState ->
 
-            Log.i(TAG,"Recived in vm from inter:"+" Error:" + roomDataState.data_error+ "stored:"+roomDataState.data_stored)
             data = roomDataState
 
         }.launchIn(viewModelScope).join()

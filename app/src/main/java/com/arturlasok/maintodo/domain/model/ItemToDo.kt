@@ -6,7 +6,7 @@ data class ItemToDo(
     val dItemAuthor: String = "",
     val dItemDescription: String = "",
     val dItemImportance: Int = 0,
-    val dItemCompleted: Boolean = false,
+    var dItemCompleted: Boolean = false,
     val dItemAdded: Long = 0L,
     val dItemEdited: Long = 0L,
     val dItemImported: String = "",
@@ -18,4 +18,4 @@ data class ItemToDo(
     val dItemDeliveryTime: Long = 0L,
     val dItemRemindTime: Long = 0L,
     val dItemLimitTime: Long = 0L
-)
+) : java.io.Serializable

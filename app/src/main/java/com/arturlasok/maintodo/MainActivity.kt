@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
                 viewModel.uiState
                     .onEach {
                         thisuiState = it
-                        Log.i(TAG,"Data is changed MA")
+                        Log.i(TAG,"Data is changed in MA")
                     }.launchIn(this)
             }
         }
@@ -167,6 +167,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                //Screen is ready!
                 LaunchedEffect(key1 = true, block = {
                     viewModel.setScreenIsReady(true)
 

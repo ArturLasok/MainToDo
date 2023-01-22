@@ -23,6 +23,7 @@ class MainActivityViewModel @Inject constructor(
     private val currentDestination = savedStateHandle.getStateFlow("currentDestination","")
 
     val uiState : Flow<MainActivityUiState> = combine(isScreenIsAvailable, currentDestination) { isScreenIsAvailable, currentDestination ->
+
         Log.i(TAG,"Data is changed VM")
 
         if(!isScreenIsAvailable) { MainActivityUiState.SplashScreen } else {
@@ -30,7 +31,7 @@ class MainActivityViewModel @Inject constructor(
 
 
 
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(1000), MainActivityUiState.SplashScreen)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MainActivityUiState.SplashScreen)
 
     fun setDarkActiveTo(newVal:Int) {
        savedStateHandle["isDarkActive"] = newVal

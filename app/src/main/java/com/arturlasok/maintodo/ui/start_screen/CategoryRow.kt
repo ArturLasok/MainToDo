@@ -30,7 +30,24 @@ fun CategoryRow(
     ) {
 
         itemsIndexed(items = categoryList) { index, item ->
-
+            //Add category button to end of row. Navigation to AddCategory Screen.
+            if (index==0) {
+                StartCategoryButton(
+                    modifier = Modifier.padding(top = 24.dp, start = 12.dp),
+                    sizeImage = 34,
+                    sizeCircle = 64,
+                    image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.addcat_dark
+                    else R.drawable.addcat_light,
+                    imageDesc = "Add icon image",
+                    text = "All tasks",
+                    imageModifier = Modifier,
+                    isDarkModeOn = isDarkModeOn,
+                    clicked = { onClick(-1L) },
+                    selected = selectedCategory == -1L,
+                    ifSelected = {},
+                    startScreenState = startScreenUiState
+                )
+            }
             //Category from db
             StartCategoryButton(
                 modifier = Modifier.padding(top = 24.dp, start = 12.dp),
@@ -42,7 +59,7 @@ fun CategoryRow(
                 text = item.dCatName ?: "",
                 imageModifier = Modifier,
                 isDarkModeOn = isDarkModeOn,
-                clicked = { onClick(item.dCatId ?: -1) },
+                clicked = { onClick(item.dCatId ?: -1L) },
                 selected = selectedCategory == item.dCatId,
                 ifSelected = { },
                 startScreenState = StartScreenState.Welcome

@@ -48,7 +48,8 @@ fun NavigationComponent(
             StartScreen(
                 navigateTo = { route -> navController.navigate(route) },
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
-                selectedFromNav = categoryId
+                selectedFromNav = categoryId,
+                snackMessage = { snackMessage-> snackMessage(snackMessage) }
             )
         }
         //--
