@@ -6,21 +6,23 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
+import com.arturlasok.maintodo.util.UiText
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -44,7 +46,9 @@ fun TasksColumnLazy(
             localVisible.value = startScreenUiState == StartScreenState.Welcome
         }
     })
-    Spacer(modifier = Modifier.fillMaxWidth().height(6.dp))
+    Spacer(modifier = Modifier
+        .fillMaxWidth()
+        .height(6.dp))
     AnimatedVisibility(
         visible = localVisible.value,
         enter = slideInVertically(
@@ -68,6 +72,21 @@ fun TasksColumnLazy(
         )
 
     ) {
+        //Empty tasks
+        if(tasksList.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(top=40.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                Text(text= UiText.StringResource(
+                    R.string.no_tasks,
+                    "no"
+                ).asString(),
+                    style = MaterialTheme.typography.h3,
+                    color = MaterialTheme.colors.primary)
+            }
+        }
         //Tasks Column
         LazyColumn(
             state = itemColumnState,

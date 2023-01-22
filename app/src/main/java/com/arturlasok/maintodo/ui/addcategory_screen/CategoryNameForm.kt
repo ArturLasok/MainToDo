@@ -27,7 +27,7 @@ fun CategoryNameForm(
         TextField(
             enabled = true,
             value = nameValue.replaceFirstChar { it.uppercase() },
-            onValueChange = { value-> if(value.length<30) { onValueChange(value) } },
+            onValueChange = { value-> if(value.length<20) { onValueChange(value) } },
             modifier = modifier.fillMaxWidth().padding(0.dp).height(50.dp),
             singleLine = true,
             textStyle = MaterialTheme.typography.h3.copy(color = MaterialTheme.colors.primary),

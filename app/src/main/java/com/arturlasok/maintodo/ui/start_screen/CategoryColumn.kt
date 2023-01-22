@@ -1,7 +1,8 @@
 package com.arturlasok.maintodo.ui.start_screen
 
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -14,7 +15,7 @@ import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.CategoryIconList
 
 @Composable
-fun CategoryRow(
+fun CategoryColumn(
     isDarkModeOn: Boolean,
     categoryRowState: LazyListState,
     categoryList: List<CategoryToDo>,
@@ -25,16 +26,16 @@ fun CategoryRow(
 
 ) {
     //Category row
-    LazyRow(
+    LazyColumn(
         state = categoryRowState,
-        modifier = Modifier.padding(bottom = 10.dp)
+        modifier = Modifier.padding(bottom = 0.dp, end = 10.dp)
     ) {
 
         itemsIndexed(items = categoryList) { index, item ->
             //Add category button to end of row. Navigation to AddCategory Screen.
             if (index==0) {
                 StartCategoryButton(
-                    modifier = Modifier.padding(top = 24.dp, start = 12.dp),
+                    modifier = Modifier.padding(top = 0.dp, start = 12.dp),
                     sizeImage = 34,
                     sizeCircle = 64,
                     image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.addcat_dark
@@ -51,7 +52,7 @@ fun CategoryRow(
             }
             //Category from db
             StartCategoryButton(
-                modifier = Modifier.padding(top = 24.dp, start = 12.dp),
+                modifier = Modifier.padding(top = 0.dp, start = 12.dp),
                 sizeImage = 34,
                 sizeCircle = 64,
                 image = if (isDarkModeOn || (selectedCategory != item.dCatId)) CategoryIconList.getIconsDark()[item.dCatIcon
@@ -68,7 +69,7 @@ fun CategoryRow(
             //Add category button to end of row. Navigation to AddCategory Screen.
             if (categoryList.size == index + 1) {
                 StartCategoryButton(
-                    modifier = Modifier.padding(top = 24.dp, start = 12.dp),
+                    modifier = Modifier.padding(top = 0.dp, start = 12.dp),
                     sizeImage = 34,
                     sizeCircle = 64,
                     image = if (isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
@@ -90,37 +91,39 @@ fun CategoryRow(
 
     }
     //Add category button if no items yet. Navigation to AddCategory Screen.
-    Row(){
     if (categoryList.isEmpty()) {
-        StartCategoryButton(
-            modifier = Modifier.padding(top = 24.dp, start = 12.dp),
-            sizeImage = 34,
-            sizeCircle = 64,
-            image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.addcat_dark
-            else R.drawable.addcat_light,
-            imageDesc = "Add icon image",
-            text = "All tasks",
-            imageModifier = Modifier,
-            isDarkModeOn = isDarkModeOn,
-            clicked = { onClick(-1L) },
-            selected = selectedCategory == -1L,
-            ifSelected = {},
-            startScreenState = startScreenUiState
-        )
-        StartCategoryButton(
-            modifier = Modifier.padding(top = 24.dp, start = 12.dp, bottom = 10.dp),
-            sizeImage = 34,
-            sizeCircle = 64,
-            image = if (isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
-            imageDesc = "Add icon image",
-            text = "Add new category",
-            imageModifier = Modifier,
-            isDarkModeOn = isDarkModeOn,
-            clicked = { navigateTo(Screen.AddCategory.route) },
-            selected = false,
-            ifSelected = {},
-            startScreenState = startScreenUiState
-        )
-    }
+        Column() {
+
+
+            StartCategoryButton(
+                modifier = Modifier.padding(top = 0.dp, start = 12.dp),
+                sizeImage = 34,
+                sizeCircle = 64,
+                image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.addcat_dark
+                else R.drawable.addcat_light,
+                imageDesc = "Add icon image",
+                text = "All tasks",
+                imageModifier = Modifier,
+                isDarkModeOn = isDarkModeOn,
+                clicked = { onClick(-1L) },
+                selected = selectedCategory == -1L,
+                ifSelected = {},
+                startScreenState = startScreenUiState
+            )
+            StartCategoryButton(
+                modifier = Modifier.padding(top = 0.dp, start = 12.dp, end = 10.dp),
+                sizeImage = 34,
+                sizeCircle = 64,
+                image = if (isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
+                imageDesc = "Add icon image",
+                text = "Add new category",
+                imageModifier = Modifier,
+                isDarkModeOn = isDarkModeOn,
+                clicked = { navigateTo(Screen.AddCategory.route) },
+                selected = false,
+                ifSelected = {},
+                startScreenState = startScreenUiState
+            )
+        }
     }
 }

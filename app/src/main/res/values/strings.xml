@@ -43,4 +43,6 @@
     <string name="addtask_form_error_category">Select category for task</string>
     <string name="addtask_form_save">You have created a new task</string>
     <string name="all_tasks">All tasks</string>
+    <string name="no_tasks">You have no tasks to do!</string>
+    <string name="add_categories_first">First add task categories</string>
 </resources>

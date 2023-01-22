@@ -95,7 +95,7 @@ class EditCategoryViewModel @Inject constructor(
     }
     // on category name change
     fun onCategoryNameChange(text: String) {
-        savedStateHandle["categoryName"] = text.trim()
+        savedStateHandle["categoryName"] = text
         if(text.trim().isEmpty())
         {
             savedStateHandle["categoryNameError"] = "Too short"

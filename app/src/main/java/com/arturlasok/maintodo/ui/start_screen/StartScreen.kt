@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.ui.start_screen
 
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -12,6 +13,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.imageResource
@@ -93,7 +95,15 @@ fun StartScreen(
                         )
                     },
                     onClick = {
-                        startViewModel.setStartScreenUiState(StartScreenState.AddTask)
+                        if(categoryList.isEmpty()) {
+                            snackMessage(UiText.StringResource(
+                                R.string.add_categories_first,
+                                "asd"
+                            ).asString(startViewModel.getApplication().applicationContext)
+                            )
+                        } else {
+                            startViewModel.setStartScreenUiState(StartScreenState.AddTask)
+                        }
                     }
                 )
             }
@@ -103,7 +113,19 @@ fun StartScreen(
         backgroundColor = Color.Transparent
 
     ) {
-
+    Row() {
+        //Category row horizontal
+        if(LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            CategoryColumn(
+                isDarkModeOn = isDarkModeOn,
+                categoryRowState = categoryRowState,
+                categoryList = categoryList,
+                selectedCategory = selectedCategory,
+                onClick = { itemId -> startViewModel.setSelectedCategory(itemId); },
+                startScreenUiState = startScreenUiState,
+                navigateTo = { route -> navigateTo(route) }
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -159,16 +181,18 @@ fun StartScreen(
                     isDarkModeOn = isDarkModeOn
                 )
             }
-            //Category row
-            CategoryRow(
-                isDarkModeOn = isDarkModeOn,
-                categoryRowState = categoryRowState,
-                categoryList = categoryList,
-                selectedCategory = selectedCategory,
-                onClick = { itemId ->  startViewModel.setSelectedCategory(itemId); },
-                startScreenUiState = startScreenUiState,
-                navigateTo = {route ->  navigateTo(route) }
-            )
+            //Category row vertical
+            if(LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                CategoryRow(
+                    isDarkModeOn = isDarkModeOn,
+                    categoryRowState = categoryRowState,
+                    categoryList = categoryList,
+                    selectedCategory = selectedCategory,
+                    onClick = { itemId -> startViewModel.setSelectedCategory(itemId); },
+                    startScreenUiState = startScreenUiState,
+                    navigateTo = { route -> navigateTo(route) }
+                )
+            }
             //Add task form
             AddTaskForm(
                 startScreenUiState = startScreenUiState,
@@ -176,17 +200,19 @@ fun StartScreen(
                 categoryId = selectedCategory,
                 newTaskName = newTaskState.taskName,
                 newTaskDesc = newTaskState.taskDesc,
-                onTaskNameChange = startViewModel::onNewTaskNameChange ,
-                onTaskDescChange =  startViewModel::onNewTaskDescChange ,
-                hideKeyboard = { keyboardController?.hide(); focusManager.clearFocus(true)}
+                onTaskNameChange = startViewModel::onNewTaskNameChange,
+                onTaskDescChange = startViewModel::onNewTaskDescChange,
+                hideKeyboard = { keyboardController?.hide(); focusManager.clearFocus(true) }
 
             )
             //Category details
             CategoryDetails(
                 visible = startScreenUiState != StartScreenState.AddTask,
-                selectedCategoryDetails = if(startViewModel.getOneFromCategoryList(selectedCategory).dCatId != null) {
-                    startViewModel.getOneFromCategoryList(selectedCategory) } else { CategoryToDo() }
-                ,
+                selectedCategoryDetails = if (startViewModel.getOneFromCategoryList(selectedCategory).dCatId != null) {
+                    startViewModel.getOneFromCategoryList(selectedCategory)
+                } else {
+                    CategoryToDo()
+                },
                 navigateTo = { route -> navigateTo(route) },
                 isDarkModeOn = isDarkModeOn,
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp)
@@ -213,19 +239,21 @@ fun StartScreen(
                 onClickCheck = { itemToken: String, newVal: Boolean ->
 
 
-
-                   val itemToChangeIndex = taskItemsList.indexOf(taskItemsList.find {
-                       it.dItemToken == itemToken
-                   })
+                    val itemToChangeIndex = taskItemsList.indexOf(taskItemsList.find {
+                        it.dItemToken == itemToken
+                    })
                     scope.launch {
 
-                        if(startViewModel.updateTaskItemCompletion(taskItemsList[itemToChangeIndex], selectedCategory)) {
-                            taskItemsList[itemToChangeIndex] = taskItemsList[itemToChangeIndex].copy(dItemCompleted = newVal)
+                        if (startViewModel.updateTaskItemCompletion(
+                                taskItemsList[itemToChangeIndex],
+                                selectedCategory
+                            )
+                        ) {
+                            taskItemsList[itemToChangeIndex] =
+                                taskItemsList[itemToChangeIndex].copy(dItemCompleted = newVal)
                         }
 
                     }
-
-
 
 
                 },
@@ -233,6 +261,7 @@ fun StartScreen(
             )
 
         }
+    }
 
     }
 
