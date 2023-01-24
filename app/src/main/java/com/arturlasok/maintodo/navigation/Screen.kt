@@ -10,7 +10,7 @@ sealed class Screen(val route: String) {
 
     object EditCategory : Screen("EditCategory")
 
-    object AddTask : Screen("AddTask")
+    //object AddTask : Screen("AddTask")
 
     object EditTask : Screen("EditTask")
 }

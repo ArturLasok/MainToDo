@@ -45,4 +45,8 @@
     <string name="all_tasks">All tasks</string>
     <string name="no_tasks">You have no tasks to do!</string>
     <string name="add_categories_first">First add task categories</string>
+    <string name="delete_task_alert_question">Want to delete a task?</string>
+    <string name="delete_task_snack_removed">The task has been deleted</string>
+    <string name="edittask_screen">Edit task</string>
+    <string name="edittask_updated">Task updated</string>
 </resources>

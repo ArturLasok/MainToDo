@@ -14,6 +14,9 @@ interface ItemDao {
     @Query("DELETE FROM item_room WHERE item_id_room= :item_id")
     suspend fun deleteFromItemRoomById(item_id: Long)
 
+    @Query("DELETE FROM item_room WHERE item_info=:category_id")
+    suspend fun deleteFromItemRoomByCategoryId(category_id: String)
+
     @Query("SELECT * FROM item_room")
     suspend fun selectAllFromItemRoom() : List<ItemToDoEntity>
 

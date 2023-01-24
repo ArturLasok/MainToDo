@@ -187,13 +187,31 @@ class RoomInter(
         }
 
     }
+    //delete item
+    fun deleteItem(itemId: Long) : Flow<RoomDataState<Boolean>> = flow {
+        try {
+            itemDao.deleteFromItemRoomById(itemId)
+            emit(RoomDataState.data_stored(true))
 
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+    }
     //delete category
     fun deleteCategory(categoryId: Long) : Flow<RoomDataState<Boolean>> = flow {
         try {
+            //token of deleted category
+            val categoryToken = categoryFromEntityToDomain(categoryDao.selectOneCategory(categoryId))
+            //delete category
             categoryDao.deleteFromCategoryRoomById(categoryId)
+            //delete all task items with category token
+            itemDao.deleteFromItemRoomByCategoryId(categoryToken.dCatToken.toString())
+
             emit(RoomDataState.data_stored(true))
-            //ToDo delete all tasks from this category
+
 
         }
         catch(e:Exception) {
@@ -246,13 +264,48 @@ class RoomInter(
 
 
     }
+    //get one itemfrom database
+    fun getOneItemFromRoom(itemId: Long) : Flow<RoomDataState<Boolean>> = flow {
 
+        try {
+
+            val oneItem = itemDao.selectOneItem(itemId)
+
+            if(oneItem.item_id_room!=null) {
+                emit(RoomDataState.data_recived(itemFromEntityToDomain(oneItem)))
+            } else emit(RoomDataState.data_error("room_error"))
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+
+    }
     //get one category from database
     fun getOneCategoryFromRoom(categoryId: Long) : Flow<RoomDataState<Boolean>> = flow {
 
         try {
 
             val oneCategory = categoryDao.selectOneCategory(categoryId)
+
+            if(oneCategory.category_id_room!=null) {
+                emit(RoomDataState.data_recived(categoryFromEntityToDomain(oneCategory)))
+            } else emit(RoomDataState.data_error("room_error"))
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+
+    }
+    //get one category from database with token
+    fun getOneCategoryFromRoomWithToken(categoryToken: String) : Flow<RoomDataState<Boolean>> = flow {
+
+        try {
+
+            val oneCategory = categoryDao.selectOneCategoryWithToken(categoryToken)
 
             if(oneCategory.category_id_room!=null) {
                 emit(RoomDataState.data_recived(categoryFromEntityToDomain(oneCategory)))

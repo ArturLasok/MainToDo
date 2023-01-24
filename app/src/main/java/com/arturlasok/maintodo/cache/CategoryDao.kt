@@ -21,6 +21,9 @@ interface CategoryDao {
     @Query("SELECT * FROM category_room WHERE category_id_room=:category_id")
     suspend fun selectOneCategory(category_id: Long) : CategoryToDoEntity
 
+    @Query("SELECT * FROM category_room WHERE category_token_room=:category_token")
+    suspend fun selectOneCategoryWithToken(category_token: String) : CategoryToDoEntity
+
     @Query("SELECT category_id_room FROM category_room ORDER BY category_id_room DESC LIMIT 1")
     suspend fun selectLastAddedCategoryId() : Long
 

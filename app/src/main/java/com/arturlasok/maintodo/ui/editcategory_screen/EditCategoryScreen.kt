@@ -84,8 +84,6 @@ fun EditCategoryScreen(
                                 }
                             }
                         }
-
-
                         },
                 onCancel = {
                         //cancel

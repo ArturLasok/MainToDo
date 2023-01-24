@@ -1,12 +1,14 @@
 package com.arturlasok.maintodo.ui.start_screen
 
 import android.content.res.Configuration
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -21,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
+import com.arturlasok.maintodo.navigation.Screen
+import com.arturlasok.maintodo.util.RemoveAlert
+import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -49,6 +54,7 @@ fun StartScreen(
     val startScreenUiState: StartScreenState = startViewModel.startScreenUiState.value
     val newTaskState by startViewModel.newTaskState.collectAsState()
     val scope = rememberCoroutineScope()
+    val removeTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
 
 
     LaunchedEffect(key1 = true, block = {
@@ -231,30 +237,90 @@ fun StartScreen(
             }
 
             //Task list
+            if(removeTaskAlert.value.first) {
+                RemoveAlert(
+                    question =  UiText.StringResource(
+                        R.string.delete_task_alert_question,
+                        "no"
+                    ).asString() ,
+                    onYes = {
+                        //remove
+                        scope.launch {
+                            val deleteResponse = startViewModel.deleteTask(removeTaskAlert.value.second)
+                            deleteResponse.ok.let {
+                                if(it==true) {
+                                    removeTaskAlert.value = Pair(false,-1)
+                                    snackMessage(UiText.StringResource(
+                                        R.string.delete_task_snack_removed,
+                                        "no"
+                                    ).asString(startViewModel.getApplication().applicationContext))
+
+                                }
+                            }
+                            deleteResponse.error.let {
+                                if (it != null) {
+                                    if(it.isNotEmpty()) {
+                                        removeTaskAlert.value = Pair(false,-1)
+                                        snackMessage(it)
+                                    }
+                                }
+                            }
+                        }
+
+                    },
+                    onCancel = {
+                        //cancel
+                        removeTaskAlert.value = Pair(false,-1) })
+                {
+                    //on dismiss
+                    removeTaskAlert.value = Pair(false,-1)
+                }
+            }
             TasksColumnLazy(
                 isDarkModeOn = isDarkModeOn,
                 itemColumnState = itemColumnState,
                 tasksList = taskItemsList.toMutableStateList(),
-                onClickEdit = { },
-                onClickCheck = { itemToken: String, newVal: Boolean ->
+                onClickEdit = { itemId ->
+                    navigateTo(Screen.EditTask.route + "/${selectedCategory}+${itemId}")
+                },
+                onClickCheck = { itemToken: String, newVal: Boolean, listIndex:Int, nearIndex: Int ->
 
 
                     val itemToChangeIndex = taskItemsList.indexOf(taskItemsList.find {
                         it.dItemToken == itemToken
                     })
                     scope.launch {
-
+                        //update item in db
                         if (startViewModel.updateTaskItemCompletion(
                                 taskItemsList[itemToChangeIndex],
                                 selectedCategory
                             )
                         ) {
+                            //update list in lazy column
                             taskItemsList[itemToChangeIndex] =
                                 taskItemsList[itemToChangeIndex].copy(dItemCompleted = newVal)
+
+                            val newTaskPosition = taskItemsList.sortedBy { it.dItemCompleted }.indexOf(taskItemsList.find {
+                                it.dItemToken == itemToken
+                            })
+
+                            //Log.i(TAG,"near: $nearIndex" + " clickedIndex: $listIndex" +" newIndex: $newTaskPosition"+ " listSize: ${taskItemsList.size}")
+
+                            //scrolling
+                            if(newVal) {
+                                itemColumnState.animateScrollToItem(nearIndex)
+                            } else {
+
+                                itemColumnState.animateScrollToItem(newTaskPosition)
+                            }
                         }
 
                     }
 
+                },
+                onClickDelete = {itemId ->
+
+                    removeTaskAlert.value = Pair(true,itemId)
 
                 },
                 startScreenUiState = startScreenUiState,

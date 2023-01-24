@@ -170,6 +170,34 @@ class StartViewModel @Inject constructor(
         }
 
     }
+    //delete category
+    suspend fun deleteTask(itemId: Long) : FormDataState<Boolean> {
+
+        var response = FormDataState.ok<Boolean>(true)
+
+        roomInter.deleteItem(itemId).onEach { roomResponse ->
+
+            roomResponse.data_stored.let {
+                if(it == true) {
+                    response = FormDataState.ok<Boolean>(true)
+                    getTaskItemsFromRoom(savedStateHandle["selectedCategory"] ?: -1L)
+                }
+                roomResponse.data_error.let {
+                    if(it=="room_error") {
+                        response = FormDataState.error(UiText.StringResource(
+                            R.string.addcategory_form_error_room,
+                            "asd"
+                        ).asString(application.applicationContext))
+                    }
+                }
+            }
+
+
+
+        }.launchIn(viewModelScope).join()
+        return response
+
+    }
     //get new task name error
     private fun getNewTaskNameError() : String {
         return savedStateHandle["newTaskNameError"] ?: ""

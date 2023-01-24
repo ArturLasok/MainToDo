@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,11 +32,13 @@ fun TasksColumnLazy(
     isDarkModeOn :Boolean,
     itemColumnState: LazyListState,
     tasksList: SnapshotStateList<ItemToDo>,
-    onClickEdit:(itemToken: String) -> Unit,
-    onClickCheck:(itemToken: String, newVal:Boolean) -> Unit,
-    startScreenUiState: StartScreenState
+    onClickEdit:(itemId: Long) -> Unit,
+    onClickCheck:(itemToken: String, newVal:Boolean, listIndex: Int, nearIndex: Int) -> Unit,
+    onClickDelete:(itemId: Long) -> Unit,
+    startScreenUiState: StartScreenState,
 ) {
     val localVisible = remember { mutableStateOf(false) }
+    val openId = rememberSaveable { mutableStateOf(-1L) }
 
     LaunchedEffect(key1 = startScreenUiState, block = {
 
@@ -107,7 +110,18 @@ fun TasksColumnLazy(
                     item = item,
                     indexOfItem = index,
                     isDarkModeOn = isDarkModeOn,
-                    checkChange = { newVal -> onClickCheck(item.dItemToken,newVal)  }
+                    checkChange = { newVal -> onClickCheck(
+                       item.dItemToken,
+                        newVal,
+                        itemColumnState.firstVisibleItemIndex,
+                        if(index == tasksList.size) index-1 else {
+                            if(index>0) index-1 else index }
+                        )
+                    },
+                    deleteClick = { itemId ->  onClickDelete(itemId) },
+                    editClick = { itemId -> onClickEdit(itemId) },
+                    fullOpen = item.dItemId == openId.value,
+                    setOpen = { id -> if(openId.value==item.dItemId) { openId.value = -1L} else { openId.value = id}}
                 )
             }
         }
