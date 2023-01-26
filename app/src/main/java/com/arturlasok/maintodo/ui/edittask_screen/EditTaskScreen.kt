@@ -104,7 +104,9 @@ fun EditTaskScreen(navigateTo: (route: String) -> Unit,
                 editTaskViewModel.onItemCategoryChange(itemId)
             },
             startScreenUiState = StartScreenState.AddTask,
-            navigateTo = { }
+            navigateTo = { },
+            numberOfItems = remember{ mutableStateListOf() },
+            countItems = {}
         )
         Spacer(
             modifier = Modifier

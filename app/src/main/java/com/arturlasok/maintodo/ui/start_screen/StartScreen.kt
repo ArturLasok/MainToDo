@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -27,6 +28,8 @@ import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.RemoveAlert
 import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -57,7 +60,9 @@ fun StartScreen(
     val removeTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
 
 
+
     LaunchedEffect(key1 = true, block = {
+
         if (selectedFromNav != selectedCategory) {
            startViewModel.setSelectedCategory(selectedFromNav)
         }
@@ -129,7 +134,20 @@ fun StartScreen(
                 selectedCategory = selectedCategory,
                 onClick = { itemId -> startViewModel.setSelectedCategory(itemId); },
                 startScreenUiState = startScreenUiState,
-                navigateTo = { route -> navigateTo(route) }
+                navigateTo = { route -> navigateTo(route) },
+                numberOfItems  = startViewModel.counter,
+                countItems = { categoryToken ->
+
+                    scope.launch {
+                        startViewModel.getTaskCount(categoryToken).collect() { itemSum->
+                            val ind = startViewModel.counter.indexOfFirst {
+                                it.first == categoryToken
+                            }
+                            startViewModel.counter[ind] = Pair(categoryToken, itemSum)
+                        }
+                    }
+
+                }
             )
         }
         Column(
@@ -196,7 +214,20 @@ fun StartScreen(
                     selectedCategory = selectedCategory,
                     onClick = { itemId -> startViewModel.setSelectedCategory(itemId); },
                     startScreenUiState = startScreenUiState,
-                    navigateTo = { route -> navigateTo(route) }
+                    navigateTo = { route -> navigateTo(route) },
+                    numberOfItems = startViewModel.counter,
+                    countItems = { categoryToken ->
+
+                            scope.launch {
+                                startViewModel.getTaskCount(categoryToken).collect() { itemSum->
+                                    val ind = startViewModel.counter.indexOfFirst {
+                                        it.first == categoryToken
+                                    }
+                                    startViewModel.counter[ind] = Pair(categoryToken, itemSum)
+                                }
+                            }
+
+                    }
                 )
             }
             //Add task form

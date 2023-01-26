@@ -7,8 +7,7 @@ import com.arturlasok.maintodo.cache.model.ItemToDoEntity
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.util.RoomDataState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 
 
 class RoomInter(
@@ -242,6 +241,24 @@ class RoomInter(
         catch(e:Exception) {
 
             emit(RoomDataState.data_error("room_error"))
+        }
+
+
+    }
+    //count open tasks for badges
+    fun getCount(categoryToken: String) : Flow<Int> = itemDao.countAllFromItemRoomWithCategoryToken(categoryToken)
+    //
+    fun categoryIdToCategoryString(categoryId: Long) : Flow<String> = flow {
+
+
+        try {
+            val categoryData = categoryFromEntityToDomain(categoryDao.selectOneCategory(categoryId))
+            emit(categoryData.dCatToken ?:"")
+
+        }
+        catch(e:Exception) {
+
+            emit("")
         }
 
 

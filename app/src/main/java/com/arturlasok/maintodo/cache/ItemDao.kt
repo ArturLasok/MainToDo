@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.arturlasok.maintodo.cache.model.ItemToDoEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ItemDao {
@@ -28,6 +29,9 @@ interface ItemDao {
 
     @Query("UPDATE item_room SET item_completed=:new_completed_value WHERE item_token=:item_token")
     suspend fun updateItemCompleteInRoom(new_completed_value: Boolean,item_token: String)
+
+    @Query("SELECT count(*) FROM item_room WHERE item_info=:category_token and item_completed=0")
+    fun countAllFromItemRoomWithCategoryToken(category_token:String) : Flow<Int>
 
 
 
