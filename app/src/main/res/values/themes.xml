@@ -27,7 +27,7 @@
 
         <item name="windowSplashScreenAnimatedIcon">@drawable/tasks</item>
         <item name="postSplashScreenTheme">@style/Theme.MainToDo</item>
-        <item name="android:colorBackground">#FFFFD6FA</item>
+        <item name="android:colorBackground">#FFB5E6CD</item>
     </style>
 
 

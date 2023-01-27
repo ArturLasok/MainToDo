@@ -28,7 +28,7 @@ fun CategorySelector(
 
             CategoryButton(
                 modifier = Modifier.padding(top = 20.dp, start = 12.dp),
-                sizeImage = 34,
+                sizeImage =  if(!isDarkModeOn) {  54  } else { 34 },
                 sizeCircle = 64,
                 image = item,
                 imageModifier = Modifier,

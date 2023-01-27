@@ -70,14 +70,14 @@ internal val Teal90 = Color(0xFFBEEAF6)
 
 
 
-val Light_background = Color(0xFFFFD6FA)
+val Light_background = Color(0xFFB5E6CD)
 val Light_primary = Color(0xFF13172E)
-val Light_primary_variant = Color(0xFF7F59D5)
-val Light_secondary = Color(0xFF36003C)
+val Light_primary_variant = Color(0xFFE7BBBB)
+val Light_secondary = Color(0xFF216833)
 val Light_on_secondary = Color(0xFFFFD6FA)
 
 val Dark_background = Color(0xFF181414)
-val Dark_primary_variant = Color(0xFFBB86FC)
+val Dark_primary_variant = Color(0xFFE7BBBB)
 val Dark_primary = Color(0xFFFFEBFA)
 val Dark_secondary = Color(0xFFFFD6FA)
 val Dark_on_secondary = Color(0xFF281D29)

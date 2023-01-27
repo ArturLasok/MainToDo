@@ -4,7 +4,7 @@
     <string name="app_welcome">What we do?</string>
     <string name="app_settings">Settings</string>
     <string name="settings_changemode">Dark Theme</string>
-    <string name="settings_change_acc_question">Confirmation question</string>
+    <string name="settings_change_acc_question">Ask before changing task status</string>
     <string name="settings_additional_info">Additional information</string>
     <string name="settings_adjust">Adjust settings</string>
     <string name="day1">Monday</string>
@@ -49,4 +49,6 @@
     <string name="delete_task_snack_removed">The task has been deleted</string>
     <string name="edittask_screen">Edit task</string>
     <string name="edittask_updated">Task updated</string>
+    <string name="task_status_change_question">Do you confirm that the task has been completed?</string>
+    <string name="task_status_change_question_two">You confirm that this task will be performed again?</string>
 </resources>

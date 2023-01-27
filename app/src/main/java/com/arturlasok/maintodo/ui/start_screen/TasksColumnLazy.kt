@@ -35,6 +35,7 @@ fun TasksColumnLazy(
     onClickEdit:(itemId: Long) -> Unit,
     onClickCheck:(itemToken: String, newVal:Boolean, listIndex: Int, nearIndex: Int) -> Unit,
     onClickDelete:(itemId: Long) -> Unit,
+    confirmationTaskSetting: Boolean,
     startScreenUiState: StartScreenState,
 ) {
     val localVisible = remember { mutableStateOf(false) }
@@ -78,7 +79,9 @@ fun TasksColumnLazy(
         //Empty tasks
         if(tasksList.isEmpty()) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(top=40.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 40.dp),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -107,22 +110,30 @@ fun TasksColumnLazy(
                         durationMillis = 500,
                         easing = LinearOutSlowInEasing,
                     )),
+                    confirmationTaskSetting = confirmationTaskSetting,
                     item = item,
                     indexOfItem = index,
                     isDarkModeOn = isDarkModeOn,
-                    checkChange = { newVal -> onClickCheck(
-                       item.dItemToken,
-                        newVal,
-                        itemColumnState.firstVisibleItemIndex,
-                        if(index == tasksList.size) index-1 else {
+                    checkChange = { newVal ->
+
+                       onClickCheck(
+                            item.dItemToken,
+                            newVal,
+                            itemColumnState.firstVisibleItemIndex,
+                            if(index == tasksList.size) index-1 else {
                             if(index>0) index-1 else index }
-                        )
+                       )
+
                     },
                     deleteClick = { itemId ->  onClickDelete(itemId) },
                     editClick = { itemId -> onClickEdit(itemId) },
                     fullOpen = item.dItemId == openId.value,
                     setOpen = { id -> if(openId.value==item.dItemId) { openId.value = -1L} else { openId.value = id}}
                 )
+                
+            }
+            item { 
+                Spacer(modifier = Modifier.fillMaxWidth().height(80.dp))
             }
         }
     }

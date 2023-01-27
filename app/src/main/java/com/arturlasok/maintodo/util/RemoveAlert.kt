@@ -20,7 +20,7 @@ fun RemoveAlert(
     onDismiss:() ->Unit
 ){
     AlertDialog(
-        modifier = Modifier.border(1.dp, MaterialTheme.colors.primaryVariant),
+        //modifier = Modifier.border(1.dp, MaterialTheme.colors.primaryVariant),
         onDismissRequest = {
             onDismiss()
         },

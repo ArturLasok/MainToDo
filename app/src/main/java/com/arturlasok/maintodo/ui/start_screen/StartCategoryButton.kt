@@ -26,6 +26,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -56,13 +57,13 @@ fun StartCategoryButton(
         LaunchedEffect(key1 = true, block = {
             countItems()
         })
-
+            val addBadgeSize = if(selected) { if(!isDarkModeOn) { -10 } else { 10 }} else { 10 }
             Column(
                 modifier = modifier.width((sizeCircle).dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                BadgedBox(modifier = Modifier.width((sizeImage+8).dp),
+                BadgedBox(modifier = Modifier.width((sizeImage+addBadgeSize).dp),
                     badge = {
                         if(numberOfItems>0) {
                             Badge {
@@ -107,11 +108,17 @@ fun StartCategoryButton(
                                 .zIndex(0.9f),
                             colorFilter = if (isDarkModeOn) {
                                 if (selected) {
-                                    ColorFilter.tint(MaterialTheme.colors.primaryVariant)
+                                    null
+                                    //ColorFilter.tint(MaterialTheme.colors.primaryVariant)
+
                                 } else {
-                                    ColorFilter.tint(Color.Black)
+                                    ColorFilter.tint(Color.DarkGray)
                                 }
-                            } else null
+                            } else {
+                                if(selected) { null } else {
+                                     ColorFilter.tint(Color.LightGray)
+                                }
+                            }
                         )
 
 
@@ -123,9 +130,12 @@ fun StartCategoryButton(
                             .fillMaxWidth()
                             .height(28.dp),
                         text = text,
-                        style = MaterialTheme.typography.h5,
-                        color = MaterialTheme.colors.primary,
-                        textAlign = TextAlign.Center
+                        style = MaterialTheme.typography.h5.copy(fontWeight = if(selected) {
+                            FontWeight.Bold} else {
+                            FontWeight.Normal}),
+                        color =  MaterialTheme.colors.primary ,
+                        textAlign = TextAlign.Center,
+
 
                     )
 

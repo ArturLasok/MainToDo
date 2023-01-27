@@ -46,7 +46,7 @@ fun AcceptQuestionSettings(
             ),
             modifier = Modifier.height(40.dp),
             checked = isQuestionActive,
-            onCheckedChange = { checkedState.value = it;  }
+            onCheckedChange = { changeMode()  }
         )
 
     }

@@ -87,7 +87,7 @@ fun CategoryButton(
                     modifier = imageModifier
                         .size(sizeImage.dp)
                         .zIndex(0.9f),
-                    colorFilter =if(isDarkModeOn) ColorFilter.tint(MaterialTheme.colors.primaryVariant) else null
+                    colorFilter =if(isDarkModeOn) null else null
                 )
 
             }

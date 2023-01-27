@@ -21,6 +21,8 @@ fun NavigationComponent(
     setCurrentDestination:(route: String) -> Unit,
     currentDestination: String,
     isDarkModeOn: Int,
+    confirmationTaskSetting: Boolean,
+    changeConfirmationTaskSetting:() -> Unit,
     changeDarkMode:(newVal: Int) -> Unit,
     runLink:(runlink: String) -> Unit,
 ) {
@@ -49,6 +51,7 @@ fun NavigationComponent(
             StartScreen(
                 navigateTo = { route -> navController.navigate(route) },
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
+                confirmationTaskSetting = confirmationTaskSetting,
                 selectedFromNav = categoryId,
                 snackMessage = { snackMessage-> snackMessage(snackMessage) }
             )
@@ -71,6 +74,8 @@ fun NavigationComponent(
             SettingsScreen(
                 navigateTo = { route -> navController.navigate(route) },
                 navigateUp = { navController.popBackStack()},
+                confirmationTaskSetting = confirmationTaskSetting,
+                changeConfirmationTaskSetting = { changeConfirmationTaskSetting() },
                 categoryId = categoryId,
                 isDarkModeOn = isDarkModeOn,
                 changeDarkMode = { newVal-> changeDarkMode(newVal) },

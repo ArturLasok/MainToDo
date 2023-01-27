@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -23,7 +24,7 @@ fun DefaultSnackbar(
                     Text(
                         text = data.message,
                         style = MaterialTheme.typography.h4,
-                        color = MaterialTheme.colors.background
+                        color = MaterialTheme.colors.primary
                     )
                 },
                 action = {
@@ -31,7 +32,7 @@ fun DefaultSnackbar(
                         Button(
                             onClick = { onDismiss() },
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor = MaterialTheme.colors.secondary
+                                backgroundColor = Color.White
                             )
 
                         ) {
@@ -39,7 +40,7 @@ fun DefaultSnackbar(
                             Text(
                                 text = actionLabel,
                                 style = MaterialTheme.typography.h4,
-                                color = MaterialTheme.colors.background,
+                                color = Color.Black,
                                 fontWeight = FontWeight.Bold
                             )
                         }

@@ -42,10 +42,10 @@ fun CategoryRow(
             if (index==0) {
                 StartCategoryButton(
                     modifier = Modifier.padding(top = 12.dp, start = 12.dp),
-                    sizeImage = 32,
+                    sizeImage = if(selectedCategory == -1L) {  if(!isDarkModeOn) {  54  } else { 34 } } else { 34 },
                     sizeCircle = 64,
-                    image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.addcat_dark
-                    else R.drawable.addcat_light,
+                    image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.all_dark
+                    else R.drawable.all_light,
                     imageDesc = "Add icon image",
                     text = "All tasks",
                     imageModifier = Modifier,
@@ -61,7 +61,9 @@ fun CategoryRow(
             //Category from db
             StartCategoryButton(
                 modifier = Modifier.padding(top = 12.dp, start = 12.dp),
-                sizeImage = 32,
+                sizeImage = if(selectedCategory == item.dCatId) {
+                  if(!isDarkModeOn) {  54  } else { 34 }
+                } else { 34 },
                 sizeCircle = 64,
                 image = if (isDarkModeOn || (selectedCategory != item.dCatId)) CategoryIconList.getIconsDark()[item.dCatIcon
                     ?: 0] else CategoryIconList.getIconsLight()[item.dCatIcon ?: 0],
@@ -82,7 +84,7 @@ fun CategoryRow(
             if (categoryList.size == index + 1) {
                 StartCategoryButton(
                     modifier = Modifier.padding(top = 12.dp, start = 12.dp),
-                    sizeImage = 32,
+                    sizeImage =  if(!isDarkModeOn) {  54  } else { 34 },
                     sizeCircle = 64,
                     image = if (isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
                     imageDesc = "Add icon image",
@@ -109,10 +111,10 @@ fun CategoryRow(
     if (categoryList.isEmpty()) {
         StartCategoryButton(
             modifier = Modifier.padding(top = 12.dp, start = 12.dp),
-            sizeImage = 32,
+            sizeImage = if(selectedCategory == -1L) {  if(!isDarkModeOn) {  54  } else { 34 } } else { 44 },
             sizeCircle = 64,
-            image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.addcat_dark
-            else R.drawable.addcat_light,
+            image = if (isDarkModeOn) R.drawable.all_dark
+            else R.drawable.all_light,
             imageDesc = "Add icon image",
             text = "All tasks",
             imageModifier = Modifier,
@@ -126,7 +128,7 @@ fun CategoryRow(
         )
         StartCategoryButton(
             modifier = Modifier.padding(top = 12.dp, start = 12.dp, bottom = 10.dp),
-            sizeImage = 32,
+            sizeImage =  if(!isDarkModeOn) {  54  } else { 34 },
             sizeCircle = 64,
             image = if (isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
             imageDesc = "Add icon image",
@@ -134,7 +136,7 @@ fun CategoryRow(
             imageModifier = Modifier,
             isDarkModeOn = isDarkModeOn,
             clicked = { navigateTo(Screen.AddCategory.route) },
-            selected = false,
+            selected = true,
             ifSelected = {},
             startScreenState = startScreenUiState,
             numberOfItems = 0,

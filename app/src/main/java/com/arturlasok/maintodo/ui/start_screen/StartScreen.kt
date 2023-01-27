@@ -3,16 +3,20 @@ package com.arturlasok.maintodo.ui.start_screen
 import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
@@ -20,7 +24,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
@@ -28,8 +34,6 @@ import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.RemoveAlert
 import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -42,6 +46,7 @@ fun StartScreen(
     isDarkModeOn: Boolean,
     startViewModel:  StartViewModel  = hiltViewModel(),
     selectedFromNav: Long,
+    confirmationTaskSetting: Boolean,
     snackMessage: (snackMessage:String) -> Unit,
 ) {
 
@@ -59,20 +64,86 @@ fun StartScreen(
     val scope = rememberCoroutineScope()
     val removeTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
 
+    val scrollToItemZero = rememberSaveable { mutableStateOf(false) }
+    val isAtTopOfItemListColumn by remember {
+        derivedStateOf {
+            itemColumnState.firstVisibleItemIndex == 0 && itemColumnState.firstVisibleItemScrollOffset == 0
+        }
+    }
+    val navCategoryAdded = rememberSaveable {mutableStateOf(false) }
+    //scroll to top of item list
+    LaunchedEffect(key1 = scrollToItemZero.value, block ={
+        try {
+            itemColumnState.scrollToItem(0,0)
+            scrollToItemZero.value = false
 
+         } catch (e:Exception) {
 
+            //nothing
+        }
+    } )
+    //set category if back to screen
     LaunchedEffect(key1 = true, block = {
 
-        if (selectedFromNav != selectedCategory) {
+        if (selectedFromNav != selectedCategory && !navCategoryAdded.value) {
+            Log.i(TAG,"set  selected from nav")
            startViewModel.setSelectedCategory(selectedFromNav)
+            navCategoryAdded.value = true
         }
     })
+    //back handler if in new task form
     BackHandler(enabled = true) {
         if(startScreenUiState==StartScreenState.AddTask) {
             startViewModel.setStartScreenUiState(StartScreenState.Welcome)
         }
     }
+    //Item list back to top button
+    AnimatedVisibility(
+        visible = !isAtTopOfItemListColumn && startScreenUiState == StartScreenState.Welcome,
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier.zIndex(1.0f)
+    ) {
 
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(1.0f)
+                .padding(bottom = 100.dp, start = 0.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+
+            FloatingActionButton(
+                onClick = {
+
+                scrollToItemZero.value = true
+
+                },
+                modifier = Modifier
+                    .alpha(0.2f)
+                    .zIndex(1.0f)
+                    .padding(1.dp)
+
+            ) {
+                Column() {
+                    Image(
+
+                        painterResource(
+                            R.drawable.left_arrow
+                        ), "Floating action",
+                        modifier = Modifier
+                            .width(24.dp)
+                            .height(24.dp)
+                            .rotate(90f),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+
+                }
+
+            }
+        }
+
+    }
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -83,7 +154,7 @@ fun StartScreen(
             if(startScreenUiState == StartScreenState.Welcome) {
                 ExtendedFloatingActionButton(
                     modifier = Modifier
-                        .alpha(0.6f)
+                        .alpha(0.5f)
                         .padding(bottom = 10.dp),
                     icon = {
                         Image(
@@ -183,7 +254,12 @@ fun StartScreen(
                                 startViewModel.onNewTaskNameChange("")
                                 startViewModel.onNewTaskDescChange("")
                                 startViewModel.getTaskItemsFromRoom(selectedCategory)
-
+                                startViewModel.selectedCategoryRowIndex.value = categoryList.indexOf(
+                                    categoryList.find {
+                                        it.dCatId == selectedCategory
+                                    }
+                                )
+                                categoryRowState.animateScrollToItem(startViewModel.selectedCategoryRowIndex.value)
                             }
                             // error
                             formDataState.error?.let {
@@ -255,7 +331,7 @@ fun StartScreen(
                 modifier = Modifier.padding(start = 4.dp, end = 4.dp)
             )
 
-            //Category anim to selected category
+            //Category anim to selected category if back from other screen
             if (startViewModel.getOneFromCategoryList(selectedCategory).dCatId != null) {
                 LaunchedEffect(key1 = true, block = {
                     startViewModel.selectedCategoryRowIndex.value = categoryList.indexOf(
@@ -267,7 +343,7 @@ fun StartScreen(
                 })
             }
 
-            //Task list
+            //Task list delete alert
             if(removeTaskAlert.value.first) {
                 RemoveAlert(
                     question =  UiText.StringResource(
@@ -307,6 +383,7 @@ fun StartScreen(
                     removeTaskAlert.value = Pair(false,-1)
                 }
             }
+            //task list
             TasksColumnLazy(
                 isDarkModeOn = isDarkModeOn,
                 itemColumnState = itemColumnState,
@@ -314,7 +391,7 @@ fun StartScreen(
                 onClickEdit = { itemId ->
                     navigateTo(Screen.EditTask.route + "/${selectedCategory}+${itemId}")
                 },
-                onClickCheck = { itemToken: String, newVal: Boolean, listIndex:Int, nearIndex: Int ->
+                onClickCheck = { itemToken: String, newVal: Boolean, _:Int, nearIndex: Int ->
 
 
                     val itemToChangeIndex = taskItemsList.indexOf(taskItemsList.find {
@@ -335,7 +412,6 @@ fun StartScreen(
                                 it.dItemToken == itemToken
                             })
 
-                            //Log.i(TAG,"near: $nearIndex" + " clickedIndex: $listIndex" +" newIndex: $newTaskPosition"+ " listSize: ${taskItemsList.size}")
 
                             //scrolling
                             if(newVal) {
@@ -354,6 +430,8 @@ fun StartScreen(
                     removeTaskAlert.value = Pair(true,itemId)
 
                 },
+
+                confirmationTaskSetting = confirmationTaskSetting,
                 startScreenUiState = startScreenUiState,
             )
 

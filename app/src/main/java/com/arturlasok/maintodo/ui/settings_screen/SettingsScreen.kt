@@ -23,6 +23,8 @@ import com.arturlasok.maintodo.util.UiText
 fun SettingsScreen(
     navigateTo: (route: String) -> Unit,
     navigateUp:() -> Unit,
+    confirmationTaskSetting: Boolean,
+    changeConfirmationTaskSetting:() -> Unit,
     categoryId: Long,
     isDarkModeOn: Int,
     changeDarkMode:(newVal: Int) -> Unit,
@@ -96,8 +98,8 @@ fun SettingsScreen(
                 )
                 //Settings adjustment
                 AcceptQuestionSettings(
-                    isQuestionActive = false,
-                    changeMode = {  }
+                    isQuestionActive = confirmationTaskSetting,
+                    changeMode = { changeConfirmationTaskSetting() }
                 )
                 Text(
                     UiText.StringResource(R.string.settings_additional_info, "asd").asString(),

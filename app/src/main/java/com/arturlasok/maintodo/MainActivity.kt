@@ -89,7 +89,11 @@ class MainActivity : ComponentActivity() {
 
           }
         }
-
+        //Data Store confirm task status
+        val IS_CONFIRM_STATUS = booleanPreferencesKey("confirm_task_status")
+        val confirmTaskFromStore: Flow<Boolean> = applicationContext.dataStore.data.map { pref->
+            pref[IS_CONFIRM_STATUS] ?: false
+        }
         //Data Store dark theme // 0 - default, 1 - light, 2 - dark
         val IS_DARK_THEME = intPreferencesKey("dark_theme_on")
         val dataFromStore : Flow<Int> =  applicationContext.dataStore.data.map { pref->
@@ -111,10 +115,11 @@ class MainActivity : ComponentActivity() {
 
         //gradient for themes
         val lightGradient = Brush.verticalGradient(
-            listOf(Color(0xFFFFD6FA), Color(0xFFFFEBFA))
+          //  listOf(Color(0xFFFFD6FA), Color(0xFFFFEBFA))
+            listOf(Color(0xFFB5E6CD), Color(0xFFFFEBFA))
         )
         val darkGradient = Brush.verticalGradient(
-            listOf( Color(0xFF0A0A0A), Color(0xFF181414))
+            listOf( Color(0xFF000000), Color(0xFF181414))
         )
         //gradient for selected theme
         var selectedGradient = lightGradient
@@ -135,6 +140,8 @@ class MainActivity : ComponentActivity() {
             val systemUiController = rememberSystemUiController()
             // data store for dark theme
             val dataStoreDarkTheme = dataFromStore.collectAsState(0)
+            //confirmation task setting
+            val confirmTaskStore = confirmTaskFromStore.collectAsState(initial = false)
             MainToDoTheme(dataStoreDarkTheme.value) {
                 //theme?
                 when(dataStoreDarkTheme.value) {
@@ -143,26 +150,28 @@ class MainActivity : ComponentActivity() {
                     0 -> {
                         if(isSystemInDarkTheme()) {
                             selectedGradient = darkGradient
-                            systemUiController.setStatusBarColor(Color(0xFF0A0A0A))
+                            systemUiController.setStatusBarColor(Color(0xFF000000))
                             systemUiController.setNavigationBarColor(Color(0xFF181414))
                         }
                         else {
                             selectedGradient = lightGradient
-                            systemUiController.setStatusBarColor(Color(0xFFFFD6FA))
+                            //systemUiController.setStatusBarColor(Color(0xFFFFD6FA))
+                            systemUiController.setStatusBarColor(Color(0xFFB5E6CD))
                             systemUiController.setNavigationBarColor(Color(0xFFFFEBFA))
                         }
                     }
                     //light
                     1 -> {
                         selectedGradient = lightGradient
-                        systemUiController.setStatusBarColor(Color(0xFFFFD6FA))
+                       // systemUiController.setStatusBarColor(Color(0xFFFFD6FA))
+                        systemUiController.setStatusBarColor(Color(0xFFB5E6CD))
                         systemUiController.setNavigationBarColor(Color(0xFFFFEBFA))
 
                     }
                     //dark
                     2 -> {
                         selectedGradient = darkGradient
-                        systemUiController.setStatusBarColor(Color(0xFF0A0A0A))
+                        systemUiController.setStatusBarColor(Color(0xFF000000))
                         systemUiController.setNavigationBarColor(Color(0xFF181414))
                     }
                 }
@@ -234,6 +243,15 @@ class MainActivity : ComponentActivity() {
                                 currentDestination = navController.currentDestination?.route
                                     ?: "Start",
                                 isDarkModeOn = dataStoreDarkTheme.value,
+                                confirmationTaskSetting = confirmTaskStore.value,
+                                changeConfirmationTaskSetting= {
+                                   lifecycleScope.launch {
+                                       applicationContext.dataStore.edit { settings->
+                                           settings[IS_CONFIRM_STATUS] = !confirmTaskStore.value
+
+                                       }
+                                   }
+                                },
                                 changeDarkMode = { newVal ->
                                     lifecycleScope.launch {
                                         applicationContext.dataStore.edit { settings ->
