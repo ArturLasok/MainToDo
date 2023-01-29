@@ -51,4 +51,5 @@
     <string name="edittask_updated">Zadanie zaktualizowane</string>
     <string name="task_status_change_question">Potwierdzasz wykonanie zadania?</string>
     <string name="task_status_change_question_two">Chcesz przywrócić zadanie do aktywnych?</string>
+    <string name="add_new_category">Dodaj nową kategorię</string>
 </resources>

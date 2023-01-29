@@ -39,7 +39,7 @@ fun TaskDescForm(
     Surface(
         modifier = Modifier
             .padding(4.dp)
-            .height(150.dp)
+            .height(100.dp)
             .fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
         color = if (isDarkModeOn) {
@@ -58,8 +58,8 @@ fun TaskDescForm(
         TextField(
             enabled = true,
             value = nameValue.replaceFirstChar { it.uppercase() },
-            onValueChange = { value-> if(value.length<260) { onValueChange(value) } },
-            modifier = modifier.fillMaxWidth().padding(0.dp).height(150.dp),
+            onValueChange = { value-> if(value.length<360) { onValueChange(value) } },
+            modifier = modifier.fillMaxWidth().padding(0.dp).height(100.dp),
             singleLine = false,
             textStyle = MaterialTheme.typography.h3.copy(color = MaterialTheme.colors.primary),
             keyboardOptions = KeyboardOptions(

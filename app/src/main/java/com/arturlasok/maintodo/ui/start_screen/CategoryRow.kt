@@ -14,6 +14,7 @@ import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.CategoryIconList
+import com.arturlasok.maintodo.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 @Composable
@@ -47,7 +48,10 @@ fun CategoryRow(
                     image = if (isDarkModeOn || (selectedCategory != -1L)) R.drawable.all_dark
                     else R.drawable.all_light,
                     imageDesc = "Add icon image",
-                    text = "All tasks",
+                    text = UiText.StringResource(
+                        R.string.all_tasks,
+                        "no"
+                    ).asString(),
                     imageModifier = Modifier,
                     isDarkModeOn = isDarkModeOn,
                     clicked = { onClick(-1L) },
@@ -88,7 +92,10 @@ fun CategoryRow(
                     sizeCircle = 64,
                     image = if (isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
                     imageDesc = "Add icon image",
-                    text = "Add new category",
+                    text = UiText.StringResource(
+                        R.string.add_new_category,
+                        "no"
+                    ).asString(),
                     imageModifier = Modifier,
                     isDarkModeOn = isDarkModeOn,
                     clicked = { navigateTo(Screen.AddCategory.route) },
@@ -116,7 +123,10 @@ fun CategoryRow(
             image = if (isDarkModeOn) R.drawable.all_dark
             else R.drawable.all_light,
             imageDesc = "Add icon image",
-            text = "All tasks",
+            text = UiText.StringResource(
+                R.string.all_tasks,
+                "no"
+            ).asString(),
             imageModifier = Modifier,
             isDarkModeOn = isDarkModeOn,
             clicked = { onClick(-1L) },
@@ -132,7 +142,10 @@ fun CategoryRow(
             sizeCircle = 64,
             image = if (isDarkModeOn) R.drawable.addcat_dark else R.drawable.addcat_light,
             imageDesc = "Add icon image",
-            text = "Add new category",
+            text = UiText.StringResource(
+                R.string.add_new_category,
+                "no"
+            ).asString(),
             imageModifier = Modifier,
             isDarkModeOn = isDarkModeOn,
             clicked = { navigateTo(Screen.AddCategory.route) },
