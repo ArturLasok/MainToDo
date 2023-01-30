@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.arturlasok.maintodo.admob.AdMobBigBanner
 import kotlinx.coroutines.delay
 
 @Composable
@@ -84,7 +85,7 @@ fun AddTaskForm(
                 onDone = {hideKeyboard()}
             )
 
-
+            AdMobBigBanner()
         }
     }
 }

@@ -44,10 +44,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
+import com.arturlasok.maintodo.admob.AdMobMainBanner
 import com.arturlasok.maintodo.navigation.NavigationComponent
 import com.arturlasok.maintodo.ui.theme.MainToDoTheme
 import com.arturlasok.maintodo.util.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
+import com.google.android.ump.ConsentForm
+import com.google.android.ump.ConsentInformation
+import com.google.android.ump.ConsentRequestParameters
+import com.google.android.ump.UserMessagingPlatform
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -70,7 +78,53 @@ class MainActivity : ComponentActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
     //snackbar controller
     private val snackbarController = SnackbarController(lifecycleScope)
+    //Analytics
+    private var mFirebaseAnalytics: FirebaseAnalytics? = null
+    //Rodo check
+    private lateinit var consentInformation: ConsentInformation
+    private lateinit var consentForm: ConsentForm
+    fun checkRodo() {
+        Log.i(TAG,"RODO CHECK!!!!!")
+        // ADMOB RODO
+        val params = ConsentRequestParameters.Builder()
+            .setTagForUnderAgeOfConsent(false)
+            .build()
 
+        consentInformation = UserMessagingPlatform.getConsentInformation(this)
+        consentInformation.requestConsentInfoUpdate(
+            this,
+            params,
+            {
+                if (consentInformation.isConsentFormAvailable()) {
+                    loadForm();
+                }
+            },
+            {
+                // Handle the error.
+            })
+    }
+    open fun loadForm() {
+        Log.i(TAG,"RODO CHECK FORM!!!!!")
+        UserMessagingPlatform.loadConsentForm(
+            this,
+            { consentForm -> this@MainActivity.consentForm = consentForm
+
+                if (consentInformation.consentStatus == ConsentInformation.ConsentStatus.REQUIRED) {
+                    consentForm.show(
+                        this@MainActivity
+                    ) { // Handle dismissal by reloading form.
+                        loadForm()
+                    }
+                }
+
+
+
+
+            }
+        ) {
+            // Handle the error
+        }
+    }
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -101,6 +155,11 @@ class MainActivity : ComponentActivity() {
         }
         //Internet On?
         isOnline.runit()
+        // ADS init
+        MobileAds.initialize(this) {}
+        var adRequest = AdRequest.Builder().build()
+
+
 
         // Update the uiState
         lifecycleScope.launch {
@@ -132,7 +191,8 @@ class MainActivity : ComponentActivity() {
             statusBarPaddingTop = 16
             statusBarPaddingLeft = 48
         }
-
+        //analytics
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         setContent {
             //navController
             val navController = rememberNavController()
@@ -183,10 +243,13 @@ class MainActivity : ComponentActivity() {
                 } )
                 //scaffoldState init
                 val scaffoldState = rememberScaffoldState()
-
+                checkRodo()
                 Scaffold(
                     scaffoldState = scaffoldState,
                     snackbarHost = {scaffoldState.snackbarHostState},
+                    bottomBar = {
+                        AdMobMainBanner()
+                    }
                 )
                 {
 
@@ -199,7 +262,8 @@ class MainActivity : ComponentActivity() {
                             .padding(
                                 top = statusBarPaddingTop.dp,
                                 start = statusBarPaddingLeft.dp,
-                                end = statusBarPaddingLeft.dp
+                                end = statusBarPaddingLeft.dp,
+                                bottom = it.calculateBottomPadding()
                             )
 
                     ) {

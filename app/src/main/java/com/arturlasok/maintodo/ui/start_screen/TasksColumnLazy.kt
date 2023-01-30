@@ -21,8 +21,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
+import com.arturlasok.maintodo.util.TransparencyBox
 import com.arturlasok.maintodo.util.UiText
 import kotlinx.coroutines.delay
 
@@ -94,6 +96,10 @@ fun TasksColumnLazy(
             }
         }
         //Tasks Column
+        Box(Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().zIndex(1.0f), contentAlignment = Alignment.BottomCenter) {
+            TransparencyBox(height = 20f, isDarkTheme = isDarkModeOn)
+        }    
         LazyColumn(
             state = itemColumnState,
             modifier = Modifier.padding(4.dp)
@@ -133,8 +139,11 @@ fun TasksColumnLazy(
                 
             }
             item { 
-                Spacer(modifier = Modifier.fillMaxWidth().height(80.dp))
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(80.dp))
             }
         }
+    }
     }
 }

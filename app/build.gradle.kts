@@ -14,8 +14,8 @@ android {
         applicationId = "com.arturlasok.maintodo"
         minSdk = 26
         targetSdk = 32
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "3.0"
     }
     buildFeatures {
         compose = true
@@ -55,7 +55,7 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
     //Splash
     implementation("androidx.core:core-splashscreen:1.0.0")
-    //Acomp
+    //Accompanist
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.18.0")
     //data store
     implementation("androidx.datastore:datastore-preferences:1.0.0")
@@ -79,4 +79,8 @@ dependencies {
     //firebase
     implementation(platform("com.google.firebase:firebase-bom:31.2.0"))
     implementation("com.google.firebase:firebase-analytics-ktx")
+    //admob
+    implementation ("com.google.android.gms:play-services-ads:21.4.0")
+    //fb messaging
+    implementation ("com.google.android.ump:user-messaging-platform:2.0.0")
 }

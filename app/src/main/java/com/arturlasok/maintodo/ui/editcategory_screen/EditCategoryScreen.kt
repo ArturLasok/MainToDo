@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
+import com.arturlasok.maintodo.admob.AdMobBigBanner
 import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.ui.addcategory_screen.CategoryDescForm
 import com.arturlasok.maintodo.ui.addcategory_screen.CategoryNameForm
@@ -301,6 +302,7 @@ fun EditCategoryScreen(
                     modifier = Modifier.padding(start = 10.dp)
                 )
             }
+            AdMobBigBanner()
         }
 
     }

@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
+import com.arturlasok.maintodo.admob.AdMobBigBanner
 import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.BackButton
 import com.arturlasok.maintodo.util.UiText
@@ -52,7 +53,10 @@ fun AddCategoryScreen(
                 )
             }
             //Screen title
-            Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp), contentAlignment = Alignment.Center) {
 
                 Text(
                     text = UiText.StringResource(
@@ -236,6 +240,7 @@ fun AddCategoryScreen(
                     modifier = Modifier.padding(start = 10.dp)
                 )
             }
+            AdMobBigBanner()
         }
     }
 }
