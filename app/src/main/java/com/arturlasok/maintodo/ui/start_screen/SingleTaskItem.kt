@@ -33,7 +33,7 @@ fun SingleTaskItem(
     isDarkModeOn : Boolean,
     checkChange:(newVal:Boolean) -> Unit,
     deleteClick:(itemId: Long) -> Unit,
-    editClick:(itemId: Long) -> Unit,
+    editClick:(itemToken: String) -> Unit,
     fullOpen:Boolean,
     setOpen:(id:Long) ->Unit
 ) {
@@ -111,7 +111,7 @@ fun SingleTaskItem(
                     Text(
                         text = item.dItemTitle,
                         style = MaterialTheme.typography.h3,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Normal,
                         textDecoration = if(item.dItemCompleted) { TextDecoration.LineThrough} else {TextDecoration.None},
                         color = if(isDarkModeOn) {
                             Color.DarkGray
@@ -148,6 +148,55 @@ fun SingleTaskItem(
                         verticalArrangement = Arrangement.Center
                     )
                     {
+                        MoreButton(
+                            isDarkModeOn = isDarkModeOn,
+                            rotatedDown = fullOpen,
+                            modifier = Modifier.alpha(0.5f),
+                            onClick = {  item.dItemId?.let { setOpen(it) }},
+                            light_img = R.drawable.more,
+                            dark_img = R.drawable.more
+                        )
+                    }
+                }
+
+            }
+            if(fullOpen) {
+                Row(modifier = Modifier.padding(bottom = 10.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 54.dp, end = 10.dp, bottom = 10.dp)
+                            .fillMaxWidth(0.85f)
+                    ) {
+                        Text(
+                            text = if(item.dItemDescription.isNotEmpty()) {item.dItemDescription } else {
+                                UiText.StringResource(
+                                    R.string.no_disc,
+                                    "asd"
+                                ).asString()+"\n"
+                                                                                                        },
+                            style = MaterialTheme.typography.h4,
+                            fontWeight = FontWeight.Normal,
+                            textAlign = TextAlign.Justify,
+                            color = if (isDarkModeOn) {
+                                Color.DarkGray
+
+                            } else {
+                                if (item.dItemCompleted) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    Color.DarkGray
+                                }
+                            }
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = 8.dp),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.Center
+                    )
+                    {
                         SettingsButton(
                             isDarkModeOn = isDarkModeOn,
                             modifier = Modifier
@@ -155,20 +204,9 @@ fun SingleTaskItem(
                                 .alpha(0.5f),
                             light_img = R.drawable.edit_light,
                             dark_img = R.drawable.edit_light,
-                            onClick = { item.dItemId?.let { editClick(it) } }
+                            onClick = { item.dItemToken?.let { editClick(it) } }
                         )
                     }
-                }
-
-            }
-            if(fullOpen && item.dItemDescription.isNotEmpty()) {
-                Column(modifier = Modifier.padding(start = 54.dp, end = 10.dp, bottom = 10.dp)) {
-                    Text(
-                        text = item.dItemDescription,
-                        style = MaterialTheme.typography.h4,
-                        fontWeight = FontWeight.Normal,
-                        textAlign = TextAlign.Justify
-                    )
                 }
             }
         }

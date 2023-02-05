@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.ui.start_screen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
+import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.TransparencyBox
 import com.arturlasok.maintodo.util.UiText
 import kotlinx.coroutines.delay
@@ -34,10 +36,11 @@ fun TasksColumnLazy(
     isDarkModeOn :Boolean,
     itemColumnState: LazyListState,
     tasksList: SnapshotStateList<ItemToDo>,
-    onClickEdit:(itemId: Long) -> Unit,
+    onClickEdit:(itemToken: String) -> Unit,
     onClickCheck:(itemToken: String, newVal:Boolean, listIndex: Int, nearIndex: Int) -> Unit,
     onClickDelete:(itemId: Long) -> Unit,
     confirmationTaskSetting: Boolean,
+    lastItemSelected: String,
     startScreenUiState: StartScreenState,
 ) {
     val localVisible = remember { mutableStateOf(false) }
@@ -48,7 +51,7 @@ fun TasksColumnLazy(
         if(localVisible.value) {
             localVisible.value = startScreenUiState == StartScreenState.Welcome
         } else {
-            delay(1000)
+            delay(700)
             localVisible.value = startScreenUiState == StartScreenState.Welcome
         }
     })
@@ -62,7 +65,7 @@ fun TasksColumnLazy(
                 it + 3*it
             },
             animationSpec = tween(
-                durationMillis = 500,
+                durationMillis = 200,
                 delayMillis = 0,
                 easing = LinearOutSlowInEasing,
             )
@@ -72,7 +75,7 @@ fun TasksColumnLazy(
                 it - 3 * it
             },
             animationSpec = tween(
-                durationMillis = 300,
+                durationMillis = 100,
                 easing = LinearOutSlowInEasing
             )
         )
@@ -132,7 +135,7 @@ fun TasksColumnLazy(
 
                     },
                     deleteClick = { itemId ->  onClickDelete(itemId) },
-                    editClick = { itemId -> onClickEdit(itemId) },
+                    editClick = { itemToken -> onClickEdit(itemToken) },
                     fullOpen = item.dItemId == openId.value,
                     setOpen = { id -> if(openId.value==item.dItemId) { openId.value = -1L} else { openId.value = id}}
                 )
@@ -144,6 +147,21 @@ fun TasksColumnLazy(
                     .height(80.dp))
             }
         }
+            //Item animate to last added or edited item
+            if(lastItemSelected.isNotEmpty()) {
+                LaunchedEffect(key1 = true, block = {
+                    try {
+                        val itemToScrollIndex = tasksList.sortedBy { it.dItemCompleted }.indexOfFirst {
+                            it.dItemToken == lastItemSelected
+                        }
+                        Log.i(TAG,"Scroll to item: $lastItemSelected / indexOfElement: $itemToScrollIndex")
+                        itemColumnState.animateScrollToItem(itemToScrollIndex)
+                    }
+                    catch (e:Exception) {
+                        Log.i(TAG,"Scroll error")
+                    }
+                } )
+            }
     }
     }
 }

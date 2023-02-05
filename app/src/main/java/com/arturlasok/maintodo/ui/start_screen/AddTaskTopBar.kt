@@ -25,7 +25,7 @@ fun AddTaskTopBar(
     startScreenUiState: StartScreenState,
     isDarkModeOn: Boolean,
     navigateTo: (route: String) -> Unit,
-    categoryId: Long,
+    categoryId: String,
     close:() -> Unit,
     closeKeyboard:() -> Unit,
     verifyForm:() -> Unit
@@ -36,7 +36,7 @@ fun AddTaskTopBar(
         if(localVisible.value) {
             localVisible.value = startScreenUiState == StartScreenState.AddTask
         } else {
-            delay(1000)
+            delay(700)
             localVisible.value = startScreenUiState == StartScreenState.AddTask
         }
     })
@@ -48,7 +48,7 @@ fun AddTaskTopBar(
                 it - 3*it
             },
             animationSpec = tween(
-                durationMillis = 500,
+                durationMillis = 200,
                 delayMillis = 0,
                 easing = LinearOutSlowInEasing,
             )
@@ -58,7 +58,7 @@ fun AddTaskTopBar(
                 it - 3 * it
             },
             animationSpec = tween(
-                durationMillis = 500,
+                durationMillis = 200,
                 easing = LinearOutSlowInEasing
             )
         )

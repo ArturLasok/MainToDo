@@ -35,7 +35,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun EditCategoryScreen(
     navigateTo: (route: String) -> Unit,
-    categoryId :Long,
     isDarkModeOn: Boolean,
     snackMessage: (snackMessage:String) -> Unit,
     editCategoryViewModel: EditCategoryViewModel = hiltViewModel()
@@ -48,12 +47,13 @@ fun EditCategoryScreen(
     val removeAlert = rememberSaveable { mutableStateOf(false) }
 
     BackHandler(enabled = true) {
-        navigateTo(Screen.Start.route+"/${categoryId}")
+        navigateTo(Screen.Start.route)
     }
 
     LaunchedEffect(key1 = true, block = {
-        editCategoryViewModel.getOneCategoryFromRoom(categoryId)
+        editCategoryViewModel.getOneCategoryFromRoom(editCategoryViewModel.selectedCategory.value)
     })
+
     Column {
 
         if(removeAlert.value) {
@@ -65,15 +65,16 @@ fun EditCategoryScreen(
                 onYes = {
                         //remove
                         scope.launch {
-                            val deleteResponse = editCategoryViewModel.deleteCategory(categoryId)
+                            val deleteResponse = editCategoryViewModel.deleteCategory(editCategoryViewModel.getCategoryTokenFromDi())
                             deleteResponse.ok.let {
                                 if(it==true) {
+                                    editCategoryViewModel.setLastCategorySelected("")
                                     removeAlert.value = false
                                     snackMessage(UiText.StringResource(
                                         R.string.editcategory_snack_deleted,
                                         "no"
                                     ).asString(editCategoryViewModel.getApplication().applicationContext))
-                                    navigateTo(Screen.Start.route+"/-1L")
+                                    navigateTo(Screen.Start.route)
                                 }
                             }
                             deleteResponse.error.let {
@@ -109,7 +110,7 @@ fun EditCategoryScreen(
                     BackButton(
                         isDarkModeOn = isDarkModeOn,
                         modifier = Modifier,
-                        onClick = { navigateTo(Screen.Start.route+"/${categoryId}") }
+                        onClick = { navigateTo(Screen.Start.route) }
                     )
                     TrashButton(
                         isDarkModeOn = isDarkModeOn,
@@ -119,7 +120,10 @@ fun EditCategoryScreen(
                 }
             }
             //Screen title
-            Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp), contentAlignment = Alignment.Center) {
 
                 Text(
                     text = UiText.StringResource(
@@ -265,7 +269,7 @@ fun EditCategoryScreen(
                     keyboardController?.hide()
 
                     //verify form
-                    editCategoryViewModel.verifyForm(categoryId).onEach { formDataState ->
+                    editCategoryViewModel.verifyForm(editCategoryViewModel.selectedCategory.value).onEach { formDataState ->
                         // ok
                         formDataState.second.ok?.let {
                             snackMessage(
@@ -275,7 +279,7 @@ fun EditCategoryScreen(
                                 ).asString(editCategoryViewModel.getApplication().applicationContext)
                             )
                             //nav to start and last added category
-                            navigateTo(Screen.Start.route+"/"+categoryId)
+                            navigateTo(Screen.Start.route)
                         }
                         // error
                         formDataState.second.error?.let {

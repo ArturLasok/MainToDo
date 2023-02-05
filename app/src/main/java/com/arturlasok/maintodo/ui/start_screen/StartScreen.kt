@@ -1,7 +1,6 @@
 package com.arturlasok.maintodo.ui.start_screen
 
 import android.content.res.Configuration
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -32,7 +31,6 @@ import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.RemoveAlert
-import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -45,7 +43,6 @@ fun StartScreen(
     navigateTo: (route: String) -> Unit,
     isDarkModeOn: Boolean,
     startViewModel:  StartViewModel  = hiltViewModel(),
-    selectedFromNav: Long,
     confirmationTaskSetting: Boolean,
     snackMessage: (snackMessage:String) -> Unit,
 ) {
@@ -58,7 +55,7 @@ fun StartScreen(
     val itemColumnState = rememberLazyListState()
     val categoryList = startViewModel.categoriesFromRoom.collectAsState(initial = listOf()).value
     val taskItemsList = startViewModel.tasksFromRoom.collectAsState(initial = mutableListOf()).value.toMutableStateList()
-    val selectedCategory = startViewModel.selectedCategory.collectAsState(initial = -1L).value
+    val selectedCategory = startViewModel.selectedCategory.collectAsState(initial = "").value
     val startScreenUiState: StartScreenState = startViewModel.startScreenUiState.value
     val newTaskState by startViewModel.newTaskState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -70,27 +67,19 @@ fun StartScreen(
             itemColumnState.firstVisibleItemIndex == 0 && itemColumnState.firstVisibleItemScrollOffset == 0
         }
     }
-    val navCategoryAdded = rememberSaveable {mutableStateOf(false) }
+
     //scroll to top of item list
     LaunchedEffect(key1 = scrollToItemZero.value, block ={
-        try {
-            itemColumnState.scrollToItem(0,0)
-            scrollToItemZero.value = false
+        if(scrollToItemZero.value) {
+            try {
+                itemColumnState.scrollToItem(0, 0)
+                scrollToItemZero.value = false
 
-         } catch (e:Exception) {
-
-            //nothing
+            } catch (e: Exception) {
+                //nothing
+            }
         }
     } )
-    //set category if back to screen
-    LaunchedEffect(key1 = true, block = {
-
-        if (selectedFromNav != selectedCategory && !navCategoryAdded.value) {
-            Log.i(TAG,"set  selected from nav")
-           startViewModel.setSelectedCategory(selectedFromNav)
-            navCategoryAdded.value = true
-        }
-    })
     //back handler if in new task form
     BackHandler(enabled = true) {
         if(startScreenUiState==StartScreenState.AddTask) {
@@ -135,7 +124,7 @@ fun StartScreen(
                             .width(24.dp)
                             .height(24.dp)
                             .rotate(90f),
-                        colorFilter = ColorFilter.tint(Color.White)
+                        colorFilter = ColorFilter.tint(MaterialTheme.colors.onPrimary)
                     )
 
                 }
@@ -203,23 +192,22 @@ fun StartScreen(
                 categoryRowState = categoryRowState,
                 categoryList = categoryList,
                 selectedCategory = selectedCategory,
-                onClick = { itemId -> startViewModel.setSelectedCategory(itemId); },
+                onClick = { itemToken -> startViewModel.setSelectedCategory(itemToken); scrollToItemZero.value = true },
                 startScreenUiState = startScreenUiState,
                 navigateTo = { route -> navigateTo(route) },
-                numberOfItems  = startViewModel.counter,
-                countItems = { categoryToken ->
+                numberOfItems = startViewModel.counter
+            ) { categoryToken ->
 
-                    scope.launch {
-                        startViewModel.getTaskCount(categoryToken).collect() { itemSum->
-                            val ind = startViewModel.counter.indexOfFirst {
-                                it.first == categoryToken
-                            }
-                            startViewModel.counter[ind] = Pair(categoryToken, itemSum)
+                scope.launch {
+                    startViewModel.getTaskCount(categoryToken).collect() { itemSum ->
+                        val ind = startViewModel.counter.indexOfFirst {
+                            it.first == categoryToken
                         }
+                        startViewModel.counter[ind] = Pair(categoryToken, itemSum)
                     }
-
                 }
-            )
+
+            }
         }
         Column(
             modifier = Modifier
@@ -234,44 +222,44 @@ fun StartScreen(
                     navigateTo = { route -> navigateTo(route) },
                     categoryId = selectedCategory,
                     close = { startViewModel.setStartScreenUiState(StartScreenState.Welcome) },
-                    closeKeyboard = { keyboardController?.hide() },
-                    verifyForm = {
-                        startViewModel.onNewTaskNameChange(newTaskState.taskName)
-                        startViewModel.onNewTaskDescChange(newTaskState.taskDesc)
-                        startViewModel.onNewTaskCategoryChange(newTaskState.taskCategory)
-                        //vm verify
-                        startViewModel.verifyForm().onEach { formDataState ->
-                            // ok
-                            formDataState.ok?.let {
-                                snackMessage(
-                                    UiText.StringResource(
-                                        R.string.addtask_form_save,
-                                        "no"
-                                    ).asString(startViewModel.getApplication().applicationContext)
-                                )
+                    closeKeyboard = { keyboardController?.hide() }
+                ) {
+                    startViewModel.onNewTaskNameChange(newTaskState.taskName)
+                    startViewModel.onNewTaskDescChange(newTaskState.taskDesc)
+                    startViewModel.onNewTaskCategoryChange(newTaskState.taskCategory)
+                    //vm verify
+                    startViewModel.verifyForm().onEach { formDataState ->
+                        // ok
+                        formDataState.ok?.let {
+                            snackMessage(
+                                UiText.StringResource(
+                                    R.string.addtask_form_save,
+                                    "no"
+                                ).asString(startViewModel.getApplication().applicationContext)
+                            )
 
-                                startViewModel.setStartScreenUiState(StartScreenState.Welcome)
-                                startViewModel.onNewTaskNameChange("")
-                                startViewModel.onNewTaskDescChange("")
-                                startViewModel.getTaskItemsFromRoom(selectedCategory)
-                                startViewModel.selectedCategoryRowIndex.value = categoryList.indexOf(
-                                    categoryList.find {
-                                        it.dCatId == selectedCategory
-                                    }
-                                )
-                                categoryRowState.animateScrollToItem(startViewModel.selectedCategoryRowIndex.value)
-                            }
-                            // error
-                            formDataState.error?.let {
-                                //snack message with error
-                                snackMessage(it)
+                            startViewModel.setStartScreenUiState(StartScreenState.Welcome)
+                            startViewModel.onNewTaskNameChange("")
+                            startViewModel.onNewTaskDescChange("")
+                            startViewModel.getTaskItemsFromRoom(selectedCategory)
+                            startViewModel.selectedCategoryRowIndex.value = categoryList.indexOf(
+                                categoryList.find {
+                                    it.dCatToken == selectedCategory
+                                }
+                            )
+                            categoryRowState.animateScrollToItem(startViewModel.selectedCategoryRowIndex.value)
 
-                            }
+                        }
+                        // error
+                        formDataState.error?.let {
+                            //snack message with error
+                            snackMessage(it)
 
-                        }.launchIn(scope)
+                        }
 
-                    }
-                )
+                    }.launchIn(scope)
+
+                }
                 //Top info and settings button
                 TopAndSettings(
                     startScreenUiState = startScreenUiState,
@@ -283,28 +271,28 @@ fun StartScreen(
             }
             //Category row vertical
             if(LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
+
                 CategoryRow(
                     isDarkModeOn = isDarkModeOn,
                     categoryRowState = categoryRowState,
                     categoryList = categoryList,
                     selectedCategory = selectedCategory,
-                    onClick = { itemId -> startViewModel.setSelectedCategory(itemId); },
+                    onClick = { itemToken -> startViewModel.setSelectedCategory(itemToken); scrollToItemZero.value = true},
                     startScreenUiState = startScreenUiState,
                     navigateTo = { route -> navigateTo(route) },
-                    numberOfItems = startViewModel.counter,
-                    countItems = { categoryToken ->
+                    numberOfItems = startViewModel.counter
+                ) { categoryToken ->
 
-                            scope.launch {
-                                startViewModel.getTaskCount(categoryToken).collect() { itemSum->
-                                    val ind = startViewModel.counter.indexOfFirst {
-                                        it.first == categoryToken
-                                    }
-                                    startViewModel.counter[ind] = Pair(categoryToken, itemSum)
-                                }
+                    scope.launch {
+                        startViewModel.getTaskCount(categoryToken).collect() { itemSum ->
+                            val ind = startViewModel.counter.indexOfFirst {
+                                it.first == categoryToken
                             }
-
+                            startViewModel.counter[ind] = Pair(categoryToken, itemSum)
+                        }
                     }
-                )
+
+                }
             }
             //Add task form
             AddTaskForm(
@@ -314,10 +302,9 @@ fun StartScreen(
                 newTaskName = newTaskState.taskName,
                 newTaskDesc = newTaskState.taskDesc,
                 onTaskNameChange = startViewModel::onNewTaskNameChange,
-                onTaskDescChange = startViewModel::onNewTaskDescChange,
-                hideKeyboard = { keyboardController?.hide(); focusManager.clearFocus(true) }
+                onTaskDescChange = startViewModel::onNewTaskDescChange
 
-            )
+            ) { keyboardController?.hide(); focusManager.clearFocus(true) }
             //Category details
             CategoryDetails(
                 visible = startScreenUiState != StartScreenState.AddTask,
@@ -336,12 +323,13 @@ fun StartScreen(
                 LaunchedEffect(key1 = true, block = {
                     startViewModel.selectedCategoryRowIndex.value = categoryList.indexOf(
                         categoryList.find {
-                            it.dCatId == selectedCategory
+                            it.dCatToken == selectedCategory
                         }
                     )
                     categoryRowState.animateScrollToItem(startViewModel.selectedCategoryRowIndex.value)
                 })
             }
+
 
             //Task list delete alert
             if(removeTaskAlert.value.first) {
@@ -389,7 +377,8 @@ fun StartScreen(
                 itemColumnState = itemColumnState,
                 tasksList = taskItemsList.toMutableStateList(),
                 onClickEdit = { itemId ->
-                    navigateTo(Screen.EditTask.route + "/${selectedCategory}+${itemId}")
+                    startViewModel.setLastItemSelected(itemId)
+                    navigateTo(Screen.EditTask.route)
                 },
                 onClickCheck = { itemToken: String, newVal: Boolean, _:Int, nearIndex: Int ->
 
@@ -433,9 +422,11 @@ fun StartScreen(
 
                 confirmationTaskSetting = confirmationTaskSetting,
                 startScreenUiState = startScreenUiState,
+                lastItemSelected = startViewModel.getLastItemSelected()
             )
 
         }
+
     }
 
     }

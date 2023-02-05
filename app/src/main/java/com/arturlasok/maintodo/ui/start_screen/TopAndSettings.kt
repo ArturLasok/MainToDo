@@ -5,14 +5,12 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +25,7 @@ fun TopAndSettings(
     startScreenUiState: StartScreenState,
     dateAndNameOfDay:String,
     navigateTo:(route:String)->Unit,
-    selectedCategory: Long,
+    selectedCategory: String,
     isDarkModeOn: Boolean
 ){
     val localVisible = rememberSaveable { mutableStateOf(false) }
@@ -37,7 +35,7 @@ fun TopAndSettings(
         if(localVisible.value) {
             localVisible.value = startScreenUiState == StartScreenState.Welcome
         } else {
-            delay(1000)
+            delay(700)
             localVisible.value = startScreenUiState == StartScreenState.Welcome
         }
     })
@@ -49,7 +47,7 @@ fun TopAndSettings(
                 it - 3*it
             },
             animationSpec = tween(
-                durationMillis = 500,
+                durationMillis = 200,
                 easing = LinearOutSlowInEasing,
             )
         ),
@@ -70,7 +68,7 @@ fun TopAndSettings(
                 it - 3 * it
             },
             animationSpec = tween(
-                durationMillis = 1000,
+                durationMillis = 700,
                 easing = LinearOutSlowInEasing
             )
         )
@@ -107,7 +105,7 @@ fun TopAndSettings(
                     SettingsButton(
                         isDarkModeOn = isDarkModeOn,
                         modifier = Modifier,
-                        onClick = { navigateTo(Screen.Settings.route + "/${selectedCategory}") },
+                        onClick = { navigateTo(Screen.Settings.route) },
                         light_img = R.drawable.settings,
                         dark_img = R.drawable.settings_dark
                     )

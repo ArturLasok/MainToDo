@@ -7,12 +7,15 @@ import com.arturlasok.maintodo.cache.model.ItemToDoEntity
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.util.RoomDataState
+import com.arturlasok.maintodo.util.ItemUiState
 import kotlinx.coroutines.flow.*
+
 
 
 class RoomInter(
     private val categoryDao: CategoryDao,
-    private val itemDao: ItemDao
+    private val itemDao: ItemDao,
+    private val itemUiState: ItemUiState
 ) {
     //item from domain to entity
     fun itemFromDomainToEntity(itemToDo: ItemToDo) : ItemToDoEntity {
@@ -125,13 +128,15 @@ class RoomInter(
     fun insertTaskItemToRoom(taskItem: ItemToDo) : Flow<RoomDataState<Boolean>> = flow {
 
         try {
-            val categoryData = categoryDao.selectOneCategory(taskItem.dItemInfo.toLong())
+            val categoryData = categoryDao.selectOneCategory(taskItem.dItemInfo)
 
             if(!categoryData.category_token_room.isNullOrEmpty()) {
                 itemDao.insertItemToRoom(
                     itemFromDomainToEntity(taskItem)
                         .copy(item_info_room = categoryData.category_token_room)
                 )
+                itemUiState.setlastItemToken(getLastAddedOrEditedItemFromRoom().last())
+
                 emit(RoomDataState.data_stored(true))
             } else
             {
@@ -145,18 +150,34 @@ class RoomInter(
         }
 
     }
+    //get last added or edited item token
+    private fun getLastAddedOrEditedItemFromRoom(): Flow<String>  = flow {
+
+        try {
+
+            emit(itemDao.selectLastAddedOrEditedItem())
+
+        }
+        catch(e:Exception) {
+
+            emit("")
+
+        }
+
+
+    }
     //update category to Database
     fun insertCategoryToRoomWithOldToken(categoryToDo: CategoryToDo) : Flow<RoomDataState<Boolean>> = flow {
 
         try {
-            val categoryData = categoryDao.selectOneCategory(categoryToDo.dCatId ?: 0)
+            val categoryData = categoryDao.selectOneCategory(categoryToDo.dCatToken ?: "")
 
             if(!categoryData.category_token_room.isNullOrEmpty()) {
 
 
                 categoryDao.insertCategoryToRoom(
                     categoryFromDomainToEntity(categoryToDo)
-                        .copy(category_token_room = categoryData.category_token_room)
+                        .copy(category_token_room = categoryData.category_token_room, category_id_room = categoryData.category_id_room)
                 )
                 emit(RoomDataState.data_stored(true))
             } else {
@@ -200,14 +221,13 @@ class RoomInter(
 
     }
     //delete category
-    fun deleteCategory(categoryId: Long) : Flow<RoomDataState<Boolean>> = flow {
+    fun deleteCategory(categoryToken: String) : Flow<RoomDataState<Boolean>> = flow {
         try {
-            //token of deleted category
-            val categoryToken = categoryFromEntityToDomain(categoryDao.selectOneCategory(categoryId))
+
             //delete category
-            categoryDao.deleteFromCategoryRoomById(categoryId)
+            categoryDao.deleteFromCategoryRoomById(categoryToken)
             //delete all task items with category token
-            itemDao.deleteFromItemRoomByCategoryId(categoryToken.dCatToken.toString())
+            itemDao.deleteFromItemRoomByCategoryId(categoryToken)
 
             emit(RoomDataState.data_stored(true))
 
@@ -220,16 +240,16 @@ class RoomInter(
 
     }
     //get task
-    fun getTasksFromRoom(categoryId: Long) : Flow<RoomDataState<Boolean>> = flow {
+    fun getTasksFromRoom(categoryToken: String) : Flow<RoomDataState<Boolean>> = flow {
 
 
         try {
 
-            val tasksList = if(categoryId<0) {
+            val tasksList = if(categoryToken.isEmpty()) {
                 itemDao.selectAllFromItemRoom()
             } else {
 
-                val categoryData = categoryDao.selectOneCategory(categoryId)
+                val categoryData = categoryDao.selectOneCategory(categoryToken)
 
                 itemDao.selectAllFromItemRoomWithCategoryToken(categoryData.category_token_room ?: "")
             }
@@ -248,11 +268,26 @@ class RoomInter(
     //count open tasks for badges
     fun getCount(categoryToken: String) : Flow<Int> = itemDao.countAllFromItemRoomWithCategoryToken(categoryToken)
     //
-    fun categoryIdToCategoryString(categoryId: Long) : Flow<String> = flow {
+    fun categoryTokenToCategoryIcon(categoryToken: String) : Flow<Int> = flow {
 
 
         try {
-            val categoryData = categoryFromEntityToDomain(categoryDao.selectOneCategory(categoryId))
+            val categoryData = categoryDao.fromCategoryTokenToCategoryIcon(categoryToken)
+            emit(categoryData)
+
+        }
+        catch(e:Exception) {
+
+            emit(-1)
+        }
+
+
+    }
+    fun categoryTokenToCategoryString(categoryToken: String) : Flow<String> = flow {
+
+
+        try {
+            val categoryData = categoryFromEntityToDomain(categoryDao.selectOneCategory(categoryToken))
             emit(categoryData.dCatToken ?:"")
 
         }
@@ -282,11 +317,11 @@ class RoomInter(
 
     }
     //get one itemfrom database
-    fun getOneItemFromRoom(itemId: Long) : Flow<RoomDataState<Boolean>> = flow {
+    fun getOneItemFromRoom(itemToken: String) : Flow<RoomDataState<Boolean>> = flow {
 
         try {
 
-            val oneItem = itemDao.selectOneItem(itemId)
+            val oneItem = itemDao.selectOneItem(itemToken)
 
             if(oneItem.item_id_room!=null) {
                 emit(RoomDataState.data_recived(itemFromEntityToDomain(oneItem)))
@@ -300,11 +335,11 @@ class RoomInter(
 
     }
     //get one category from database
-    fun getOneCategoryFromRoom(categoryId: Long) : Flow<RoomDataState<Boolean>> = flow {
+    fun getOneCategoryFromRoom(categoryToken: String) : Flow<RoomDataState<Boolean>> = flow {
 
         try {
 
-            val oneCategory = categoryDao.selectOneCategory(categoryId)
+            val oneCategory = categoryDao.selectOneCategory(categoryToken)
 
             if(oneCategory.category_id_room!=null) {
                 emit(RoomDataState.data_recived(categoryFromEntityToDomain(oneCategory)))
@@ -336,11 +371,11 @@ class RoomInter(
 
     }
     //get last added category
-    fun getLastCategoryId() : Flow<RoomDataState<Boolean>> = flow {
+    fun getLastCategoryToken() : Flow<RoomDataState<Boolean>> = flow {
 
         try {
-            val lastId = categoryDao.selectLastAddedCategoryId()
-            if(lastId!=0L) {
+            val lastId = categoryDao.selectLastAddedCategoryToken()
+            if(lastId.isNotEmpty()) {
                 emit(RoomDataState.data_recived(lastId))
             } else {
                 emit(RoomDataState.data_error("room_error"))

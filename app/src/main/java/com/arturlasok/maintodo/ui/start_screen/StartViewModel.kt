@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -15,8 +15,6 @@ import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.RoomInter
 import com.arturlasok.maintodo.interactors.util.RoomDataState
-import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_error
-import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_stored
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -26,20 +24,28 @@ import javax.inject.Inject
 class StartViewModel @Inject constructor(
     private val application: BaseApplication,
     private val savedStateHandle: SavedStateHandle,
-    private val roomInter: RoomInter
+    private val roomInter: RoomInter,
+    private val itemUiState: ItemUiState,
+    private val categoryUiState: CategoryUiState
 ) : ViewModel() {
 
 
     init {
         getCategoriesFromRoom()
-        getTaskItemsFromRoom(savedStateHandle["selectedCategory"] ?: -1L)
+        if(savedStateHandle.getStateFlow("selectedCategory","").value.isEmpty()) {  savedStateHandle["selectedCategory"] = categoryUiState.getSelectedCategoryToken() }
+        else { savedStateHandle.getStateFlow("selectedCategory","") }
+        if(savedStateHandle.getStateFlow("newTaskCategory","").value.isEmpty()) {  savedStateHandle["newTaskCategory"] = categoryUiState.getSelectedCategoryToken() }
+        else { savedStateHandle.getStateFlow("newTaskCategory","") }
+        getTaskItemsFromRoom(savedStateHandle["selectedCategory"] ?: "")
+
     }
     //CATEGORY
     val selectedCategoryRowIndex =  mutableStateOf(0)
-    //selected category -1 All visible
-    val selectedCategory = savedStateHandle.getStateFlow("selectedCategory",-1L)
+    //selected category empty All visible
+    val selectedCategory = savedStateHandle.getStateFlow("selectedCategory","")
     // category list from db
     val categoriesFromRoom = savedStateHandle.getStateFlow("categories", emptyList<CategoryToDo>())
+    //number of items in category
     val counter : SnapshotStateList<Pair<String, Int>> =  mutableStateListOf()
 
     //SCREEN
@@ -52,12 +58,12 @@ class StartViewModel @Inject constructor(
     //new task desc
     private val newTaskDesc = savedStateHandle.getStateFlow("newTaskDesc","")
     //new task category
-    private val newTaskCategory = savedStateHandle.getStateFlow("newTaskCategory",-1L)
+    private val newTaskCategory = savedStateHandle.getStateFlow("newTaskCategory","")
     //new task name error
     private val newTaskNameError = savedStateHandle.getStateFlow("newTaskNameError","")
     //new task category error
     private val newTaskCategoryError = savedStateHandle.getStateFlow("newTaskCategoryError","")
-    // category list from db
+    // item list from db
     val tasksFromRoom = savedStateHandle.getStateFlow("tasks", mutableListOf<ItemToDo>())
 
 
@@ -96,6 +102,14 @@ class StartViewModel @Inject constructor(
     fun getApplication() : BaseApplication {
         return application
     }
+    //set di last item
+    fun setLastItemSelected(itemToken: String) {
+        itemUiState.setlastItemToken(itemToken)
+    }
+    //get last di item
+    fun getLastItemSelected() : String {
+        return itemUiState.getLastItemToken()
+    }
     //get categories list
     private fun getCategoriesFromRoom() {
 
@@ -126,9 +140,9 @@ class StartViewModel @Inject constructor(
     fun getTaskCount(categoryToken: String) : Flow<Int> = roomInter.getCount(categoryToken)
 
     //get task items list
-    fun getTaskItemsFromRoom(categoryId: Long) {
+    fun getTaskItemsFromRoom(categoryToken: String) {
 
-        roomInter.getTasksFromRoom(categoryId).onEach { roomDataState ->
+        roomInter.getTasksFromRoom(categoryToken).onEach { roomDataState ->
 
             roomDataState.data_recived.let {
                 savedStateHandle["tasks"] = it
@@ -138,32 +152,26 @@ class StartViewModel @Inject constructor(
 
     }
     //selected category
-    fun setSelectedCategory(categoryId: Long) {
+    fun setSelectedCategory(categoryToken: String) {
 
-        savedStateHandle["selectedCategory"] = categoryId
-        savedStateHandle["newTaskCategory"] = categoryId
+        savedStateHandle["selectedCategory"] = categoryToken
+        savedStateHandle["newTaskCategory"] = categoryToken
 
-        getTaskItemsFromRoom(categoryId)
+        Log.i(TAG,"set seleceted category $categoryToken")
+        categoryUiState.setSelectedCategoryToken(categoryToken)
 
-    }
-    //category id to category token
-    suspend fun categoryIdToCategoryToken(categoryId: Long) : String {
-        var catToken = ""
-        roomInter.categoryIdToCategoryString(categoryId = categoryId).onEach {
-            catToken = it
-            Log.i(TAG,"vm cat tok: $catToken")
-        }.launchIn(viewModelScope).join()
-        return catToken
+        getTaskItemsFromRoom(categoryToken)
+
     }
     //set start screen UI state
     fun setStartScreenUiState(newState: StartScreenState) {
         startScreenUiState.value = newState
     }
     //get one from category list
-    fun getOneFromCategoryList(categoryId: Long) : CategoryToDo {
+    fun getOneFromCategoryList(categoryToken: String) : CategoryToDo {
 
        return categoriesFromRoom.value.find {
-            it.dCatId == categoryId
+            it.dCatToken == categoryToken
         } ?: CategoryToDo()
 
     }
@@ -187,10 +195,10 @@ class StartViewModel @Inject constructor(
 
     }
     //new task category change
-    fun onNewTaskCategoryChange(categoryId: Long) {
+    fun onNewTaskCategoryChange(categoryToken: String) {
 
-        savedStateHandle["newTaskCategory"] = categoryId
-        if(categoryId<0) {
+        savedStateHandle["newTaskCategory"] = categoryToken
+        if(categoryToken.isEmpty()) {
             savedStateHandle["newTaskCategoryError"] = "no selected category"
         } else
         {
@@ -208,7 +216,7 @@ class StartViewModel @Inject constructor(
             roomResponse.data_stored.let {
                 if(it == true) {
                     response = FormDataState.ok<Boolean>(true)
-                    getTaskItemsFromRoom(savedStateHandle["selectedCategory"] ?: -1L)
+                    getTaskItemsFromRoom(savedStateHandle["selectedCategory"] ?: "")
                 }
                 roomResponse.data_error.let {
                     if(it=="room_error") {
@@ -333,7 +341,7 @@ class StartViewModel @Inject constructor(
         return "$unixTime"+"time"+random.invoke()
     }
     //update task item Completion in room
-    suspend fun updateTaskItemCompletion(taskToDo: ItemToDo, selectedCategory: Long) : Boolean {
+    suspend fun updateTaskItemCompletion(taskToDo: ItemToDo, selectedCategory: String) : Boolean {
         var isDone = false
         roomInter.updateTaskItemCompletion(taskToDo).onEach {
             it.data_stored.let {

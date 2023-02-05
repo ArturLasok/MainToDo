@@ -118,7 +118,7 @@ fun CategoryDetails(
                         modifier = Modifier.padding(2.dp).alpha(0.5f),
                         light_img = R.drawable.edit_light,
                         dark_img = R.drawable.edit_light,
-                        onClick = { navigateTo(Screen.EditCategory.route + "/${selectedCategoryDetails.dCatId}") }
+                        onClick = { navigateTo(Screen.EditCategory.route) }
                     )
                 }
             }

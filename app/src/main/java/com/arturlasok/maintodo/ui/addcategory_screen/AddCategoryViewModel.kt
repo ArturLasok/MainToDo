@@ -9,6 +9,10 @@ import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.interactors.RoomInter
 import com.arturlasok.maintodo.interactors.util.RoomDataState
+import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_error
+import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_recived
+import com.arturlasok.maintodo.ui.start_screen.StartScreenState
+import com.arturlasok.maintodo.util.CategoryUiState
 import com.arturlasok.maintodo.util.FormDataState
 import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
@@ -20,7 +24,8 @@ import javax.inject.Inject
 class AddCategoryViewModel @Inject constructor(
     private val application: BaseApplication,
     private val savedStateHandle: SavedStateHandle,
-    private val roomInter: RoomInter
+    private val roomInter: RoomInter,
+    private val categoryUiState: CategoryUiState
 ): ViewModel() {
 
     //categoryName
@@ -98,17 +103,17 @@ class AddCategoryViewModel @Inject constructor(
         return application
     }
     //form verification
-    fun verifyForm() : Flow<Pair<Long,FormDataState<Boolean>>> = flow {
+    fun verifyForm() : Flow<Pair<String,FormDataState<Boolean>>> = flow {
 
         if(getNameError().isNotEmpty() || getIconError().isNotEmpty()) {
 
             if(getNameError().isNotEmpty())
             {
-                emit(Pair(-1L,FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_name,"asd").asString(application.applicationContext))))
+                emit(Pair("",FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_name,"asd").asString(application.applicationContext))))
             }
             else
             {
-                emit(Pair(-1L,FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_icon,"asd").asString(application.applicationContext))))
+                emit(Pair("",FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_icon,"asd").asString(application.applicationContext))))
             }
 
         } else {
@@ -130,8 +135,8 @@ class AddCategoryViewModel @Inject constructor(
             result.data_stored.let {
                 //stored
                 if(it == true) {
-                    val lastCategoryId =  getLastCategoryId()
-                    emit(Pair(lastCategoryId,FormDataState(true)))
+                    val lastCategoryToken =  getLastCategoryToken()
+                    emit(Pair(lastCategoryToken,FormDataState(true)))
 
                 }
             }
@@ -143,7 +148,7 @@ class AddCategoryViewModel @Inject constructor(
             result.data_error.let {
                 //error to ui
                 if(!it.isNullOrBlank()) {
-                    emit(Pair(-1L,
+                    emit(Pair("",
                         FormDataState.error<Boolean>(
                             UiText.StringResource(
                                 R.string.addcategory_form_error_room,
@@ -174,17 +179,21 @@ class AddCategoryViewModel @Inject constructor(
 
 
     }
-    suspend fun getLastCategoryId() : Long {
 
-         var data = -1L
+    fun setSelectedCategoryUiToken(newToken:String) {
+       categoryUiState.setSelectedCategoryToken(newToken)
+    }
+    suspend fun getLastCategoryToken() : String {
 
-        roomInter.getLastCategoryId().onEach {
+         var data = ""
+
+        roomInter.getLastCategoryToken().onEach {
 
             it.data_recived.let { id->
-                data =id as Long
+                data =id as String
             }
             it.data_error.let { error_string ->
-                if(error_string=="room_error") { data = -1L }
+                if(error_string=="room_error") { data = "" }
             }
 
 

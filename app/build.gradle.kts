@@ -14,8 +14,8 @@ android {
         applicationId = "com.arturlasok.maintodo"
         minSdk = 26
         targetSdk = 32
-        versionCode = 3
-        versionName = "3.0"
+        versionCode = 5
+        versionName = "5.0"
     }
     buildFeatures {
         compose = true

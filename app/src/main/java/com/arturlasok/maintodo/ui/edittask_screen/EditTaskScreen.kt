@@ -32,9 +32,7 @@ import kotlinx.coroutines.flow.onEach
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditTaskScreen(navigateTo: (route: String) -> Unit,
-                   taskId :Long,
                    isDarkModeOn: Boolean,
-                   categoryId: Long,
                    snackMessage: (snackMessage:String) -> Unit,
                    editTaskViewModel: EditTaskViewModel = hiltViewModel()
 ) {
@@ -45,10 +43,10 @@ fun EditTaskScreen(navigateTo: (route: String) -> Unit,
     val state by editTaskViewModel.editItemState.collectAsState()
 
     BackHandler(enabled = true) {
-        navigateTo(Screen.Start.route+"/${categoryId}")
+        navigateTo(Screen.Start.route)
     }
     LaunchedEffect(key1 = true, block = {
-        editTaskViewModel.getOneItemFromRoom(itemId = taskId)
+        editTaskViewModel.getOneItemFromRoom(itemId = editTaskViewModel.getItemFormDi())
         editTaskViewModel.getCategoriesFromRoom()
     })
     Column {
@@ -66,7 +64,7 @@ fun EditTaskScreen(navigateTo: (route: String) -> Unit,
                 BackButton(
                     isDarkModeOn = isDarkModeOn,
                     modifier = Modifier,
-                    onClick = { navigateTo(Screen.Start.route+"/${categoryId}") }
+                    onClick = { navigateTo(Screen.Start.route) }
                 )
 
             }
@@ -100,15 +98,14 @@ fun EditTaskScreen(navigateTo: (route: String) -> Unit,
             categoryRowState = rememberLazyListState(),
             categoryList = editTaskViewModel.categoriesFromRoom.collectAsState().value,
             selectedCategory = state.itemCategory,
-            onClick = { itemId ->
+            onClick = { itemToken ->
                 focusManager.clearFocus();
-                editTaskViewModel.onItemCategoryChange(itemId)
+                editTaskViewModel.onItemCategoryChange(itemToken)
             },
             startScreenUiState = StartScreenState.AddTask,
             navigateTo = { },
-            numberOfItems = remember{ mutableStateListOf() },
-            countItems = {}
-        )
+            numberOfItems = remember{ mutableStateListOf() }
+        ) {}
         Spacer(
             modifier = Modifier
                 .fillMaxWidth()
@@ -149,7 +146,7 @@ fun EditTaskScreen(navigateTo: (route: String) -> Unit,
                             ).asString(editTaskViewModel.getApplication().applicationContext)
                         )
                         //nav to start and last added category
-                        navigateTo(Screen.Start.route + "/" + state.itemCategory)
+                        navigateTo(Screen.Start.route)
                     }
                     // error
                     formDataState.second.error?.let {

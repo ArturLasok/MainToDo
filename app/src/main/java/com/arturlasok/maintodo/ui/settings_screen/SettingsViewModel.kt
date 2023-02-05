@@ -1,20 +1,19 @@
 package com.arturlasok.maintodo.ui.settings_screen
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.arturlasok.maintodo.BaseApplication
 import com.arturlasok.maintodo.R
-import com.arturlasok.maintodo.util.UiText
-import com.arturlasok.maintodo.util.milisToDayOfWeek
-import com.arturlasok.maintodo.util.millisToDate
+import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val application: BaseApplication,
-    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
 
     fun dateWithNameOfDayWeek() : String {
         val timeInMilis =  System.currentTimeMillis()
@@ -32,10 +31,6 @@ class SettingsViewModel @Inject constructor(
 
         return millisToDate(timeInMilis)+ " " + dayNames[dayOfWeek-2]
 
-    }
-
-    fun getApplication() : BaseApplication {
-        return application
     }
 
 }

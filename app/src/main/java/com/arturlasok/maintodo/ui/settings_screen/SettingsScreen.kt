@@ -25,7 +25,6 @@ fun SettingsScreen(
     navigateUp:() -> Unit,
     confirmationTaskSetting: Boolean,
     changeConfirmationTaskSetting:() -> Unit,
-    categoryId: Long,
     isDarkModeOn: Int,
     changeDarkMode:(newVal: Int) -> Unit,
     runLink:(runlink :String) -> Unit,
@@ -33,7 +32,7 @@ fun SettingsScreen(
 ) {
 
     BackHandler(enabled = true) {
-        navigateTo(Screen.Start.route+"/${categoryId}")
+        navigateTo(Screen.Start.route)
     }
     Column {
 
@@ -45,7 +44,7 @@ fun SettingsScreen(
                 BackButton(
                     isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                     modifier = Modifier,
-                    onClick = { navigateTo(Screen.Start.route+"/${categoryId}") }
+                    onClick = { navigateTo(Screen.Start.route) }
                     //onClick = { navigateUp() }
                 )
             }

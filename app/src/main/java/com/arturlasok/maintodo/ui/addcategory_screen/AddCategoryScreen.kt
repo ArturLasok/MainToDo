@@ -49,7 +49,7 @@ fun AddCategoryScreen(
                 BackButton(
                     isDarkModeOn = isDarkModeOn,
                     modifier = Modifier,
-                    onClick = { navigateTo(Screen.Start.route+"/-1L") }
+                    onClick = { navigateTo(Screen.Start.route) }
                 )
             }
             //Screen title
@@ -214,7 +214,8 @@ fun AddCategoryScreen(
                                 ).asString(addCategoryViewModel.getApplication().applicationContext)
                             )
                             //nav to start and last added category
-                            navigateTo(Screen.Start.route+"/"+formDataState.first)
+                            addCategoryViewModel.setSelectedCategoryUiToken(formDataState.first)
+                            navigateTo(Screen.Start.route)
                         }
                         // error
                         formDataState.second.error?.let {

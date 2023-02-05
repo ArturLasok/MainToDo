@@ -21,8 +21,8 @@ interface ItemDao {
     @Query("SELECT * FROM item_room")
     suspend fun selectAllFromItemRoom() : List<ItemToDoEntity>
 
-    @Query("SELECT * FROM item_room WHERE item_id_room=:item_id")
-    suspend fun selectOneItem(item_id: Long) : ItemToDoEntity
+    @Query("SELECT * FROM item_room WHERE item_token=:item_token")
+    suspend fun selectOneItem(item_token: String) : ItemToDoEntity
 
     @Query("SELECT * FROM item_room WHERE item_info=:category_token")
     suspend fun selectAllFromItemRoomWithCategoryToken(category_token:String) : List<ItemToDoEntity>
@@ -32,6 +32,9 @@ interface ItemDao {
 
     @Query("SELECT count(*) FROM item_room WHERE item_info=:category_token and item_completed=0")
     fun countAllFromItemRoomWithCategoryToken(category_token:String) : Flow<Int>
+
+    @Query("SELECT item_token FROM item_room ORDER BY item_edited DESC LIMIT 1")
+    suspend fun selectLastAddedOrEditedItem() : String
 
 
 

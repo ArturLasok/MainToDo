@@ -11,6 +11,7 @@ import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.interactors.RoomInter
 import com.arturlasok.maintodo.interactors.util.RoomDataState
 import com.arturlasok.maintodo.ui.addcategory_screen.NewCategoryState
+import com.arturlasok.maintodo.util.CategoryUiState
 import com.arturlasok.maintodo.util.FormDataState
 import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
@@ -22,10 +23,16 @@ import javax.inject.Inject
 class EditCategoryViewModel @Inject constructor(
     private val application: BaseApplication,
     private val savedStateHandle: SavedStateHandle,
-    private val roomInter: RoomInter
+    private val roomInter: RoomInter,
+    private val categoryUiState: CategoryUiState
 ) :ViewModel() {
 
-
+    init{
+        if(savedStateHandle.getStateFlow("selectedCategory","").value.isEmpty()) {  savedStateHandle["selectedCategory"] = categoryUiState.getSelectedCategoryToken() }
+        else { savedStateHandle.getStateFlow("selectedCategory","") }
+    }
+    //selected category
+    val selectedCategory = savedStateHandle.getStateFlow("selectedCategory","")
     //categoryName
     private val categoryName = savedStateHandle.getStateFlow("categoryName","")
 
@@ -56,10 +63,18 @@ class EditCategoryViewModel @Inject constructor(
     fun getApplication() : BaseApplication {
         return application
     }
+    //set di last item
+    fun setLastCategorySelected(categoryToken: String) {
+       categoryUiState.setSelectedCategoryToken(categoryToken)
+    }
+    //get di last item
+    fun getCategoryTokenFromDi() : String {
+        return categoryUiState.getSelectedCategoryToken()
+    }
     //get categories list
-    fun getOneCategoryFromRoom(categoryId: Long) {
+    fun getOneCategoryFromRoom(categoryToken: String) {
         if(categoryName.value == "" && categoryDescription.value=="" && selectedIcon.value ==-1) {
-            roomInter.getOneCategoryFromRoom(categoryId).onEach { roomDataState ->
+            roomInter.getOneCategoryFromRoom(categoryToken).onEach { roomDataState ->
 
                 try {
                     (roomDataState.data_recived as CategoryToDo).let { categoryToDo ->
@@ -72,7 +87,7 @@ class EditCategoryViewModel @Inject constructor(
                 } catch (e: Exception) {
 
                     savedStateHandle["categoryName"] = ""
-                    savedStateHandle["categoryIcon"] = -1
+                    savedStateHandle["categoryIcon"] = ""
                     savedStateHandle["categoryDescription"] = ""
                 }
 
@@ -119,11 +134,11 @@ class EditCategoryViewModel @Inject constructor(
         return savedStateHandle["categoryNameError"] ?:""
     }
     //delete category
-    suspend fun deleteCategory(categoryId: Long) : FormDataState<Boolean> {
+    suspend fun deleteCategory(categoryToken:String) : FormDataState<Boolean> {
 
         var response = FormDataState.ok<Boolean>(true)
 
-        roomInter.deleteCategory(categoryId).onEach { roomResponse ->
+        roomInter.deleteCategory(categoryToken).onEach { roomResponse ->
 
             roomResponse.data_stored.let {
                 if(it == true) {
@@ -161,18 +176,18 @@ class EditCategoryViewModel @Inject constructor(
 
 
     }
-    fun verifyForm(categoryId: Long) : Flow<Pair<Long, FormDataState<Boolean>>> = flow {
+    fun verifyForm(categoryToken: String) : Flow<Pair<String, FormDataState<Boolean>>> = flow {
 
         if(getNameError().isNotEmpty() || getIconError().isNotEmpty()) {
 
             if(getNameError().isNotEmpty())
             {
-                emit(Pair(-1L,
+                emit(Pair("",
                     FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_name,"asd").asString(application.applicationContext))))
             }
             else
             {
-                emit(Pair(-1L,
+                emit(Pair("",
                     FormDataState.error<Boolean>(UiText.StringResource(R.string.addcategory_form_error_icon,"asd").asString(application.applicationContext))))
             }
 
@@ -180,11 +195,11 @@ class EditCategoryViewModel @Inject constructor(
 
             val result = updateCategoryInRoom(
                 CategoryToDo(
-                    dCatId = categoryId,
+                    dCatId = null,
                     dCatName = editCategoryState.value.categoryName,
                     dCatDescription = editCategoryState.value.categoryDescription,
                     dCatIcon = editCategoryState.value.categoryIcon,
-                    dCatToken = "empty",
+                    dCatToken = categoryToken,
                     dCatSort = 0,
                     dCatFav = false
                 )
@@ -195,7 +210,7 @@ class EditCategoryViewModel @Inject constructor(
             result.data_stored.let {
                 //stored
                 if(it == true) {
-                    emit(Pair(-1L, FormDataState(true)))
+                    emit(Pair("", FormDataState(true)))
 
                 }
             }
@@ -207,7 +222,7 @@ class EditCategoryViewModel @Inject constructor(
             result.data_error.let {
                 //error to ui
                 if(!it.isNullOrBlank()) {
-                    emit(Pair(-1L,
+                    emit(Pair("",
                         FormDataState.error<Boolean>(
                             UiText.StringResource(
                                 R.string.addcategory_form_error_room,

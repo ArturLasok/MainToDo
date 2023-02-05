@@ -12,20 +12,22 @@ interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategoryToRoom(category: CategoryToDoEntity)
 
-    @Query("DELETE FROM category_room WHERE category_id_room= :category_id")
-    suspend fun deleteFromCategoryRoomById(category_id: Long)
+    @Query("DELETE FROM category_room WHERE category_token_room= :category_token")
+    suspend fun deleteFromCategoryRoomById(category_token:String)
 
     @Query("SELECT * FROM category_room")
     suspend fun selectAllFromCategoryRoom() : List<CategoryToDoEntity>
 
-    @Query("SELECT * FROM category_room WHERE category_id_room=:category_id")
-    suspend fun selectOneCategory(category_id: Long) : CategoryToDoEntity
+    @Query("SELECT * FROM category_room WHERE category_token_room=:category_token")
+    suspend fun selectOneCategory(category_token: String) : CategoryToDoEntity
 
     @Query("SELECT * FROM category_room WHERE category_token_room=:category_token")
     suspend fun selectOneCategoryWithToken(category_token: String) : CategoryToDoEntity
 
-    @Query("SELECT category_id_room FROM category_room ORDER BY category_id_room DESC LIMIT 1")
-    suspend fun selectLastAddedCategoryId() : Long
+    @Query("SELECT category_token_room FROM category_room ORDER BY category_id_room DESC LIMIT 1")
+    suspend fun selectLastAddedCategoryToken() : String
 
+    @Query("SELECT category_icon_room FROM category_room WHERE category_token_room=:category_token")
+    suspend fun fromCategoryTokenToCategoryIcon(category_token: String) : Int
 
 }

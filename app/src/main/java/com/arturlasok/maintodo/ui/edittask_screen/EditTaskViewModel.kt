@@ -13,9 +13,7 @@ import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.RoomInter
 import com.arturlasok.maintodo.interactors.util.RoomDataState
 import com.arturlasok.maintodo.ui.editcategory_screen.EditCategoryState
-import com.arturlasok.maintodo.util.FormDataState
-import com.arturlasok.maintodo.util.TAG
-import com.arturlasok.maintodo.util.UiText
+import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -24,7 +22,9 @@ import javax.inject.Inject
 class EditTaskViewModel @Inject constructor(
     private val application: BaseApplication,
     private val savedStateHandle: SavedStateHandle,
-    private val roomInter: RoomInter
+    private val roomInter: RoomInter,
+    private val categoryUiState: CategoryUiState,
+    private val itemUiState: ItemUiState
 ) :ViewModel() {
 
     //category list
@@ -36,8 +36,8 @@ class EditTaskViewModel @Inject constructor(
     //categoryName
     private val itemName = savedStateHandle.getStateFlow("itemName","")
 
-    //selectedIcon
-    private val itemCategory = savedStateHandle.getStateFlow("itemCategory",-1L)
+    //selectedCategory
+    private val itemCategory = savedStateHandle.getStateFlow("itemCategory","")
 
     //categoryDescription
     private val itemDescription = savedStateHandle.getStateFlow("itemDescription","")
@@ -48,10 +48,10 @@ class EditTaskViewModel @Inject constructor(
     //categoryIconError
     private val itemCategoryError = savedStateHandle.getStateFlow("itemCategoryError","")
 
-    val editItemState = combine(itemName,itemCategory,itemDescription,itemNameError, itemCategoryError) { name, icon, description, nameError,  categoryError ->
+    val editItemState = combine(itemName,itemCategory,itemDescription,itemNameError, itemCategoryError) { name, cat, description, nameError,  categoryError ->
         EditItemState(
             itemName = name,
-            itemCategory = icon,
+            itemCategory = cat,
             itemDescription = description,
             itemErrors = nameError.isNotEmpty() || categoryError.isNotEmpty()
         )
@@ -64,8 +64,8 @@ class EditTaskViewModel @Inject constructor(
         return application
     }
     //get item
-    fun getOneItemFromRoom(itemId: Long) {
-        if(itemName.value == "" && itemDescription.value=="" && itemCategory.value ==-1L) {
+    fun getOneItemFromRoom(itemId: String) {
+        if(itemName.value == "" && itemDescription.value=="" && itemCategory.value =="") {
 
             roomInter.getOneItemFromRoom(itemId).onEach { roomDataState ->
 
@@ -76,18 +76,17 @@ class EditTaskViewModel @Inject constructor(
 
                             try {
                                 (it.data_recived as CategoryToDo).let { categoryToDo ->
-                                    Log.i(TAG,"item ssh: ${categoryToDo.dCatId}")
-                                    savedStateHandle["itemCategory"] = categoryToDo.dCatId
+                                    Log.i(TAG,"item ssh: ${categoryToDo.dCatToken}")
+                                    savedStateHandle["itemCategory"] = categoryToDo.dCatToken
                                 }
                             }
                             catch (e: Exception) {
 
 
-                                savedStateHandle["itemCategory"] = -1L
+                                savedStateHandle["itemCategory"] = ""
 
                             }
 
-                        Log.i(TAG,"item ssh: ${itemCategory.value}")
                         }.launchIn(viewModelScope).join()
 
                         savedStateHandle["editedItem"] = itemToDo
@@ -100,7 +99,7 @@ class EditTaskViewModel @Inject constructor(
                 } catch (e: Exception) {
 
                     savedStateHandle["itemName"] = ""
-                    savedStateHandle["itemCategory"] = -1L
+                    savedStateHandle["itemCategory"] = ""
                     savedStateHandle["itemDescription"] = ""
                 }
 
@@ -108,10 +107,11 @@ class EditTaskViewModel @Inject constructor(
         }
     }
     //on item category change
-    fun onItemCategoryChange(icon: Long) {
+    fun onItemCategoryChange(categoryToken: String) {
 
-        savedStateHandle["itemCategory"] = icon
-        if(icon==-1L)
+        savedStateHandle["itemCategory"] = categoryToken
+        categoryUiState.setSelectedCategoryToken(categoryToken)
+        if(categoryToken.isEmpty())
         {
             savedStateHandle["itemCategoryError"] = "No selected icon"
 
@@ -162,6 +162,11 @@ class EditTaskViewModel @Inject constructor(
 
 
     }
+
+    //get item ui state from di
+    fun getItemFormDi() : String {
+        return itemUiState.getLastItemToken()
+    }
     //get categories list
     fun getCategoriesFromRoom() {
 
@@ -174,18 +179,18 @@ class EditTaskViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
     }
-    fun verifyForm() : Flow<Pair<Long, FormDataState<Boolean>>> = flow {
+    fun verifyForm() : Flow<Pair<String, FormDataState<Boolean>>> = flow {
 
         if(getNameError().isNotEmpty() || getCategoryError().isNotEmpty()) {
 
             if(getNameError().isNotEmpty())
             {
-                emit(Pair(-1L,
+                emit(Pair("",
                     FormDataState.error<Boolean>(UiText.StringResource(R.string.addtask_form_error_name,"asd").asString(application.applicationContext))))
             }
             else
             {
-                emit(Pair(-1L,
+                emit(Pair("",
                     FormDataState.error<Boolean>(UiText.StringResource(R.string.addtask_form_error_category,"asd").asString(application.applicationContext))))
             }
 
@@ -194,7 +199,7 @@ class EditTaskViewModel @Inject constructor(
             val result = updateItemInRoom(
                editedItem.value.copy(
                    dItemTitle = itemName.value,
-                   dItemInfo = itemCategory.value.toString(),
+                   dItemInfo = itemCategory.value,
                    dItemDescription = itemDescription.value,
                    dItemEdited = System.currentTimeMillis(),
                )
@@ -205,7 +210,7 @@ class EditTaskViewModel @Inject constructor(
             result.data_stored.let {
                 //stored
                 if(it == true) {
-                    emit(Pair(-1L, FormDataState(true)))
+                    emit(Pair("", FormDataState(true)))
 
                 }
             }
@@ -217,7 +222,7 @@ class EditTaskViewModel @Inject constructor(
             result.data_error.let {
                 //error to ui
                 if(!it.isNullOrBlank()) {
-                    emit(Pair(-1L,
+                    emit(Pair("",
                         FormDataState.error<Boolean>(
                             UiText.StringResource(
                                 R.string.addcategory_form_error_room,

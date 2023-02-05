@@ -29,21 +29,12 @@ fun NavigationComponent(
 
     NavHost(
     navController = navController,
-    startDestination = Screen.Start.route+"/{categoryId}"
+    startDestination = Screen.Start.route
     ) {
         //--
         // Main Screen
         composable(
-            route= Screen.Start.route+"/{categoryId}",
-            arguments = listOf(
-                navArgument(name = "categoryId") {
-                type = NavType.LongType
-                defaultValue = -1
-            },
-            )
-            ) { backStackEntry ->
-
-            val categoryId = backStackEntry.arguments?.getLong("categoryId") ?: -1L
+            route= Screen.Start.route) {
 
             navController.currentDestination?.route?.let { newRoute->
                 setCurrentDestination(newRoute)
@@ -52,21 +43,13 @@ fun NavigationComponent(
                 navigateTo = { route -> navController.navigate(route) },
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                 confirmationTaskSetting = confirmationTaskSetting,
-                selectedFromNav = categoryId,
                 snackMessage = { snackMessage-> snackMessage(snackMessage) }
             )
         }
         //--
         // Settings Screen
         composable(
-            route=Screen.Settings.route+"/{categoryId}",
-            arguments = listOf(navArgument(name = "categoryId") {
-                type = NavType.LongType
-                defaultValue = -1
-            })
-            ) { backStackEntry ->
-
-            val categoryId = backStackEntry.arguments?.getLong("categoryId") ?: -1L
+            route=Screen.Settings.route) {
 
             navController.currentDestination?.route?.let { newRoute->
                 setCurrentDestination(newRoute)
@@ -76,7 +59,6 @@ fun NavigationComponent(
                 navigateUp = { navController.popBackStack()},
                 confirmationTaskSetting = confirmationTaskSetting,
                 changeConfirmationTaskSetting = { changeConfirmationTaskSetting() },
-                categoryId = categoryId,
                 isDarkModeOn = isDarkModeOn,
                 changeDarkMode = { newVal-> changeDarkMode(newVal) },
                 runLink  = { runlink -> runLink(runlink) }
@@ -98,28 +80,14 @@ fun NavigationComponent(
         //--
         // EditTask Screen
         composable(
-            route = Screen.EditTask.route+"/{categoryId}+{itemId}",
-            arguments = listOf(
-                navArgument(name = "categoryId") {
-                type = NavType.LongType
-                defaultValue = -1
-            },
-                navArgument(name = "itemId") {
-                    type = NavType.LongType
-                    defaultValue = -1
-             })
-        ) { backStackEntry ->
-
-            val categoryId = backStackEntry.arguments?.getLong("categoryId") ?: -1L
-            val itemId = backStackEntry.arguments?.getLong("itemId") ?: -1L
+            route = Screen.EditTask.route
+        ) {
 
             navController.currentDestination?.route?.let { newRoute->
                 setCurrentDestination(newRoute)
             }
             EditTaskScreen(
                 navigateTo = { route -> navController.navigate(route) },
-                taskId = itemId,
-                categoryId = categoryId,
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                 snackMessage = { snackMessage-> snackMessage(snackMessage) }
             )
@@ -127,21 +95,14 @@ fun NavigationComponent(
         //--
         // EditCategory Screen
         composable(
-            route = Screen.EditCategory.route+"/{categoryId}",
-            arguments = listOf(navArgument(name = "categoryId") {
-                type = NavType.LongType
-                defaultValue = -1
-            })
-            ) { backStackEntry ->
-
-            val categoryId = backStackEntry.arguments?.getLong("categoryId") ?: -1L
+            route = Screen.EditCategory.route
+            ) {
 
             navController.currentDestination?.route?.let { newRoute->
                 setCurrentDestination(newRoute)
             }
             EditCategoryScreen(
                 navigateTo = { route -> navController.navigate(route) },
-                categoryId = categoryId,
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                 snackMessage = { snackMessage-> snackMessage(snackMessage) }
             )

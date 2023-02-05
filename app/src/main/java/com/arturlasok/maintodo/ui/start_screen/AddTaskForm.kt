@@ -24,21 +24,21 @@ import kotlinx.coroutines.delay
 fun AddTaskForm(
     startScreenUiState: StartScreenState,
     isDarkModeOn: Boolean,
-    categoryId: Long,
+    categoryId: String,
     newTaskName: String,
     newTaskDesc:String,
     onTaskNameChange:(text: String) -> Unit,
     onTaskDescChange:(text: String) -> Unit,
     hideKeyboard:() ->Unit,
 
-) {
+    ) {
     val localVisible = rememberSaveable{ mutableStateOf(false) }
     LaunchedEffect(key1 = startScreenUiState, block = {
 
         if(localVisible.value) {
             localVisible.value = startScreenUiState == StartScreenState.AddTask
         } else {
-            delay(1000)
+            delay(700)
             localVisible.value = startScreenUiState == StartScreenState.AddTask
         }
     })

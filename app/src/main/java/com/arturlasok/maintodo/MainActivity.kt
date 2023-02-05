@@ -1,37 +1,31 @@
 package com.arturlasok.maintodo
 
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings.System.getConfiguration
+import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.datastore.core.DataStore
@@ -45,6 +39,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.arturlasok.maintodo.admob.AdMobMainBanner
+import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.navigation.NavigationComponent
 import com.arturlasok.maintodo.ui.theme.MainToDoTheme
 import com.arturlasok.maintodo.util.*
@@ -57,7 +52,6 @@ import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -84,7 +78,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var consentInformation: ConsentInformation
     private lateinit var consentForm: ConsentForm
     fun checkRodo() {
-        Log.i(TAG,"RODO CHECK!!!!!")
         // ADMOB RODO
         val params = ConsentRequestParameters.Builder()
             .setTagForUnderAgeOfConsent(false)
@@ -96,15 +89,14 @@ class MainActivity : ComponentActivity() {
             params,
             {
                 if (consentInformation.isConsentFormAvailable()) {
-                    loadForm();
+                    loadRodoForm();
                 }
             },
             {
                 // Handle the error.
             })
     }
-    open fun loadForm() {
-        Log.i(TAG,"RODO CHECK FORM!!!!!")
+    open fun loadRodoForm() {
         UserMessagingPlatform.loadConsentForm(
             this,
             { consentForm -> this@MainActivity.consentForm = consentForm
@@ -113,12 +105,9 @@ class MainActivity : ComponentActivity() {
                     consentForm.show(
                         this@MainActivity
                     ) { // Handle dismissal by reloading form.
-                        loadForm()
+                        loadRodoForm()
                     }
                 }
-
-
-
 
             }
         ) {
@@ -244,9 +233,32 @@ class MainActivity : ComponentActivity() {
                 //scaffoldState init
                 val scaffoldState = rememberScaffoldState()
                 checkRodo()
+
                 Scaffold(
                     scaffoldState = scaffoldState,
                     snackbarHost = {scaffoldState.snackbarHostState},
+                    topBar = {
+                        Text("",modifier= Modifier.clickable(onClick = {
+                            val taskInfo = ItemToDo(dItemTitle = "title", dItemId = 28L, dItemDescription = "desc", dItemAdded = System.currentTimeMillis())
+                            // creating alarmManager instance
+                            val alarmManager = this@MainActivity?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+                            // adding intent and pending intent to go to AlarmReceiver Class in future
+                            val intent = Intent(this@MainActivity, AlarmReceiver::class.java)
+                            //intent.putExtra("KEY_FOO_STRING", "Medium AlarmManager Demo")
+                            intent.putExtra("task_info", taskInfo)
+                            val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, taskInfo.dItemId?.toInt() ?: 0, intent, PendingIntent.FLAG_IMMUTABLE)
+                            // when using setAlarmClock() it displays a notification until alarm rings and when pressed it takes us to mainActivity
+                            val mainActivityIntent = Intent(this@MainActivity, MainActivity::class.java)
+                            val basicPendingIntent = PendingIntent.getActivity(this@MainActivity, taskInfo.dItemId?.toInt() ?: 0, mainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
+                            // creating clockInfo instance
+                            val clockInfo = AlarmManager.AlarmClockInfo(taskInfo.dItemAdded+50000, basicPendingIntent)
+                            // setting the alarm
+                            //alarmManager.setExact(AlarmManager.RTC_WAKEUP,taskInfo.dItemAdded+30000,pendingIntent)
+                           alarmManager.setAlarmClock(clockInfo, pendingIntent)
+
+                        }))
+                    },
                     bottomBar = {
                         AdMobMainBanner()
                     }

@@ -52,4 +52,5 @@
     <string name="task_status_change_question">Do you confirm that the task has been completed?</string>
     <string name="task_status_change_question_two">You confirm that this task will be performed again?</string>
     <string name="add_new_category">Add new category</string>
+    <string name="no_disc">No description</string>
 </resources>
