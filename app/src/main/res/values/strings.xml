@@ -53,4 +53,14 @@
     <string name="task_status_change_question_two">You confirm that this task will be performed again?</string>
     <string name="add_new_category">Add new category</string>
     <string name="no_disc">No description</string>
+    <string name="no_date">No date</string>
+    <string name="no_time">No time</string>
+    <string name="task_date">Task completion \ndate</string>
+    <string name="task_time">Task execution \ntime</string>
+    <string name="task_not_date">Reminder \ndate</string>
+    <string name="task_not_time">Reminder \nhour</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="select_date">Select date</string>
+    <string name="select_time">Select time</string>
 </resources>

@@ -238,6 +238,7 @@ class MainActivity : ComponentActivity() {
                     scaffoldState = scaffoldState,
                     snackbarHost = {scaffoldState.snackbarHostState},
                     topBar = {
+                        /*
                         Text("",modifier= Modifier.clickable(onClick = {
                             val taskInfo = ItemToDo(dItemTitle = "title", dItemId = 28L, dItemDescription = "desc", dItemAdded = System.currentTimeMillis())
                             // creating alarmManager instance
@@ -258,6 +259,8 @@ class MainActivity : ComponentActivity() {
                            alarmManager.setAlarmClock(clockInfo, pendingIntent)
 
                         }))
+
+                         */
                     },
                     bottomBar = {
                         AdMobMainBanner()

@@ -58,6 +58,7 @@ fun StartScreen(
     val selectedCategory = startViewModel.selectedCategory.collectAsState(initial = "").value
     val startScreenUiState: StartScreenState = startViewModel.startScreenUiState.value
     val newTaskState by startViewModel.newTaskState.collectAsState()
+    val newDateTimeState by startViewModel.newDateTimeState.collectAsState()
     val scope = rememberCoroutineScope()
     val removeTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
 
@@ -143,7 +144,7 @@ fun StartScreen(
             if(startScreenUiState == StartScreenState.Welcome) {
                 ExtendedFloatingActionButton(
                     modifier = Modifier
-                        .alpha(0.5f)
+                        .alpha(0.8f)
                         .padding(bottom = 10.dp),
                     icon = {
                         Image(
@@ -162,7 +163,8 @@ fun StartScreen(
                             text = UiText.StringResource(
                                 R.string.floating_button_add,
                                 "asd"
-                            ).asString()
+                            ).asString().uppercase(),
+                            color = MaterialTheme.colors.onPrimary
                         )
                     },
                     onClick = {
@@ -296,6 +298,12 @@ fun StartScreen(
             }
             //Add task form
             AddTaskForm(
+                newDateTimeState = newDateTimeState,
+                onNewDateChange= startViewModel::setNewTaskDate,
+                onNewTimeChange = startViewModel::setNewTaskTime,
+                onNewNotDateChange=startViewModel::setNotTaskDate,
+                onNewNotTimeChange = startViewModel::setNotTaskTime,
+                onNewErrorDateTimeSet=startViewModel::setErrorTaskDateTime,
                 startScreenUiState = startScreenUiState,
                 isDarkModeOn = isDarkModeOn,
                 categoryId = selectedCategory,

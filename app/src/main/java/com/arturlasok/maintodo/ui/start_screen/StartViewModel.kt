@@ -18,6 +18,7 @@ import com.arturlasok.maintodo.interactors.util.RoomDataState
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,6 +66,25 @@ class StartViewModel @Inject constructor(
     private val newTaskCategoryError = savedStateHandle.getStateFlow("newTaskCategoryError","")
     // item list from db
     val tasksFromRoom = savedStateHandle.getStateFlow("tasks", mutableListOf<ItemToDo>())
+    //DATE & TIME
+    private val taskDate = savedStateHandle.getStateFlow("taskDate",0L)
+    private val notDate = savedStateHandle.getStateFlow("notDate",0L)
+    private val taskTime = savedStateHandle.getStateFlow("taskTime",0L)
+    private val notTime = savedStateHandle.getStateFlow("notTime",0L)
+    private val taskDateTimeError = savedStateHandle.getStateFlow("taskDateTimeError",0)
+
+    val newDateTimeState = combine(taskDate,notDate,taskTime,notTime,taskDateTimeError) {
+            taskDate,notDate, taskTime, notTime, taskDateTimeError ->
+        NewDateTimeState(
+            taskToken = "",
+            taskDateTimeError = taskDateTimeError,
+            taskDate = taskDate,
+            taskTime= taskTime,
+            notDate = notDate,
+            notTime = notTime
+        )
+
+    }.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),NewDateTimeState())
 
 
     //new task state
@@ -162,6 +182,24 @@ class StartViewModel @Inject constructor(
 
         getTaskItemsFromRoom(categoryToken)
 
+    }
+    //set new DateTime
+    fun setNewTaskDate(newTaskDate: Long) {
+        savedStateHandle["taskDate"] = newTaskDate
+    }
+    fun setNewTaskTime(newTaskTime: Long) {
+        savedStateHandle["taskTime"] = newTaskTime
+    }
+    //set new notDateTime
+    fun setNotTaskDate(newNotDate: Long) {
+        savedStateHandle["notDate"] = newNotDate
+    }
+    fun setNotTaskTime(newNotTime: Long) {
+        savedStateHandle["notTime"] = newNotTime
+    }
+    //set new errorDateTime
+    fun setErrorTaskDateTime(error: Int) {
+        savedStateHandle["taskDateTimeError"] = error
     }
     //set start screen UI state
     fun setStartScreenUiState(newState: StartScreenState) {
@@ -274,8 +312,8 @@ class StartViewModel @Inject constructor(
                     dItemGroup = "empty",
                     dItemInfo = newTaskState.value.taskCategory.toString(),
                     dItemWhyFailed = "empty",
-                    dItemDeliveryTime = 0,
-                    dItemRemindTime = System.currentTimeMillis(),
+                    dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+taskTime.value,
+                    dItemRemindTime = (TimeUnit.DAYS.toMillis(notDate.value))+notTime.value,
                     dItemLimitTime = System.currentTimeMillis()
                 )
             )

@@ -1,6 +1,7 @@
 package com.arturlasok.maintodo.ui.start_screen
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -13,16 +14,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
-import com.arturlasok.maintodo.util.RemoveAlert
-import com.arturlasok.maintodo.util.TAG
-import com.arturlasok.maintodo.util.TrashButton
-import com.arturlasok.maintodo.util.UiText
+import com.arturlasok.maintodo.util.*
 
 @Composable
 fun SingleTaskItem(
@@ -108,20 +110,158 @@ fun SingleTaskItem(
                             uncheckedColor = Color.Gray
                         )
                     )
-                    Text(
-                        text = item.dItemTitle,
-                        style = MaterialTheme.typography.h3,
-                        fontWeight = FontWeight.Normal,
-                        textDecoration = if(item.dItemCompleted) { TextDecoration.LineThrough} else {TextDecoration.None},
-                        color = if(isDarkModeOn) {
-                            Color.DarkGray
+                    Column() {
 
-                        } else {
-                            if(item.dItemCompleted) {
-                            MaterialTheme.colors.primary }
-                            else { Color.DarkGray }
+
+                        Text(
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            text = item.dItemTitle,
+                            style = MaterialTheme.typography.h3,
+                            fontWeight = FontWeight.SemiBold,
+                            textDecoration = if (item.dItemCompleted) {
+                                TextDecoration.LineThrough
+                            } else {
+                                TextDecoration.None
+                            },
+                            color = if (isDarkModeOn) {
+                                Color.DarkGray
+
+                            } else {
+                                if (item.dItemCompleted) {
+                                    MaterialTheme.colors.primary
+                                } else {
+                                    Color.Black
+                                }
+                            }
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .padding(top = 4.dp)
+                                .fillMaxWidth(0.9f)
+                        ) {
+                            Row() {
+                                Image(
+                                    bitmap = ImageBitmap.imageResource(
+                                        id = R.drawable.calendar_dark
+                                    ),
+                                    modifier = modifier
+                                        .size(
+                                            16.dp,
+                                            16.dp
+                                        ).alpha(
+                                            if (item.dItemDeliveryTime != 0L) {
+                                                1.0f
+                                            } else {
+                                                0.2f
+                                            }
+                                        ),
+                                    contentDescription = "Pick Date",
+                                    colorFilter = ColorFilter.tint(
+                                        if (isDarkModeOn) {
+                                            Color.DarkGray
+
+                                        } else {
+                                            if (item.dItemCompleted) {
+                                                MaterialTheme.colors.primary
+                                            } else {
+                                                Color.DarkGray
+                                            }
+                                        }
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+
+                                Text(
+                                    modifier = Modifier.alpha(
+                                        if (item.dItemDeliveryTime != 0L) {
+                                            1.0f
+                                        } else {
+                                            0.2f
+                                        }
+                                    ),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    text = if (item.dItemDeliveryTime != 0L) {
+                                        millisToDateAndHour(item.dItemDeliveryTime)
+                                    } else {
+                                        "-"
+                                    },
+                                    style = MaterialTheme.typography.h5,
+                                    fontWeight = FontWeight.Normal,
+                                    textDecoration = if (item.dItemCompleted) {
+                                        TextDecoration.LineThrough
+                                    } else {
+                                        TextDecoration.None
+                                    },
+                                    color = if (isDarkModeOn) {
+                                        Color.DarkGray
+
+                                    } else {
+                                        if (item.dItemCompleted) {
+                                            MaterialTheme.colors.primary
+                                        } else {
+                                            Color.DarkGray
+                                        }
+                                    }
+                                )
+                            }
+                            Row() {
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Image(
+                                    bitmap = ImageBitmap.imageResource(
+                                        id = R.drawable.alarmclock_dark
+                                    ),
+                                    modifier = modifier
+                                        .size(
+                                            16.dp,
+                                            16.dp
+                                        ),
+                                    contentDescription = "Pick Date",
+                                    colorFilter = ColorFilter.tint(
+                                        if (isDarkModeOn) {
+                                            Color.DarkGray
+
+                                        } else {
+                                            if (item.dItemCompleted) {
+                                                MaterialTheme.colors.primary
+                                            } else {
+                                                Color.DarkGray
+                                            }
+                                        }
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    text = if (item.dItemRemindTime != 0L) {
+                                        millisToDateAndHour(item.dItemRemindTime)
+                                    } else {
+                                        "-"
+                                    },
+                                    style = MaterialTheme.typography.h5,
+                                    fontWeight = FontWeight.Normal,
+                                    textDecoration = if (item.dItemCompleted) {
+                                        TextDecoration.LineThrough
+                                    } else {
+                                        TextDecoration.None
+                                    },
+                                    color = if (isDarkModeOn) {
+                                        Color.DarkGray
+
+                                    } else {
+                                        if (item.dItemCompleted) {
+                                            MaterialTheme.colors.primary
+                                        } else {
+                                            Color.DarkGray
+                                        }
+                                    }
+                                )
+                            }
                         }
-                    )
+                    }
                 }
                 if (item.dItemCompleted) {
                     Column(
