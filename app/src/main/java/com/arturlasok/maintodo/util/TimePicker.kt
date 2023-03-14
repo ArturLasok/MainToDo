@@ -1,7 +1,7 @@
 package com.arturlasok.maintodo.util
 
+import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,9 +12,12 @@ import com.arturlasok.maintodo.R
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.MaterialDialogState
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.toKotlinLocalTime
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.Date
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun TimePicker(
@@ -45,7 +48,8 @@ fun TimePicker(
             is24HourClock = true
         ) { time ->
             // Do stuff with java.time.LocalDate object which is passed in
-            setTime(time.toKotlinLocalTime().toMillisecondOfDay().toLong())
+            setTime(TimeUnit.NANOSECONDS.toMillis(time.toNanoOfDay()))
+
         }
     }
 

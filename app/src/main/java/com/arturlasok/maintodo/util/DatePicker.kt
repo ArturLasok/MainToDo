@@ -47,16 +47,20 @@ fun DatePicker(
                    if(taskDataType || taskLimitDate.toEpochDay()==0L) {
                        ((it.dayOfMonth>= LocalDate.now().dayOfMonth && it.month>=LocalDate.now().month) || (
                                it.month>LocalDate.now().month
-                               ))
+                               ) || it.year>LocalDate.now().year)
 
                    }
                 else {
+                    it.toEpochDay()>=LocalDate.now().toEpochDay() && it.toEpochDay()<=taskLimitDate.toEpochDay()
+                    /*
                 ((it.dayOfMonth>= LocalDate.now().dayOfMonth && it.month>=LocalDate.now().month) || (
                     it.month>LocalDate.now().month
                     )) && ((it.dayOfMonth<=taskLimitDate.dayOfMonth && it.month<=taskLimitDate.month) || (
                         it.month<taskLimitDate.month
-                        ))
+                        ) || (it.year<=taskLimitDate.year && it.year>LocalDate.now().year))
 
+
+                     */
                    }
         }) { date ->
             setDate(date.toEpochDay())

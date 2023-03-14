@@ -39,7 +39,7 @@ fun MoreButton(
                 .clickable(onClick = { onClick() })
             ,
             contentDescription = "Ustawienia",
-            colorFilter = if(isDarkModeOn) { ColorFilter.tint(Color.White) } else {ColorFilter.tint(Color.Black) }
+            colorFilter = if(isDarkModeOn) { ColorFilter.tint(Color.White) } else {ColorFilter.tint(Color.White) }
             )
 
 

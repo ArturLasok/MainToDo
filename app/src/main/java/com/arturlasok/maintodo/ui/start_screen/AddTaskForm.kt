@@ -1,6 +1,7 @@
 package com.arturlasok.maintodo.ui.start_screen
 
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -27,20 +28,16 @@ import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.util.*
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
-import kotlinx.datetime.toKotlinLocalDate
 import kotlinx.datetime.toKotlinLocalTime
-import java.text.DateFormat
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalAccessor
-import java.util.Date
 import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalAnimationApi::class)
+
 @Composable
 fun AddTaskForm(
-    newDateTimeState: NewDateTimeState,
+    startViewModel: StartViewModel,
+    //newDateTimeState: NewDateTimeState,
     onNewDateChange:(date: Long) -> Unit,
     onNewTimeChange:(time: Long) -> Unit,
     onNewNotDateChange:(date: Long) -> Unit,
@@ -56,11 +53,45 @@ fun AddTaskForm(
     hideKeyboard:() ->Unit,
 
     ) {
+    Log.i(TAG,"addTaskForm recompose:")
+    val newDateTimeState = startViewModel.newDateTimeState.collectAsState().value
+
+    val localTimeNow = remember {
+        mutableStateOf( millisToHour(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong()) )
+    }
+    val localTimeNowLong = remember {
+        mutableStateOf(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong() )
+    }
     val dialogStateDate = rememberMaterialDialogState()
     val dialogStateTime = rememberMaterialDialogState()
     val dialogStateNotDate = rememberMaterialDialogState()
     val dialogStateNotTime = rememberMaterialDialogState()
     val localVisible = rememberSaveable{ mutableStateOf(false) }
+
+
+    LaunchedEffect(key1 = true, block = {
+        startViewModel.getDatePickerInitialTaskDate()
+        startViewModel.getTimePickerInitialTaskTime()
+
+    })
+    LaunchedEffect(key1 = startScreenUiState, block = {
+        Log.i(TAG,"alarm screen state change")
+        do {
+
+            localTimeNowLong.value =
+                LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong()
+            localTimeNow.value =
+                millisToHourOfDay(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
+            delay(1000)
+            startViewModel.getTimePickerInitialTaskTime()
+            startViewModel.getTimePickerInitialNotTime()
+
+        } while (startScreenUiState == StartScreenState.AddTask)
+    })
+
+
+
+
     LaunchedEffect(key1 = startScreenUiState, block = {
 
         if(localVisible.value) {
@@ -113,7 +144,9 @@ fun AddTaskForm(
                 onDone = {hideKeyboard()}
             )
             //REALIZATION
-            Row(modifier = Modifier.padding(10.dp, bottom = 4.dp).clickable(onClick = { dialogStateDate.show() }),
+            Row(modifier = Modifier
+                .padding(10.dp, bottom = 4.dp)
+                .clickable(onClick = { dialogStateDate.show() }),
                 verticalAlignment = Alignment.CenterVertically
 
                 ) {
@@ -123,44 +156,13 @@ fun AddTaskForm(
                             taskDataType = true,
                             isDarkModeOn = isDarkModeOn,
                             taskLimitDate = LocalDate.ofEpochDay(1000000L),
-                            //initial date from VModel
-                            initialDate = if(newDateTimeState.taskDate!=0L)
-                            { LocalDate.ofEpochDay(newDateTimeState.taskDate) }
-                            else
-                            { LocalDate.now() },
+                            initialDate = LocalDate.ofEpochDay(newDateTimeState.taskDate),
                             light_img = R.drawable.calendar_light,
                             dark_img = R.drawable.calendar_dark,
                             modifier = Modifier,
                             setDate = {
                             //set new task date!
                             date ->  onNewDateChange(date)
-
-                                //if time of new task is older then time now it is reset to null 0L
-                                if(date== LocalDate.now().toEpochDay()) {
-
-                                    if(newDateTimeState.taskTime.toInt()<LocalTime.now().toKotlinLocalTime().toMillisecondOfDay()) {
-                                        onNewTimeChange(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
-                                    }
-
-                                }
-                                //if date of notification is after new task date is not reset to date of task
-                                if(LocalDate.ofEpochDay(date)<LocalDate.ofEpochDay(newDateTimeState.notDate))   {
-                                    onNewNotDateChange(date)
-
-                                    if(newDateTimeState.taskTime.toInt()<newDateTimeState.notTime.toInt()) {
-                                        onNewNotTimeChange(newDateTimeState.taskTime)
-                                    }
-                                }
-                                //if date of notification is after new task date is not reset to date of task
-                                if(LocalDate.ofEpochDay(date)==LocalDate.ofEpochDay(newDateTimeState.notDate))   {
-
-
-                                    if(newDateTimeState.taskTime<newDateTimeState.notTime && (newDateTimeState.taskTime!=0L)) {
-                                        onNewNotTimeChange(newDateTimeState.taskTime)
-                                    }
-                                }
-
-
                             },
                             dialogState = dialogStateDate
                         )
@@ -192,20 +194,21 @@ fun AddTaskForm(
                         )
                         Row(verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.height(48.dp).fillMaxWidth()
+                            modifier = Modifier
+                                .height(48.dp)
+                                .fillMaxWidth()
                         ) {
                             Text(
-                                text = if (newDateTimeState.taskDate == 0L) {
-                                    UiText.StringResource(R.string.no_date,"asd").asString().uppercase()
-                                } else {
-                                    millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate))
-
-                                },
+                                text = millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)),
                                 style = MaterialTheme.typography.h3,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            if(newDateTimeState.taskDate != 0L) {
-                                IconButton(onClick = { onNewDateChange(0L) }) {
+                            if(newDateTimeState.taskDate != LocalDate.now().toEpochDay()) {
+                                IconButton(onClick = {
+                                    //reset date to now day
+                                    onNewDateChange(LocalDate.now().toEpochDay())
+
+                                }) {
                                     Icon(
                                         Icons.Filled.Clear, "Clear",
                                         modifier = Modifier
@@ -221,12 +224,21 @@ fun AddTaskForm(
 
 
             }
-            Row(modifier = Modifier.padding(10.dp, bottom = 4.dp).clickable(onClick = {
-                if(newDateTimeState.taskDate!=0L) {
+            Row(modifier = Modifier
+                .padding(10.dp, bottom = 4.dp)
+                .clickable(onClick = {
+                    //if(newDateTimeState.taskDate!=0L) {
                     dialogStateTime.show()
-                }
+                    //}
 
-            }).alpha(if(newDateTimeState.taskDate!=0L) { 1.0f } else { 0.2f})
+                })
+                .alpha(
+                    if (newDateTimeState.taskDate != 0L) {
+                        1.0f
+                    } else {
+                        1.0f
+                    }
+                )
             ,
                 verticalAlignment = Alignment.CenterVertically
 
@@ -236,28 +248,13 @@ fun AddTaskForm(
                         TimePicker(
                             isDarkModeOn = isDarkModeOn,
                             //initial task limit time from VModel
-                            initialTime = if(newDateTimeState.taskTime!=0L)
-                            {
-                                LocalTime.ofNanoOfDay(TimeUnit.MILLISECONDS.toNanos(newDateTimeState.taskTime))
-
-                            }
-                            else {
-                                 LocalTime.now()
-                                 },
+                            initialTime = LocalTime.ofNanoOfDay(TimeUnit.MILLISECONDS.toNanos(newDateTimeState.taskTime)),
+                            //initialTime = LocalTime.ofNanoOfDay(newDateTimeState.taskTime),
                             light_img = R.drawable.time_light,
                             dark_img = R.drawable.time_dark,
                             modifier = Modifier,
                             //set new time
-                            setTime = { time ->onNewTimeChange(time)
-                                //if date of notification is after new task date is not reset to date of task
-                                if(LocalDate.ofEpochDay(newDateTimeState.taskDate)==LocalDate.ofEpochDay(newDateTimeState.notDate))   {
-
-
-                                    if(time<newDateTimeState.notTime && (newDateTimeState.taskTime!=0L)) {
-                                        onNewNotTimeChange(time)
-                                    }
-                                }
-                                      },
+                            setTime = { time ->onNewTimeChange(time) },
                             //date to make range of accepted time
                             acceptedDate = newDateTimeState.taskDate,
                             dialogState = dialogStateTime
@@ -290,19 +287,18 @@ fun AddTaskForm(
                         )
                         Row(verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.height(48.dp).fillMaxWidth()
+                            modifier = Modifier
+                                .height(48.dp)
+                                .fillMaxWidth()
                             ) {
                             Text(
-                                text = if (newDateTimeState.taskTime == 0L) {
-                                    UiText.StringResource(R.string.no_time,"asd").asString().uppercase()
-                                } else {
-                                    millisToHour(newDateTimeState.taskTime)
-                                },
+                                text = millisToHourOfDay(newDateTimeState.taskTime),
                                 style = MaterialTheme.typography.h3,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            if(newDateTimeState.taskTime != 0L) {
-                                IconButton(onClick = { onNewTimeChange(0L) }) {
+                            if((newDateTimeState.taskTime>localTimeNowLong.value && LocalDate.ofEpochDay(newDateTimeState.taskDate).toEpochDay()==LocalDate.now().toEpochDay())
+                                || (LocalDate.ofEpochDay(newDateTimeState.taskDate).toEpochDay()>LocalDate.now().toEpochDay()) && TimeUnit.MILLISECONDS.toMinutes(newDateTimeState.taskTime)!=TimeUnit.MILLISECONDS.toMinutes(localTimeNowLong.value)){
+                                IconButton(onClick = { onNewTimeChange(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong()) }) {
                                     Icon(
                                         Icons.Filled.Clear, "Clear",
                                         modifier = Modifier
@@ -318,7 +314,9 @@ fun AddTaskForm(
             }
             //REMINDER
                 Row(
-                    modifier = Modifier.padding(10.dp, bottom = 4.dp).clickable(onClick = { dialogStateNotDate.show() }),
+                    modifier = Modifier
+                        .padding(10.dp, bottom = 4.dp)
+                        .clickable(onClick = { dialogStateNotDate.show() }),
                     verticalAlignment = Alignment.CenterVertically
 
                 ) {
@@ -345,24 +343,6 @@ fun AddTaskForm(
                                 dark_img = R.drawable.alarm_dark,
                                 modifier = Modifier,
                                 setDate = { date -> onNewNotDateChange(date)
-
-                                    if(date== LocalDate.now().toEpochDay()) {
-
-                                        if(newDateTimeState.notTime.toInt()<LocalTime.now().toKotlinLocalTime().toMillisecondOfDay()) {
-                                            onNewNotTimeChange(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
-                                        }
-
-
-                                    }
-                                    //if date of notification is after new task date is not reset to date of task
-                                    if(LocalDate.ofEpochDay(newDateTimeState.taskDate)==LocalDate.ofEpochDay(date))   {
-
-
-                                        if(newDateTimeState.taskTime<newDateTimeState.notTime && (newDateTimeState.taskTime!=0L)) {
-                                            onNewNotTimeChange(newDateTimeState.taskTime)
-                                        }
-                                    }
-
 
                                 },
                                 dialogState = dialogStateNotDate
@@ -395,7 +375,9 @@ fun AddTaskForm(
                             )
                             Row(verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.height(48.dp).fillMaxWidth()
+                                modifier = Modifier
+                                    .height(48.dp)
+                                    .fillMaxWidth()
                             ) {
                                 Text(
                                     text = if (newDateTimeState.notDate == 0L) {
@@ -407,7 +389,7 @@ fun AddTaskForm(
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 if(newDateTimeState.notDate!= 0L) {
-                                    IconButton(onClick = { onNewNotDateChange(0L) }) {
+                                    IconButton(onClick = { onNewNotDateChange(0L); onNewNotTimeChange(0L) }) {
                                         Icon(
                                             Icons.Filled.Clear, "Clear",
                                             modifier = Modifier
@@ -424,13 +406,22 @@ fun AddTaskForm(
 
                 }
                 Row(
-                    modifier = Modifier.padding(10.dp, bottom = 4.dp).clickable(onClick = {
-                       if(newDateTimeState.notDate!=0L) {
+                    modifier = Modifier
+                        .padding(10.dp, bottom = 4.dp)
+                        .clickable(onClick = {
+                            if (newDateTimeState.notDate != 0L) {
 
-                           dialogStateNotTime.show()
+                                dialogStateNotTime.show()
 
-                       }
-                    }).alpha(if(newDateTimeState.notDate!=0L) { 1.0f } else { 0.2f}),
+                            }
+                        })
+                        .alpha(
+                            if (newDateTimeState.notDate != 0L) {
+                                1.0f
+                            } else {
+                                0.2f
+                            }
+                        ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
 
@@ -455,14 +446,7 @@ fun AddTaskForm(
                                 dark_img = R.drawable.alarmclock_dark,
                                 modifier = Modifier,
                                 setTime = { time -> onNewNotTimeChange(time)
-                                    //if date of notification is after new task date is not reset to date of task
-                                    if(LocalDate.ofEpochDay(newDateTimeState.taskDate)==LocalDate.ofEpochDay(newDateTimeState.notDate))   {
 
-
-                                        if(newDateTimeState.taskTime<time && (newDateTimeState.taskTime!=0L)) {
-                                            onNewNotTimeChange(newDateTimeState.taskTime)
-                                        }
-                                    }
                                           },
                                 acceptedDate = newDateTimeState.notDate,
                                 dialogState = dialogStateNotTime
@@ -497,46 +481,26 @@ fun AddTaskForm(
                             )
                             Row(verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.height(48.dp).fillMaxWidth()
+                                modifier = Modifier
+                                    .height(48.dp)
+                                    .fillMaxWidth()
                             ) {
+
                                 Text(
-                                    text = if (newDateTimeState.notTime == 0L) {
+                                    text = if(newDateTimeState.notDate!=0L) { millisToHourOfDay(newDateTimeState.notTime) } else
+                                    {
                                         UiText.StringResource(R.string.no_time,"asd").asString().uppercase()
-                                    } else {
-                                        millisToHour(newDateTimeState.notTime)
                                     },
                                     style = MaterialTheme.typography.h3,
                                     fontWeight = FontWeight.SemiBold
                                 )
-                                if(newDateTimeState.notTime != 0L) {
-                                    IconButton(onClick = { onNewNotTimeChange(0L) }) {
-                                        Icon(
-                                            Icons.Filled.Clear, "Clear",
-                                            modifier = Modifier
-                                                .padding(start = 0.dp, end = 0.dp),
-                                            tint = Color.Gray
-                                        )
 
-                                    }
-                                }
                             }
                         }
                     }
 
                 }
 
-            /*
-            Text("NewDate in milis: ${TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)}")
-            Text("NewTime in milis: ${newDateTimeState.taskTime}")
-            Text("NewDate is: ${millisToDateAndHour(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+newDateTimeState.taskTime)}")
-            Spacer(modifier = Modifier.height(10.dp))
-            Text("notDate in milis: ${TimeUnit.DAYS.toMillis(newDateTimeState.notDate)}")
-            Text("motTime in milis: ${newDateTimeState.notTime}")
-            Text("noDate is: ${millisToDateAndHour(TimeUnit.DAYS.toMillis(newDateTimeState.notDate)+newDateTimeState.notTime)}")
-
-
-             */
-        //AdMobBigBanner()
         }
     }
 }

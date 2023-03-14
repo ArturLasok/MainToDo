@@ -16,6 +16,10 @@ import com.arturlasok.maintodo.ui.editcategory_screen.EditCategoryState
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.datetime.toKotlinLocalTime
+import java.time.LocalDate
+import java.time.LocalTime
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -59,10 +63,38 @@ class EditTaskViewModel @Inject constructor(
 
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EditItemState())
 
+    //DATE & TIME
+    private val taskDate = savedStateHandle.getStateFlow("taskDate", LocalDate.now().toEpochDay())
+    private val notDate = savedStateHandle.getStateFlow("notDate",0L)
+    private val taskTime = savedStateHandle.getStateFlow("taskTime", LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
+    private val notTime = savedStateHandle.getStateFlow("notTime",0L)
+    private val taskDateTimeError = savedStateHandle.getStateFlow("taskDateTimeError",0)
+
+    val editDateTimeState = combine(taskDate,notDate,taskTime,notTime,taskDateTimeError) {
+            taskDate,notDate, taskTime, notTime, taskDateTimeError ->
+        EditDateTimeState(
+            taskToken = "",
+            taskDateTimeError = taskDateTimeError,
+            taskDate = taskDate,
+            taskTime= taskTime,
+            notDate = notDate,
+            notTime = notTime,
+        )
+
+    }.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),EditDateTimeState())
+
     //get application
     fun getApplication() : BaseApplication {
         return application
     }
+    fun getLastItemSelected() : String {
+        return itemUiState.getLastItemToken()
+    }
+    //get last item id in room
+    fun getLastItemIdInRoom() : Long {
+        return itemUiState.getLastItemId()
+    }
+    //g
     //get item
     fun getOneItemFromRoom(itemId: String) {
         if(itemName.value == "" && itemDescription.value=="" && itemCategory.value =="") {
@@ -94,6 +126,15 @@ class EditTaskViewModel @Inject constructor(
                         savedStateHandle["itemName"] = itemToDo.dItemTitle
 
                         savedStateHandle["itemDescription"] = itemToDo.dItemDescription
+
+
+                      savedStateHandle["taskDate"] = TimeUnit.MILLISECONDS.toDays(itemToDo.dItemDeliveryTime)
+
+                      savedStateHandle["taskTime"] = LocalTime.parse(millisToHour(itemToDo.dItemDeliveryTime)).toKotlinLocalTime().toMillisecondOfDay()
+
+                      savedStateHandle["notDate"] =  TimeUnit.MILLISECONDS.toDays(itemToDo.dItemRemindTime)
+
+                       savedStateHandle["notTime"] = LocalTime.parse(millisToHour(itemToDo.dItemRemindTime)).toKotlinLocalTime().toMillisecondOfDay()
 
                     }
                 } catch (e: Exception) {
@@ -202,6 +243,8 @@ class EditTaskViewModel @Inject constructor(
                    dItemInfo = itemCategory.value,
                    dItemDescription = itemDescription.value,
                    dItemEdited = System.currentTimeMillis(),
+                   dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value-3600000),
+                   dItemRemindTime = (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value-3600000),
                )
             )
 
@@ -237,6 +280,92 @@ class EditTaskViewModel @Inject constructor(
         }
 
     }
+    //set new DateTime
+    fun setNewTaskDate(newTaskDate: Long) {
+        //if time of new task is older then time now it is reset to null 0L
+        if(newTaskDate== LocalDate.now().toEpochDay()) {
 
+            if(taskTime.value.toInt()<LocalTime.now().toKotlinLocalTime().toMillisecondOfDay()) {
+                setNewTaskTime(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
+            }
+
+        }
+        //if date of notification is after new task date is not reset to date of task
+        if(LocalDate.ofEpochDay(newTaskDate)<LocalDate.ofEpochDay(notDate.value))   {
+            setNotTaskDate(newTaskDate)
+
+            if(taskTime.value.toInt()<notTime.value.toInt()) {
+                setNotTaskTime(taskTime.value)
+            }
+        }
+        //if date of notification is after new task date is not reset to date of task
+        if(LocalDate.ofEpochDay(newTaskDate)==LocalDate.ofEpochDay(notDate.value))   {
+
+
+            if(taskTime.value<notTime.value && (taskTime.value!=0L)) {
+                setNotTaskTime(taskTime.value)
+            }
+        }
+        savedStateHandle["taskDate"] = newTaskDate
+
+    }
+    fun setNewTaskTime(newTaskTime: Long) {
+        //if date of notification is after new task date is not reset to date of task
+        savedStateHandle["taskTime"] = newTaskTime
+        if(LocalDate.ofEpochDay(taskDate.value)==LocalDate.ofEpochDay(notDate.value))   {
+
+
+            //if(newTaskTime<notTime.value && (taskTime.value!=0L) && LocalDate.ofEpochDay(taskDate.value).toEpochDay()==LocalDate.now().toEpochDay() ) {
+            if(newTaskTime<notTime.value && (taskTime.value!=0L) && LocalDate.ofEpochDay(taskDate.value).toEpochDay()==LocalDate.ofEpochDay(notDate.value).toEpochDay()) {
+                setNotTaskTime(newTaskTime)
+            }
+        }
+
+        Log.i(TAG,"sese12 TASK TIME: ${millisToHour(newTaskTime)}")
+
+    }
+    //set new notDateTime
+    fun setNotTaskDate(newNotDate: Long) {
+
+        if(newNotDate== LocalDate.now().toEpochDay()) {
+
+            if(notTime.value.toInt()<LocalTime.now().toKotlinLocalTime().toMillisecondOfDay()) {
+                setNotTaskTime(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
+            }
+
+
+        }
+        //if date of notification is after new task date , not reset to date of task
+        if(LocalDate.ofEpochDay(taskDate.value)==LocalDate.ofEpochDay(newNotDate))   {
+
+
+            if(taskTime.value<notTime.value && (taskTime.value!=0L)) {
+                setNotTaskTime(taskTime.value)
+            }
+        }
+
+        savedStateHandle["notDate"] = newNotDate
+        Log.i(TAG,"sese12 NOTIFICATION DATE: ${newNotDate}")
+
+    }
+    fun setNotTaskTime(newNotTime: Long) {
+        //if date of notification is after new task date is not reset to date of task
+        if(LocalDate.ofEpochDay(taskDate.value)==LocalDate.ofEpochDay(notDate.value))   {
+
+            //if((taskTime.value<newNotTime && (taskTime.value!=0L)) && LocalDate.ofEpochDay(taskDate.value).toEpochDay()==LocalDate.now().toEpochDay() ) {
+            if((taskTime.value<newNotTime && (taskTime.value!=0L)) && LocalDate.ofEpochDay(taskDate.value).toEpochDay()==LocalDate.ofEpochDay(notDate.value).toEpochDay()) {
+                //setNotTaskTime(taskTime.value)
+                savedStateHandle["notTime"] = taskTime.value
+                Log.i(TAG,"sese12 NOTIFICATION TIME: ${millisToHour(taskTime.value)}")
+            } else {savedStateHandle["notTime"] = newNotTime
+                Log.i(TAG,"sese12 NOTIFICATION TIME: ${millisToHour(newNotTime)}")
+            }
+        } else{ savedStateHandle["notTime"] = newNotTime
+            Log.i(TAG,"sese12 NOTIFICATION TIME: ${millisToHour(newNotTime)}")
+        }
+
+
+
+    }
 
 }

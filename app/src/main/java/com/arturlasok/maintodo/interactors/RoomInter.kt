@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.interactors
 
+import android.util.Log
 import com.arturlasok.maintodo.cache.CategoryDao
 import com.arturlasok.maintodo.cache.ItemDao
 import com.arturlasok.maintodo.cache.model.CategoryToDoEntity
@@ -8,6 +9,7 @@ import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.util.RoomDataState
 import com.arturlasok.maintodo.util.ItemUiState
+import com.arturlasok.maintodo.util.TAG
 import kotlinx.coroutines.flow.*
 
 
@@ -135,7 +137,9 @@ class RoomInter(
                     itemFromDomainToEntity(taskItem)
                         .copy(item_info_room = categoryData.category_token_room)
                 )
-                itemUiState.setlastItemToken(getLastAddedOrEditedItemFromRoom().last())
+                val whenZero = System.currentTimeMillis()/1000
+                itemUiState.setlastItemToken(getLastAddedOrEditedItemFromRoom().last().dItemToken)
+                itemUiState.setLastItemId(getLastAddedOrEditedItemFromRoom().last().dItemId ?: whenZero)
 
                 emit(RoomDataState.data_stored(true))
             } else
@@ -151,16 +155,16 @@ class RoomInter(
 
     }
     //get last added or edited item token
-    private fun getLastAddedOrEditedItemFromRoom(): Flow<String>  = flow {
+    private fun getLastAddedOrEditedItemFromRoom(): Flow<ItemToDo>  = flow {
 
         try {
 
-            emit(itemDao.selectLastAddedOrEditedItem())
+            emit(itemFromEntityToDomain(itemDao.selectLastAddedOrEditedItem()))
 
         }
         catch(e:Exception) {
 
-            emit("")
+            emit(ItemToDo())
 
         }
 
@@ -304,7 +308,7 @@ class RoomInter(
         try {
 
             val categoryList = categoryDao.selectAllFromCategoryRoom()
-
+            Log.i(TAG,"Category list: ${categoryList.size} / ${categoryList.isNotEmpty()}")
             if(categoryList.isNotEmpty()) {
                 emit(RoomDataState.data_recived(categoryFromListEntityToListDomain(categoryList)))
             } else emit(RoomDataState.data_recived(emptyList<CategoryToDo>()))
@@ -324,7 +328,7 @@ class RoomInter(
             val oneItem = itemDao.selectOneItem(itemToken)
 
             if(oneItem.item_id_room!=null) {
-                emit(RoomDataState.data_recived(itemFromEntityToDomain(oneItem)))
+                emit(RoomDataState.data_recived(itemFromEntityToDomain(oneItem).copy(dItemDeliveryTime = oneItem.item_delivery_time_room, dItemRemindTime = oneItem.item_remind_time_room)))
             } else emit(RoomDataState.data_error("room_error"))
         }
         catch(e:Exception) {

@@ -1,6 +1,9 @@
 package com.arturlasok.maintodo.util
 
+import android.util.Log
+import java.time.LocalTime
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 fun millisToDate(milisec: Long) : String {
 
@@ -15,6 +18,55 @@ fun millisToDate(milisec: Long) : String {
 
     return "${mDay}/${mMonth}/${mYear}"
 }
+fun millisToEpochDays(milisec: Long) : String {
+
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = milisec
+
+    val mYear = calendar[Calendar.YEAR]
+    val mMonth = if((calendar[Calendar.MONTH]+1)<10) { "0"+(calendar[Calendar.MONTH]+1) } else { calendar[Calendar.MONTH]+1 }
+
+    val mDay = calendar[Calendar.DAY_OF_YEAR]
+
+
+    return "${mDay}"
+}
+fun millisToMonth(milisec: Long) : String {
+
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = milisec
+
+    val mYear = calendar[Calendar.YEAR]
+    val mMonth = if((calendar[Calendar.MONTH]+1)<10) { "0"+(calendar[Calendar.MONTH]+1) } else { calendar[Calendar.MONTH]+1 }
+
+    val mDay = calendar[Calendar.DAY_OF_MONTH]
+
+
+    return "${mMonth}"
+}
+fun millisToDay(milisec: Long) : String {
+
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = milisec
+
+    val mYear = calendar[Calendar.YEAR]
+    val mMonth = if((calendar[Calendar.MONTH]+1)<10) { "0"+(calendar[Calendar.MONTH]+1) } else { calendar[Calendar.MONTH]+1 }
+
+    val mDay = calendar[Calendar.DAY_OF_MONTH]
+
+
+    return "${mDay}"
+}
+fun millisToHourOfDay(milisec: Long) :String {
+
+    val hours = TimeUnit.MILLISECONDS.toHours(milisec)
+
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(milisec)-(TimeUnit.MILLISECONDS.toHours(milisec)*60)
+
+
+    return if(hours<10) {"0"} else {""} + hours.toString() +":"+if (minutes<10) {"0"} else {""}+(minutes).toString()
+}
+
 fun millisToHour(milisec: Long) : String {
     val calendar = Calendar.getInstance()
     calendar.timeInMillis = milisec
@@ -25,7 +77,7 @@ fun millisToHour(milisec: Long) : String {
     val mDay = calendar[Calendar.DAY_OF_MONTH]
 
 
-    var mH = calendar[Calendar.HOUR_OF_DAY]-1
+    var mH = calendar[Calendar.HOUR_OF_DAY]
     if(mH==-1) mH = 23
 
     val mm = calendar[Calendar.MINUTE]
@@ -47,7 +99,7 @@ fun millisToDateAndHour(milisec: Long) : String {
     val mDay = calendar[Calendar.DAY_OF_MONTH]
 
 
-    var mH = calendar[Calendar.HOUR_OF_DAY]-1
+    var mH = calendar[Calendar.HOUR_OF_DAY]
     if(mH==-1) mH = 23
 
     val mm = calendar[Calendar.MINUTE]

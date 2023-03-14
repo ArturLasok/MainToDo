@@ -16,6 +16,8 @@ import com.arturlasok.maintodo.R
 
 @Composable
 fun SettingsButton(
+    tintLight: ColorFilter,
+    tintDark: ColorFilter,
     isDarkModeOn: Boolean,
     modifier: Modifier,
     onClick:() -> Unit,
@@ -36,7 +38,8 @@ fun SettingsButton(
                 .clickable(onClick = { onClick() })
             ,
             contentDescription = "Ustawienia",
-            colorFilter = if(isDarkModeOn) { ColorFilter.tint(Color.White) } else {ColorFilter.tint(Color.Black) }
+            colorFilter = if(isDarkModeOn) { tintDark } else { tintLight }
+
             )
 
 

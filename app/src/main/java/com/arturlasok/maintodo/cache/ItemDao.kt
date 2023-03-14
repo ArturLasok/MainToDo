@@ -33,8 +33,8 @@ interface ItemDao {
     @Query("SELECT count(*) FROM item_room WHERE item_info=:category_token and item_completed=0")
     fun countAllFromItemRoomWithCategoryToken(category_token:String) : Flow<Int>
 
-    @Query("SELECT item_token FROM item_room ORDER BY item_edited DESC LIMIT 1")
-    suspend fun selectLastAddedOrEditedItem() : String
+    @Query("SELECT * FROM item_room ORDER BY item_edited DESC LIMIT 1")
+    suspend fun selectLastAddedOrEditedItem() : ItemToDoEntity
 
 
 

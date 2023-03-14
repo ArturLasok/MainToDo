@@ -5,6 +5,7 @@ import com.arturlasok.maintodo.domain.model.ItemToDo
 object ItemUiState {
     private var tempItem: ItemToDo = ItemToDo()
     private var lastItemToken: String = ""
+    private var lastItemId: Long = 0
 
     fun setTempItem(itemToDo: ItemToDo) {
         tempItem = itemToDo
@@ -18,6 +19,12 @@ object ItemUiState {
     }
     fun getLastItemToken() : String {
         return lastItemToken
+    }
+    fun getLastItemId() :Long {
+        return lastItemId
+    }
+    fun setLastItemId(itemId: Long) {
+        lastItemId = itemId
     }
 
 }

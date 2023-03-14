@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.navigation.Screen
@@ -51,18 +53,7 @@ fun TopAndSettings(
                 easing = LinearOutSlowInEasing,
             )
         ),
-        /*
-        exit = slideOutVertically(
-            targetOffsetY = {
-                it - 3 * it
-            },
-            animationSpec = tween(
-                durationMillis = 500,
-                easing = LinearOutSlowInEasing
-            )
-        )
 
-         */
         exit = slideOutHorizontally(
             targetOffsetX = {
                 it - 3 * it
@@ -103,6 +94,8 @@ fun TopAndSettings(
                 Column {
 
                     SettingsButton(
+                        tintDark = ColorFilter.tint(Color.White),
+                        tintLight = ColorFilter.tint(Color.Black),
                         isDarkModeOn = isDarkModeOn,
                         modifier = Modifier,
                         onClick = { navigateTo(Screen.Settings.route) },
