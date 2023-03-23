@@ -14,6 +14,18 @@
     <string name="day5">Friday</string>
     <string name="day6">Saturday</string>
     <string name="day7">Sunday</string>
+    <string name="month1">January</string>
+    <string name="month2">February</string>
+    <string name="month3">March</string>
+    <string name="month4">April</string>
+    <string name="month5">May</string>
+    <string name="month6">June</string>
+    <string name="month7">July</string>
+    <string name="month8">August</string>
+    <string name="month9">September</string>
+    <string name="month10">October</string>
+    <string name="month11">November</string>
+    <string name="month12">December</string>
     <string name="settings_theme_mode0">System default</string>
     <string name="settings_theme_mode1">Light theme</string>
     <string name="settings_theme_mode2">Dark theme</string>
@@ -33,6 +45,7 @@
     <string name="addnewtask">Add new task</string>
     <string name="edit_alert_yes">Yes</string>
     <string name="edit_alert_cancel">Cancel</string>
+    <string name="edit_alert_no">No</string>
     <string name="edit_alert_question">Do you want to delete the category and all tasks it contains?</string>
     <string name="editcategory_snack_deleted">The category and associated tasks have been removed</string>
     <string name="add">Add</string>
@@ -53,4 +66,17 @@
     <string name="task_status_change_question_two">You confirm that this task will be performed again?</string>
     <string name="add_new_category">Add new category</string>
     <string name="no_disc">No description</string>
+    <string name="no_date">No date</string>
+    <string name="no_time">No time</string>
+    <string name="task_date">Task completion \ndate</string>
+    <string name="task_time">Task execution \ntime</string>
+    <string name="task_not_date">Reminder \ndate</string>
+    <string name="task_not_time">Reminder \nhour</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="select_date">Select date</string>
+    <string name="select_time">Select time</string>
+    <string name="autostartinfo">Please add the app to autostart to keep alerts after phone reboot. This is very important for the proper functioning of the application.</string>
+    <string name="autostartsecondq">Have you added the application to autostart?</string>
+    <string name="week_number">Week</string>
 </resources>

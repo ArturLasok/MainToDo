@@ -1,8 +1,10 @@
 package com.arturlasok.maintodo.ui.start_screen
 
 import android.util.Log
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -10,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
@@ -35,8 +38,11 @@ fun CategoryRow(
 ) {
     //Category row
     LazyRow(
+
         state = categoryRowState,
-        modifier = Modifier.padding(bottom = 10.dp)
+        modifier = Modifier
+            .padding(bottom = 10.dp)
+            .fillMaxWidth()
     ) {
 
         itemsIndexed(items = categoryList) { index, item ->
@@ -109,6 +115,13 @@ fun CategoryRow(
                     countItems = {  }
 
                 )
+            }
+            if (categoryList.size -1 == index) {
+                Column(modifier = Modifier
+                    .width(16.dp)
+                    .height(50.dp)) {
+                    
+                }
             }
 
 

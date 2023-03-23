@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.domain.model.CategoryToDo
@@ -68,58 +69,78 @@ fun CategoryDetails(
         )
 
     ) {
-        Surface(
-            modifier = modifier,
-            shape = MaterialTheme.shapes.medium,
-            elevation = 4.dp,
-            color = if (isDarkModeOn) {
-                MaterialTheme.colors.onSecondary
-            } else {
-                Color.White
-            }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(fraction = 0.9f),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = if(!selectedCategoryDetails.dCatName.isNullOrEmpty())
-                        {
-                            selectedCategoryDetails.dCatName
-                        }
-                        else {
-                            UiText.StringResource(
-                                R.string.all_tasks,
-                                "no"
-                            ).asString()
-                             },
-                        style = MaterialTheme.typography.h3,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    if (selectedCategoryDetails.dCatDescription?.isNotEmpty() == true) {
-                        Text(
-                            text = selectedCategoryDetails.dCatDescription ?: "",
-                            style = MaterialTheme.typography.h4
 
+        Row() {
+
+                Row(
+                    modifier = Modifier.width(0.dp).padding(1.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    /*
+                    Text(
+                        text = "Data".uppercase(),
+                        style = MaterialTheme.typography.h5
+
+                    )
+
+                     */
+                }
+
+
+            Surface(
+                modifier = modifier,
+                shape = MaterialTheme.shapes.medium,
+                elevation = 4.dp,
+                color = if (isDarkModeOn) {
+                    MaterialTheme.colors.onSecondary
+                } else {
+                    Color.White
+                }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(fraction = 0.9f),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Text(
+                            text = if (!selectedCategoryDetails.dCatName.isNullOrEmpty()) {
+                                selectedCategoryDetails.dCatName
+                            } else {
+                                UiText.StringResource(
+                                    R.string.all_tasks,
+                                    "no"
+                                ).asString()
+                            },
+                            style = MaterialTheme.typography.h3,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        if (selectedCategoryDetails.dCatDescription?.isNotEmpty() == true) {
+                            Text(
+                                text = selectedCategoryDetails.dCatDescription ?: "",
+                                style = MaterialTheme.typography.h4
+
+                            )
+                        }
+                    }
+                    if (selectedCategoryDetails.dCatId != null) {
+                        SettingsButton(
+                            tintLight = ColorFilter.tint(Color.Black),
+                            tintDark = ColorFilter.tint(Color.White),
+                            isDarkModeOn = isDarkModeOn,
+                            modifier = Modifier.padding(2.dp).alpha(0.5f),
+                            light_img = R.drawable.edit_light,
+                            dark_img = R.drawable.edit_light,
+                            onClick = { navigateTo(Screen.EditCategory.route) }
                         )
                     }
-                }
-                if(selectedCategoryDetails.dCatId != null) {
-                    SettingsButton(
-                        isDarkModeOn = isDarkModeOn,
-                        modifier = Modifier.padding(2.dp).alpha(0.5f),
-                        light_img = R.drawable.edit_light,
-                        dark_img = R.drawable.edit_light,
-                        onClick = { navigateTo(Screen.EditCategory.route) }
-                    )
                 }
             }
         }

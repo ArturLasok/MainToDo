@@ -1,6 +1,7 @@
 package com.arturlasok.maintodo.navigation
 
 
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -13,10 +14,14 @@ import com.arturlasok.maintodo.ui.editcategory_screen.EditCategoryScreen
 import com.arturlasok.maintodo.ui.edittask_screen.EditTaskScreen
 import com.arturlasok.maintodo.ui.settings_screen.SettingsScreen
 import com.arturlasok.maintodo.ui.start_screen.StartScreen
+import com.arturlasok.maintodo.util.TAG
 
 @Composable
 fun NavigationComponent(
     navController: NavHostController,
+    addAlarm:(time: Long, beganTime:Long,name: String,desc:String, token: String, id:Long) -> Unit,
+    removeAlarm:(id: Int) -> Unit,
+    getPermission:() ->Unit,
     snackMessage:(text: String) -> Unit,
     setCurrentDestination:(route: String) -> Unit,
     currentDestination: String,
@@ -39,7 +44,11 @@ fun NavigationComponent(
             navController.currentDestination?.route?.let { newRoute->
                 setCurrentDestination(newRoute)
             }
+            Log.i(TAG,"NAV--------------------------- recompose:")
             StartScreen(
+                addAlarm = { time,beganTime, name, desc, token, id ->  addAlarm(time,beganTime, name,desc,token, id) },
+                removeAlarm = { taskid-> removeAlarm(taskid) },
+                getPermission = { getPermission() },
                 navigateTo = { route -> navController.navigate(route) },
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                 confirmationTaskSetting = confirmationTaskSetting,
@@ -87,6 +96,7 @@ fun NavigationComponent(
                 setCurrentDestination(newRoute)
             }
             EditTaskScreen(
+                addAlarm = { time,beganTime, name, desc, token, id ->  addAlarm(time,beganTime, name,desc,token, id) },
                 navigateTo = { route -> navController.navigate(route) },
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                 snackMessage = { snackMessage-> snackMessage(snackMessage) }

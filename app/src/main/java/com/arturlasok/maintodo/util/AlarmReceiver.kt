@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.util
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -28,6 +29,8 @@ class AlarmReceiver : BroadcastReceiver() {
         val channelId="pl_channel"
         val channelName  = "pl_message"
 
+        val task = p1?.getSerializableExtra("task_info") as? ItemToDo
+
         val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
         manager.createNotificationChannel(channel)
         val intent = Intent(p0, MainActivity::class.java).apply {
@@ -36,16 +39,17 @@ class AlarmReceiver : BroadcastReceiver() {
         val pendingIntent: PendingIntent = PendingIntent.getActivity(p0, 0, intent, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
         val builder = NotificationCompat.Builder(p0, channelId)
-            .setContentTitle("task")
-            .setContentText("desc")
-            .setSmallIcon(R.drawable.all_light)
+            .setContentTitle(task?.dItemTitle)
+            .setContentText(task?.dItemDescription)
+            .setSmallIcon(R.drawable.all_dark)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             // Set the intent that will fire when the user taps the notification
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
-        manager.notify(1,builder.build())
+        manager.notify(task?.dItemId?.toInt() ?: 0,builder.build())
+
         /*
         val importance = NotificationManager.IMPORTANCE_HIGH
         val channel = NotificationChannel("to_do_list", "Tasks Notification Channel", importance).apply {

@@ -1,6 +1,9 @@
 package com.arturlasok.maintodo.ui.start_screen
 
+import android.app.AlarmManager
+import android.content.Context
 import android.content.res.Configuration
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -9,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -29,17 +33,21 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
+import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.navigation.Screen
-import com.arturlasok.maintodo.util.RemoveAlert
-import com.arturlasok.maintodo.util.UiText
+import com.arturlasok.maintodo.util.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StartScreen(
+    addAlarm:(time: Long,beganTime: Long, name: String,desc:String, token: String, id: Long) -> Unit,
+    removeAlarm:(taskid: Int) -> Unit,
+    getPermission:() ->Unit,
     navigateTo: (route: String) -> Unit,
     isDarkModeOn: Boolean,
     startViewModel:  StartViewModel  = hiltViewModel(),
@@ -47,17 +55,18 @@ fun StartScreen(
     snackMessage: (snackMessage:String) -> Unit,
 ) {
 
-
+    val response = remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val scaffoldState = rememberScaffoldState()
     val categoryRowState = rememberLazyListState()
     val itemColumnState = rememberLazyListState()
     val categoryList = startViewModel.categoriesFromRoom.collectAsState(initial = listOf()).value
-    val taskItemsList = startViewModel.tasksFromRoom.collectAsState(initial = mutableListOf()).value.toMutableStateList()
+    val taskItemsList = startViewModel.tasksFromRoom.collectAsState(initial = mutableListOf<ItemToDo>()).value
     val selectedCategory = startViewModel.selectedCategory.collectAsState(initial = "").value
     val startScreenUiState: StartScreenState = startViewModel.startScreenUiState.value
     val newTaskState by startViewModel.newTaskState.collectAsState()
+    val newDateTimeState by startViewModel.newDateTimeState.collectAsState()
     val scope = rememberCoroutineScope()
     val removeTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
 
@@ -67,8 +76,21 @@ fun StartScreen(
             itemColumnState.firstVisibleItemIndex == 0 && itemColumnState.firstVisibleItemScrollOffset == 0
         }
     }
+/*
+    LaunchedEffect(key1 = newDateTimeState, block = {
+        Log.i(TAG,"alarm task date: ${millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate))}")
+        Log.i(TAG,"alarm task hour: ${millisToHourOfDay(newDateTimeState.taskTime)}")
+        Log.i(TAG,"alarm notifi date: ${millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.notDate))}")
+        Log.i(TAG,"alarm notifi hour: ${millisToHourOfDay(newDateTimeState.notTime)}")
 
-    //scroll to top of item list
+        Log.i(TAG,"->>>>>>> alarm sum task date & hour: ${millisToDateAndHour((TimeUnit.DAYS.toMillis(newDateTimeState.taskDate))+(newDateTimeState.taskTime-3600000))}")
+        Log.i(TAG,"->>>>>>> alarm sum not date &  hour: ${millisToDateAndHour((TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime-3600000))}")
+    } )
+
+
+ */
+    //scroll to top of item list Log.i(TAG,"start recompose:")
+
     LaunchedEffect(key1 = scrollToItemZero.value, block ={
         if(scrollToItemZero.value) {
             try {
@@ -80,59 +102,15 @@ fun StartScreen(
             }
         }
     } )
+
+
     //back handler if in new task form
     BackHandler(enabled = true) {
         if(startScreenUiState==StartScreenState.AddTask) {
             startViewModel.setStartScreenUiState(StartScreenState.Welcome)
         }
     }
-    //Item list back to top button
-    AnimatedVisibility(
-        visible = !isAtTopOfItemListColumn && startScreenUiState == StartScreenState.Welcome,
-        enter = fadeIn(),
-        exit = fadeOut(),
-        modifier = Modifier.zIndex(1.0f)
-    ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .zIndex(1.0f)
-                .padding(bottom = 100.dp, start = 0.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-
-            FloatingActionButton(
-                onClick = {
-
-                scrollToItemZero.value = true
-
-                },
-                modifier = Modifier
-                    .alpha(0.2f)
-                    .zIndex(1.0f)
-                    .padding(1.dp)
-
-            ) {
-                Column() {
-                    Image(
-
-                        painterResource(
-                            R.drawable.left_arrow
-                        ), "Floating action",
-                        modifier = Modifier
-                            .width(24.dp)
-                            .height(24.dp)
-                            .rotate(90f),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colors.onPrimary)
-                    )
-
-                }
-
-            }
-        }
-
-    }
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -141,9 +119,115 @@ fun StartScreen(
         floatingActionButton = {
             //FAB
             if(startScreenUiState == StartScreenState.Welcome) {
+                Row() {
+                    /*
+                    FloatingActionButton(
+                        backgroundColor = Color.White,
+                        onClick = {
+
+                            scrollToItemZero.value = true
+
+                        },
+                        modifier = Modifier
+                            .alpha(0.6f)
+                            .zIndex(1.0f)
+                            .padding(10.dp)
+
+                    ) {
+                        Column() {
+                            Image(
+
+                                painterResource(
+                                    R.drawable.calendar_dark
+                                ), "Floating action",
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                                    .rotate(0f),
+                                colorFilter = ColorFilter.tint(Color.Blue)
+                            )
+
+                        }
+                    }
+
+                     */
+                    FloatingActionButton(
+                        onClick = {
+
+                            scrollToItemZero.value = true
+
+                        },
+                        modifier = Modifier
+                            .alpha(if(!isAtTopOfItemListColumn && startScreenUiState == StartScreenState.Welcome) { 0.7f } else { 0.3f })
+                            .zIndex(1.0f)
+                            .padding(10.dp)
+
+                    ) {
+                        Column() {
+                            Image(
+
+                                painterResource(
+                                    R.drawable.left_arrow
+                                ), "Floating action",
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                                    .rotate(90f),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colors.onPrimary)
+                            )
+
+                        }
+
+                    }
+                    FloatingActionButton(
+                        backgroundColor = Color.White,
+                        onClick = {
+
+                            if(categoryList.isEmpty()) {
+                                snackMessage(UiText.StringResource(
+                                    R.string.add_categories_first,
+                                    "asd"
+                                ).asString(startViewModel.getApplication().applicationContext)
+                                )
+                            } else {
+                                val alarmManager = startViewModel.getApplication().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                                if(1==1) {
+                                    startViewModel.setStartScreenUiState(StartScreenState.AddTask) } else {
+                                    getPermission()
+                                }
+
+
+                            }
+
+                        },
+                        modifier = Modifier
+                            .alpha(0.6f)
+                            .zIndex(1.0f)
+                            .padding(10.dp)
+
+                    ) {
+                        Column() {
+                            Image(
+
+                                painterResource(
+                                    R.drawable.addcat_dark
+                                ), "Floating action",
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                                    .rotate(0f),
+                                colorFilter = ColorFilter.tint(Color.Blue)
+                            )
+
+                        }
+                }
+
+                }
+                /*
                 ExtendedFloatingActionButton(
+                    backgroundColor = MaterialTheme.colors.secondary.copy(alpha = 0.8f),
                     modifier = Modifier
-                        .alpha(0.5f)
+                        .alpha(0.8f)
                         .padding(bottom = 10.dp),
                     icon = {
                         Image(
@@ -153,17 +237,21 @@ fun StartScreen(
                                 "asd"
                             ).asString(),
                             modifier = Modifier
-                                .size(24.dp),
+                                .size(32.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary)
                         )
                     },
                     text = {
+                        /*
                         Text(
                             text = UiText.StringResource(
                                 R.string.floating_button_add,
                                 "asd"
-                            ).asString()
+                            ).asString().uppercase(),
+                            color = MaterialTheme.colors.onPrimary
                         )
+
+                         */
                     },
                     onClick = {
                         if(categoryList.isEmpty()) {
@@ -173,10 +261,18 @@ fun StartScreen(
                             ).asString(startViewModel.getApplication().applicationContext)
                             )
                         } else {
-                            startViewModel.setStartScreenUiState(StartScreenState.AddTask)
+                            val alarmManager = startViewModel.getApplication().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                            if(1==1) {
+                            startViewModel.setStartScreenUiState(StartScreenState.AddTask) } else {
+                                getPermission()
+                            }
+
+
                         }
                     }
                 )
+
+                 */
             }
         },
         topBar = {},
@@ -187,6 +283,7 @@ fun StartScreen(
     Row() {
         //Category row horizontal
         if(LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
             CategoryColumn(
                 isDarkModeOn = isDarkModeOn,
                 categoryRowState = categoryRowState,
@@ -208,6 +305,8 @@ fun StartScreen(
                 }
 
             }
+
+
         }
         Column(
             modifier = Modifier
@@ -215,6 +314,7 @@ fun StartScreen(
                 .padding(bottom = it.calculateBottomPadding())
         ) {
             Column(modifier = Modifier.height(48.dp)) {
+
                 //Add task top bar
                 AddTaskTopBar(
                     startScreenUiState = startScreenUiState,
@@ -237,7 +337,15 @@ fun StartScreen(
                                     "no"
                                 ).asString(startViewModel.getApplication().applicationContext)
                             )
-
+                            addAlarm(
+                                (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime-3600000),
+                                TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime-3600000),
+                                newTaskState.taskName,
+                                newTaskState.taskDesc,
+                                startViewModel.getLastItemSelected(),
+                                startViewModel.getLastItemIdInRoom(),
+                            )
+                            startViewModel.resetNewTaskState()
                             startViewModel.setStartScreenUiState(StartScreenState.Welcome)
                             startViewModel.onNewTaskNameChange("")
                             startViewModel.onNewTaskDescChange("")
@@ -260,17 +368,24 @@ fun StartScreen(
                     }.launchIn(scope)
 
                 }
+
+
                 //Top info and settings button
+
                 TopAndSettings(
                     startScreenUiState = startScreenUiState,
+                    weekNumber = startViewModel.weekNumber(),
                     dateAndNameOfDay = startViewModel.dateWithNameOfDayWeek(),
                     navigateTo = { route -> navigateTo(route) },
                     selectedCategory = selectedCategory,
                     isDarkModeOn = isDarkModeOn
                 )
+
+
             }
             //Category row vertical
             if(LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
+
 
                 CategoryRow(
                     isDarkModeOn = isDarkModeOn,
@@ -293,9 +408,18 @@ fun StartScreen(
                     }
 
                 }
+
+
             }
             //Add task form
+
             AddTaskForm(
+                startViewModel = startViewModel,
+                onNewDateChange= startViewModel::setNewTaskDate,
+                onNewTimeChange = startViewModel::setNewTaskTime,
+                onNewNotDateChange=startViewModel::setNotTaskDate,
+                onNewNotTimeChange = startViewModel::setNotTaskTime,
+                onNewErrorDateTimeSet=startViewModel::setErrorTaskDateTime,
                 startScreenUiState = startScreenUiState,
                 isDarkModeOn = isDarkModeOn,
                 categoryId = selectedCategory,
@@ -305,7 +429,10 @@ fun StartScreen(
                 onTaskDescChange = startViewModel::onNewTaskDescChange
 
             ) { keyboardController?.hide(); focusManager.clearFocus(true) }
+
+
             //Category details
+
             CategoryDetails(
                 visible = startScreenUiState != StartScreenState.AddTask,
                 selectedCategoryDetails = if (startViewModel.getOneFromCategoryList(selectedCategory).dCatId != null) {
@@ -329,6 +456,8 @@ fun StartScreen(
                     categoryRowState.animateScrollToItem(startViewModel.selectedCategoryRowIndex.value)
                 })
             }
+
+
 
 
             //Task list delete alert
@@ -372,44 +501,71 @@ fun StartScreen(
                 }
             }
             //task list
+            Log.i(TAG,"start recompose:")
+
             TasksColumnLazy(
+
+                startViewModel = startViewModel,
                 isDarkModeOn = isDarkModeOn,
                 itemColumnState = itemColumnState,
-                tasksList = taskItemsList.toMutableStateList(),
+                tasksList = taskItemsList,
                 onClickEdit = { itemId ->
                     startViewModel.setLastItemSelected(itemId)
                     navigateTo(Screen.EditTask.route)
                 },
-                onClickCheck = { itemToken: String, newVal: Boolean, _:Int, nearIndex: Int ->
+                onClickCheck = { item: ItemToDo, newVal: Boolean, _:Int, nearIndex: Int ->
+
+                    Log.i(TAG,"Item: ${item.dItemTitle}")
+
+
+
+
+                    if(newVal) {
+                        //remove alarms
+                        item.dItemId?.let { it1 -> removeAlarm(it1.toInt()); removeAlarm(it1.toInt().unaryMinus()); Log.i(TAG,"Item alarm remove: ${item.dItemTitle}") }
+                    } else {
+                        //add alarms
+                        addAlarm(
+                            item.dItemRemindTime,
+                            item.dItemDeliveryTime,
+                            item.dItemTitle,
+                            item.dItemDescription,
+                            item.dItemToken,
+                            item.dItemId ?: 0)
+                    }
+
 
 
                     val itemToChangeIndex = taskItemsList.indexOf(taskItemsList.find {
-                        it.dItemToken == itemToken
+                        it.dItemToken == item.dItemToken
                     })
+
+
                     scope.launch {
                         //update item in db
-                        if (startViewModel.updateTaskItemCompletion(
+
+                        response.value = startViewModel.updateTaskItemCompletion(
                                 taskItemsList[itemToChangeIndex],
                                 selectedCategory
                             )
-                        ) {
-                            //update list in lazy column
-                            taskItemsList[itemToChangeIndex] =
-                                taskItemsList[itemToChangeIndex].copy(dItemCompleted = newVal)
 
-                            val newTaskPosition = taskItemsList.sortedBy { it.dItemCompleted }.indexOf(taskItemsList.find {
-                                it.dItemToken == itemToken
-                            })
+                         if(response.value.isNotEmpty())
+                         {
 
+
+                             Log.i(TAG,"response real pos ${startViewModel.getin(response.value)}")
 
                             //scrolling
                             if(newVal) {
-                                itemColumnState.animateScrollToItem(nearIndex)
+                                //itemColumnState.animateScrollToItem(nearIndex)
+
                             } else {
 
-                                itemColumnState.animateScrollToItem(newTaskPosition)
+                                itemColumnState.animateScrollToItem(startViewModel.getin(response.value))
                             }
                         }
+
+
 
                     }
 
@@ -424,6 +580,8 @@ fun StartScreen(
                 startScreenUiState = startScreenUiState,
                 lastItemSelected = startViewModel.getLastItemSelected()
             )
+
+
 
         }
 
