@@ -1,5 +1,7 @@
 package com.arturlasok.maintodo.ui.start_screen
 
+import android.app.AlarmManager
+import android.content.Context
 import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -10,6 +12,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -44,6 +47,7 @@ import java.util.concurrent.TimeUnit
 fun StartScreen(
     addAlarm:(time: Long,beganTime: Long, name: String,desc:String, token: String, id: Long) -> Unit,
     removeAlarm:(taskid: Int) -> Unit,
+    getPermission:() ->Unit,
     navigateTo: (route: String) -> Unit,
     isDarkModeOn: Boolean,
     startViewModel:  StartViewModel  = hiltViewModel(),
@@ -106,53 +110,7 @@ fun StartScreen(
             startViewModel.setStartScreenUiState(StartScreenState.Welcome)
         }
     }
-    //Item list back to top button
-    AnimatedVisibility(
-        visible = !isAtTopOfItemListColumn && startScreenUiState == StartScreenState.Welcome,
-        enter = fadeIn(),
-        exit = fadeOut(),
-        modifier = Modifier.zIndex(1.0f)
-    ) {
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .zIndex(1.0f)
-                .padding(bottom = 100.dp, start = 0.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-
-            FloatingActionButton(
-                onClick = {
-
-                scrollToItemZero.value = true
-
-                },
-                modifier = Modifier
-                    .alpha(0.2f)
-                    .zIndex(1.0f)
-                    .padding(1.dp)
-
-            ) {
-                Column() {
-                    Image(
-
-                        painterResource(
-                            R.drawable.left_arrow
-                        ), "Floating action",
-                        modifier = Modifier
-                            .width(24.dp)
-                            .height(24.dp)
-                            .rotate(90f),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colors.onPrimary)
-                    )
-
-                }
-
-            }
-        }
-
-    }
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -161,6 +119,111 @@ fun StartScreen(
         floatingActionButton = {
             //FAB
             if(startScreenUiState == StartScreenState.Welcome) {
+                Row() {
+                    /*
+                    FloatingActionButton(
+                        backgroundColor = Color.White,
+                        onClick = {
+
+                            scrollToItemZero.value = true
+
+                        },
+                        modifier = Modifier
+                            .alpha(0.6f)
+                            .zIndex(1.0f)
+                            .padding(10.dp)
+
+                    ) {
+                        Column() {
+                            Image(
+
+                                painterResource(
+                                    R.drawable.calendar_dark
+                                ), "Floating action",
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                                    .rotate(0f),
+                                colorFilter = ColorFilter.tint(Color.Blue)
+                            )
+
+                        }
+                    }
+
+                     */
+                    FloatingActionButton(
+                        onClick = {
+
+                            scrollToItemZero.value = true
+
+                        },
+                        modifier = Modifier
+                            .alpha(if(!isAtTopOfItemListColumn && startScreenUiState == StartScreenState.Welcome) { 0.7f } else { 0.3f })
+                            .zIndex(1.0f)
+                            .padding(10.dp)
+
+                    ) {
+                        Column() {
+                            Image(
+
+                                painterResource(
+                                    R.drawable.left_arrow
+                                ), "Floating action",
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                                    .rotate(90f),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colors.onPrimary)
+                            )
+
+                        }
+
+                    }
+                    FloatingActionButton(
+                        backgroundColor = Color.White,
+                        onClick = {
+
+                            if(categoryList.isEmpty()) {
+                                snackMessage(UiText.StringResource(
+                                    R.string.add_categories_first,
+                                    "asd"
+                                ).asString(startViewModel.getApplication().applicationContext)
+                                )
+                            } else {
+                                val alarmManager = startViewModel.getApplication().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                                if(1==1) {
+                                    startViewModel.setStartScreenUiState(StartScreenState.AddTask) } else {
+                                    getPermission()
+                                }
+
+
+                            }
+
+                        },
+                        modifier = Modifier
+                            .alpha(0.6f)
+                            .zIndex(1.0f)
+                            .padding(10.dp)
+
+                    ) {
+                        Column() {
+                            Image(
+
+                                painterResource(
+                                    R.drawable.addcat_dark
+                                ), "Floating action",
+                                modifier = Modifier
+                                    .width(24.dp)
+                                    .height(24.dp)
+                                    .rotate(0f),
+                                colorFilter = ColorFilter.tint(Color.Blue)
+                            )
+
+                        }
+                }
+
+                }
+                /*
                 ExtendedFloatingActionButton(
                     backgroundColor = MaterialTheme.colors.secondary.copy(alpha = 0.8f),
                     modifier = Modifier
@@ -174,11 +237,12 @@ fun StartScreen(
                                 "asd"
                             ).asString(),
                             modifier = Modifier
-                                .size(24.dp),
+                                .size(32.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colors.onSecondary)
                         )
                     },
                     text = {
+                        /*
                         Text(
                             text = UiText.StringResource(
                                 R.string.floating_button_add,
@@ -186,6 +250,8 @@ fun StartScreen(
                             ).asString().uppercase(),
                             color = MaterialTheme.colors.onPrimary
                         )
+
+                         */
                     },
                     onClick = {
                         if(categoryList.isEmpty()) {
@@ -195,10 +261,18 @@ fun StartScreen(
                             ).asString(startViewModel.getApplication().applicationContext)
                             )
                         } else {
-                            startViewModel.setStartScreenUiState(StartScreenState.AddTask)
+                            val alarmManager = startViewModel.getApplication().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                            if(1==1) {
+                            startViewModel.setStartScreenUiState(StartScreenState.AddTask) } else {
+                                getPermission()
+                            }
+
+
                         }
                     }
                 )
+
+                 */
             }
         },
         topBar = {},
@@ -300,6 +374,7 @@ fun StartScreen(
 
                 TopAndSettings(
                     startScreenUiState = startScreenUiState,
+                    weekNumber = startViewModel.weekNumber(),
                     dateAndNameOfDay = startViewModel.dateWithNameOfDayWeek(),
                     navigateTo = { route -> navigateTo(route) },
                     selectedCategory = selectedCategory,

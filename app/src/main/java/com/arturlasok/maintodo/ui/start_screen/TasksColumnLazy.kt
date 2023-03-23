@@ -23,6 +23,7 @@ import com.arturlasok.maintodo.util.*
 import kotlinx.coroutines.delay
 
 
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TasksColumnLazy(
@@ -141,6 +142,23 @@ fun TasksColumnLazy(
 
             ) { index, item ->
        //         Log.i(TAG,"TASK alarm recompose ${item.dItemTitle}")
+/*
+                ListInfos(
+                    months = startViewModel.months,
+                    firstVisibleIndexX = derivedStateOf {  startViewModel.firstViItemIndex },
+                    itemBefore = if(index>0) { tasksList[index-1] } else ItemToDo(),
+                    itemNext = try {
+                        tasksList[index + 1]
+                    } catch (e:Exception) { ItemToDo()},
+                    item = item,
+                    modifier = Modifier,
+
+
+                    )
+
+
+ */
+
                 SingleTaskItem(
                     firstVisibleIndexX = derivedStateOf {  startViewModel.firstViItemIndex },
                     itemColumnState = itemColumnState,
@@ -179,6 +197,7 @@ fun TasksColumnLazy(
                         openId.value = id
                     }
                 }
+
 
             }
             item { 

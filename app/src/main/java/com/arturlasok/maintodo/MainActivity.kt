@@ -2,15 +2,19 @@ package com.arturlasok.maintodo
 
 import android.annotation.SuppressLint
 import android.app.*
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
@@ -48,6 +52,7 @@ import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.judemanutd.autostarter.AutoStartPermissionHelper
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
@@ -59,6 +64,9 @@ import javax.inject.Inject
 
 // Datastore init
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ustawienia")
+
+//Permission
+const val PERMISSION_REQUEST_SCHEDULE_EXACT_ALARMS = 0
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -118,7 +126,8 @@ class MainActivity : ComponentActivity() {
 
         //ui State
         var thisuiState: MainActivityUiState by mutableStateOf(MainActivityUiState.SplashScreen)
-
+        //auto start alert
+        val autoStartAlert = mutableStateOf(false)
 
         //Splash screen
         splashScreen.setKeepOnScreenCondition {
@@ -128,6 +137,11 @@ class MainActivity : ComponentActivity() {
               is MainActivityUiState.ScreenReady -> false
 
           }
+        }
+        //Data Store app added to autostart
+        val IS_AUTOSTART = booleanPreferencesKey("app_added_to_autostart")
+        val autostartFromStore: Flow<Boolean> = applicationContext.dataStore.data.map { pref->
+            pref[IS_AUTOSTART] ?: false
         }
         //Data Store confirm task status
         val IS_CONFIRM_STATUS = booleanPreferencesKey("confirm_task_status")
@@ -188,6 +202,8 @@ class MainActivity : ComponentActivity() {
             val dataStoreDarkTheme = dataFromStore.collectAsState(0)
             //confirmation task setting
             val confirmTaskStore = confirmTaskFromStore.collectAsState(initial = false)
+            //autostart is set
+            val autostartFromDataStore = autostartFromStore.collectAsState(initial = false)
             MainToDoTheme(dataStoreDarkTheme.value) {
                 //theme?
                 when(dataStoreDarkTheme.value) {
@@ -271,10 +287,24 @@ class MainActivity : ComponentActivity() {
                                 //.zIndex(0.9f)
                                 .padding(16.dp)
                         ) {
-
+                            AutoStartInfo(
+                                autoStartAlert = autoStartAlert.value,
+                                closeAutoStartAlert = { autoStartAlert.value = false},
+                                is_autostart_set = autostartFromDataStore.value,
+                                setAutostart = {
+                                    lifecycleScope.launch {
+                                        applicationContext.dataStore.edit { settings->
+                                            settings[IS_AUTOSTART] = true
+                                        }
+                                    }
+                                },
+                                isAutoStartPermissionAvailable =AutoStartPermissionHelper.getInstance().isAutoStartPermissionAvailable(this@MainActivity),
+                                getAutoStartPermission = { AutoStartPermissionHelper.getInstance().getAutoStartPermission(this@MainActivity) }
+                            )
                             NavigationComponent(
                                 navController = navController,
                                 addAlarm = { time, beganTime, name, desc, token, id->
+                                    autoStartAlert.value = true
                                     addAlarm(
                                         time = time,
                                         beganTime = beganTime,
@@ -283,10 +313,12 @@ class MainActivity : ComponentActivity() {
                                         token = token,
                                         taskId = id
                                         )
+
                                 },
                                 removeAlarm = { taskId->
                                     removeAlarm(taskId)
                                 },
+                                getPermission = { checkScheduleExactAlarmsPermission() },
                                 snackMessage = {
 
                                     messageToShow: String -> snackbarController.getScope().launch {
@@ -319,6 +351,14 @@ class MainActivity : ComponentActivity() {
                                    }
                                 },
                                 changeDarkMode = { newVal ->
+                                    //TODO remove
+                                    lifecycleScope.launch {
+                                        applicationContext.dataStore.edit { settings->
+                                            settings[IS_AUTOSTART] = false
+                                        }
+                                    }
+
+
                                     lifecycleScope.launch {
                                         applicationContext.dataStore.edit { settings ->
                                             val currentStoreValue = newVal
@@ -334,6 +374,8 @@ class MainActivity : ComponentActivity() {
                                     intentLink.data = Uri.parse(link)
                                     startActivity(intentLink)
 
+
+
                                 },
                             )
                         }
@@ -342,6 +384,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    //ALARMS
     private fun addAlarm(time: Long, beganTime: Long, name: String, desc:String, token: String, taskId: Long) {
         //if remind time is before now no alarm!!!
         //add remind time if remind is after now() ( 1x ALARM )
@@ -390,5 +433,46 @@ class MainActivity : ComponentActivity() {
         val clockInfo = AlarmManager.AlarmClockInfo(alarmTime, basicPendingIntent)
         alarmManager.setAlarmClock(clockInfo, pendingIntent)
     }
+    //PERMISSION FOR SCHEDULE EXACT ALARMS
+    private fun checkScheduleExactAlarmsPermission() {
+        if(checkSelfPermission(android.Manifest.permission.SCHEDULE_EXACT_ALARM)==PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG,"Permission granted for set exact alarms")
+        }
+        else {
+            requestPermission()
+        }
+    }
+
+    private fun requestPermission() {
+        requestPermissions(arrayOf(android.Manifest.permission.SCHEDULE_EXACT_ALARM),
+            PERMISSION_REQUEST_SCHEDULE_EXACT_ALARMS)
+    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PERMISSION_REQUEST_SCHEDULE_EXACT_ALARMS) {
+
+            if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission has been granted
+
+
+                Log.i(
+                    TAG,
+                    "Permission granted to Exact alarms"
+                )
+            } else {
+                // Permission request was denied
+
+                Log.i(
+                    TAG,
+                    "Permission NOT!!!! granted to Exact alarms"
+                )
+            }
+        }
+    }
+
 }
 

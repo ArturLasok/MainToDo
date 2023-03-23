@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +22,7 @@ import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.ui.start_screen.StartViewModel
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
 
 @Composable
 fun DateInfoForBox(
@@ -57,12 +59,12 @@ fun DateInfoForBox(
     Box(
         Modifier
             .fillMaxSize()
-            .padding(start = 4.dp, top = 4.dp)
+            .padding(start = 4.dp, top = 1.dp)
             .alpha(0.8f)
             .zIndex(0.9f), contentAlignment = Alignment.TopStart) {
         if(startViewModel.firstViItemIndex.value<=taskListSize) {
 
-        if(taskListSize>1 &&
+        if(taskListSize>1 && tasksList.count { TimeUnit.MILLISECONDS.toDays(it.dItemDeliveryTime) <= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())  }>1 &&
 
             (
                     (TimeUnit.MILLISECONDS.toDays(startViewModel.actualItem.value.dItemDeliveryTime)<= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()) && TimeUnit.MILLISECONDS.toDays(startViewModel.nextItem.value.dItemDeliveryTime)<= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()))

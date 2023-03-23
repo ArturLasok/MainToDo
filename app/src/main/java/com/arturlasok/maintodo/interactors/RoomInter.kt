@@ -243,6 +243,29 @@ class RoomInter(
         }
 
     }
+    //get task not completed
+    fun getTasksNotCompletedFromRoom() : Flow<List<ItemToDo>> = flow {
+
+
+        try {
+
+
+                val tasksList = itemDao.selectAllFromItemRoom()
+
+
+
+
+            if(tasksList.isNotEmpty()) {
+                emit(itemFromEntityListToDomainList(tasksList.toMutableList()))
+            } else emit(mutableListOf())
+        }
+        catch(e:Exception) {
+
+            emit(mutableListOf())
+        }
+
+
+    }
     //get task
     fun getTasksFromRoom(categoryToken: String) : Flow<RoomDataState<Boolean>> = flow {
 
@@ -305,18 +328,18 @@ class RoomInter(
     //get all category from database
     fun getCategoryFromRoom() : Flow<RoomDataState<Boolean>> = flow {
 
-        try {
+       // try {
 
             val categoryList = categoryDao.selectAllFromCategoryRoom()
             Log.i(TAG,"Category list: ${categoryList.size} / ${categoryList.isNotEmpty()}")
             if(categoryList.isNotEmpty()) {
                 emit(RoomDataState.data_recived(categoryFromListEntityToListDomain(categoryList)))
             } else emit(RoomDataState.data_recived(emptyList<CategoryToDo>()))
-        }
-        catch(e:Exception) {
-
-            emit(RoomDataState.data_error("room_error"))
-        }
+      //  }
+        //catch(e:Exception) {
+//
+  //          emit(RoomDataState.data_error("room_error"))
+    //    }
 
 
     }

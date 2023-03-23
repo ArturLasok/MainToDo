@@ -44,6 +44,17 @@ fun millisToMonth(milisec: Long) : String {
 
     return "${mMonth}"
 }
+fun millisToYear(milisec: Long) : Int {
+
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = milisec
+
+    val mYear = calendar[Calendar.YEAR]
+
+
+
+    return mYear
+}
 fun millisToDay(milisec: Long) : String {
 
     val calendar = Calendar.getInstance()
@@ -56,6 +67,19 @@ fun millisToDay(milisec: Long) : String {
 
 
     return "${mDay}"
+}
+fun millisToWeekNumber(milisec: Long) : String {
+
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = milisec
+
+    val mYear = calendar[Calendar.YEAR]
+    val mMonth = if((calendar[Calendar.MONTH]+1)<10) { "0"+(calendar[Calendar.MONTH]+1) } else { calendar[Calendar.MONTH]+1 }
+
+    val mDay = calendar[Calendar.DAY_OF_MONTH]
+    val mWeek = calendar[Calendar.WEEK_OF_YEAR]
+
+    return "${mWeek}"
 }
 fun millisToHourOfDay(milisec: Long) :String {
 

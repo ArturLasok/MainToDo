@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.util.*
+import dagger.hilt.android.internal.Contexts.getApplication
 import kotlinx.datetime.toKotlinLocalTime
 import java.time.DateTimeException
 import java.time.LocalTime
@@ -50,7 +51,7 @@ fun SingleTaskItem(
     ) {
 
     Log.i(TAG,"ITEM recompose ${item.dItemTitle}")
-
+    val weekOn = remember { mutableStateOf(false) }
     val changeTaskStatusAlert = rememberSaveable { mutableStateOf(false) }
     //Task ready alert!
     if(changeTaskStatusAlert.value) {
@@ -75,10 +76,12 @@ fun SingleTaskItem(
             changeTaskStatusAlert.value =false
         }
     }
+
     Row(modifier = Modifier.fillMaxWidth()) {
+
         Column(modifier = Modifier
             .width(42.dp)
-            .height(60.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            , verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
 
             SingleTaskDateInfo(
                 item = item,
@@ -86,10 +89,16 @@ fun SingleTaskItem(
                 itemNext = itemNext,
                 firstVisibleIndexX = firstVisibleIndexX,
                 indexOfItem = indexOfItem,
-                isDarkModeOn = isDarkModeOn
+                isDarkModeOn = isDarkModeOn,
+
             )
 
         }
+        Column() {
+
+
+
+
         Surface(
             modifier = modifier.clickable(onClick = { item.dItemId?.let { if(!item.dItemCompleted) { setOpen(it) } } }),
             shape = MaterialTheme.shapes.medium,
@@ -181,12 +190,12 @@ fun SingleTaskItem(
                                     overflow = TextOverflow.Ellipsis,
                                     text =  if (fullOpen) { if (item.dItemDeliveryTime != 0L) {
                                         if(TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>=TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())) {
-                                        "${millisToHour(item.dItemDeliveryTime)} "+ item.dItemTitle+" / "+indexOfItem } else { item.dItemTitle+" / "+indexOfItem }
+                                        "${millisToHour(item.dItemDeliveryTime)} "+ item.dItemTitle} else { item.dItemTitle}
 
 
                                     } else {
                                         ""
-                                    } } else { item.dItemTitle+" / "+indexOfItem },
+                                    } } else { item.dItemTitle},
                                     style = MaterialTheme.typography.h3,
                                     fontWeight = FontWeight.Medium,
                                     textDecoration = if (item.dItemCompleted) {
@@ -332,7 +341,7 @@ fun SingleTaskItem(
                                 fontWeight = FontWeight.Normal,
                                 textAlign = TextAlign.Justify,
                                 color = if (isDarkModeOn) {
-                                    Color.DarkGray
+                                    Color.White
 
                                 } else {
                                     if (item.dItemCompleted) {
@@ -369,6 +378,7 @@ fun SingleTaskItem(
                 }
 
             }
+        }
         }
     }
     Spacer(modifier = modifier

@@ -17,6 +17,7 @@ import com.arturlasok.maintodo.util.FormDataState
 import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -136,12 +137,15 @@ class AddCategoryViewModel @Inject constructor(
                 //stored
                 if(it == true) {
                     val lastCategoryToken =  getLastCategoryToken()
+                    Log.i(TAG,"emit! to LATE!!!! $lastCategoryToken")
                     emit(Pair(lastCategoryToken,FormDataState(true)))
 
                 }
+                Log.i(TAG,"stored OK")
             }
 
             result.data_recived.let {
+
                 //do nothing = nothing received
             }
 

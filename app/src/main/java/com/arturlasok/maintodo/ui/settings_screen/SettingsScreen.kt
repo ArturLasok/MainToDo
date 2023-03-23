@@ -113,7 +113,15 @@ fun SettingsScreen(
                 //Additional information
                 Column(modifier = Modifier.padding(12.dp)) {
 
-
+                    Text(
+                        "AutoStart Library github.com/judemanutd/AutoStarter",
+                        style = MaterialTheme.typography.h4,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable(onClick = {
+                            runLink("https://github.com/judemanutd/AutoStarter")
+                        }),
+                        color = MaterialTheme.colors.onSurface
+                    )
 
                     Text(
                         "Icons from flaticon https://www.flaticon.com",

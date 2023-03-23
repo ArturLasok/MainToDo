@@ -40,6 +40,24 @@ class StartViewModel @Inject constructor(
         getTaskItemsFromRoom(savedStateHandle["selectedCategory"] ?: "")
 
     }
+    //MONTHS
+    val months =
+        listOf(
+            UiText.StringResource(R.string.month1, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month2, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month3, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month4, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month5, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month6, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month7, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month8, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month9, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month10, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month11, "asd").asString(getApplication().applicationContext),
+            UiText.StringResource(R.string.month12, "asd").asString(getApplication().applicationContext),
+
+            )
+
     //CATEGORY
     val selectedCategoryRowIndex =  mutableStateOf(0)
     //selected category empty All visible
@@ -78,7 +96,8 @@ class StartViewModel @Inject constructor(
     val actualItem: MutableState<ItemToDo> = mutableStateOf(ItemToDo())
     val nextItem: MutableState<ItemToDo> = mutableStateOf(ItemToDo())
     val firstViItemIndex  = mutableStateOf(0)
-
+    //IS DATEINFOBOX VISIBILITY
+    val isDateBoxVisible = mutableStateOf(false)
 
     val newDateTimeState = combine(taskDate,notDate,taskTime,notTime,taskDateTimeError) {
             taskDate,notDate, taskTime, notTime, taskDateTimeError ->
@@ -122,8 +141,12 @@ class StartViewModel @Inject constructor(
 
         )
 
-        return millisToDateAndHour(timeInMilis) + " " + dayNames[dayOfWeek-1]
+        return millisToDate(timeInMilis) + " " + dayNames[dayOfWeek-1]
 
+    }
+    //current week number
+    fun weekNumber() : Int {
+        return millisToWeekNumber(System.currentTimeMillis()).toInt()
     }
     //get application
     fun getApplication() : BaseApplication {

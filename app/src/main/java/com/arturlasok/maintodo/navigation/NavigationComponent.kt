@@ -21,6 +21,7 @@ fun NavigationComponent(
     navController: NavHostController,
     addAlarm:(time: Long, beganTime:Long,name: String,desc:String, token: String, id:Long) -> Unit,
     removeAlarm:(id: Int) -> Unit,
+    getPermission:() ->Unit,
     snackMessage:(text: String) -> Unit,
     setCurrentDestination:(route: String) -> Unit,
     currentDestination: String,
@@ -47,6 +48,7 @@ fun NavigationComponent(
             StartScreen(
                 addAlarm = { time,beganTime, name, desc, token, id ->  addAlarm(time,beganTime, name,desc,token, id) },
                 removeAlarm = { taskid-> removeAlarm(taskid) },
+                getPermission = { getPermission() },
                 navigateTo = { route -> navController.navigate(route) },
                 isDarkModeOn = isDarkModeOn==2 || isSystemInDarkTheme(),
                 confirmationTaskSetting = confirmationTaskSetting,

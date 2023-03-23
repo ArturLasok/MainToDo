@@ -2,6 +2,10 @@ package com.arturlasok.maintodo.di
 
 import android.content.Context
 import com.arturlasok.maintodo.BaseApplication
+import com.arturlasok.maintodo.WorkerViewModel
+import com.arturlasok.maintodo.cache.CategoryDao
+import com.arturlasok.maintodo.cache.ItemDao
+import com.arturlasok.maintodo.interactors.RoomInter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,5 +20,20 @@ object AppModule {
     @Provides
     fun provideApplication(@ApplicationContext app: Context): BaseApplication {
         return app as BaseApplication
+    }
+    @Singleton
+    @Provides
+    fun provideWorkerViewModel(
+        app: BaseApplication,
+        categoryDao: CategoryDao,
+        itemDao: ItemDao,
+        roomInter: RoomInter,
+    ) :WorkerViewModel {
+        return WorkerViewModel(
+            app = app,
+            categoryDao = categoryDao,
+            itemDao = itemDao,
+            roomInter = roomInter
+        )
     }
 }

@@ -26,6 +26,7 @@ import kotlinx.coroutines.delay
 fun TopAndSettings(
     startScreenUiState: StartScreenState,
     dateAndNameOfDay:String,
+    weekNumber: Int,
     navigateTo:(route:String)->Unit,
     selectedCategory: String,
     isDarkModeOn: Boolean
@@ -74,7 +75,7 @@ fun TopAndSettings(
 
                 //Hi Text
                 Column {
-
+/*
                     Text(
                         text = UiText.StringResource(
                             R.string.app_welcome,
@@ -83,8 +84,16 @@ fun TopAndSettings(
                         style = MaterialTheme.typography.body2,
                         color = MaterialTheme.colors.primary
                     )
+
+ */
                     Text(
                         text = dateAndNameOfDay,
+                        style = MaterialTheme.typography.body1,
+                        color = MaterialTheme.colors.primary
+
+                    )
+                    Text(
+                        text =  UiText.StringResource(R.string.week_number,"asd").asString() + " "+weekNumber,
                         style = MaterialTheme.typography.h5,
                         color = MaterialTheme.colors.primary
 

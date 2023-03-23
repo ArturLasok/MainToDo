@@ -36,6 +36,8 @@ interface ItemDao {
     @Query("SELECT * FROM item_room ORDER BY item_edited DESC LIMIT 1")
     suspend fun selectLastAddedOrEditedItem() : ItemToDoEntity
 
+    @Query("SELECT * FROM item_room WHERE item_completed=0")
+    suspend fun selectAllItemsNotCompleted() : List<ItemToDoEntity>
 
 
 }

@@ -14,6 +14,18 @@
     <string name="day5">Piątek</string>
     <string name="day6">Sobota</string>
     <string name="day7">Niedziela</string>
+    <string name="month1">Styczeń</string>
+    <string name="month2">Luty</string>
+    <string name="month3">Marzec</string>
+    <string name="month4">Kwiecień</string>
+    <string name="month5">Maj</string>
+    <string name="month6">Czerwiec</string>
+    <string name="month7">Lipiec</string>
+    <string name="month8">Sierpień</string>
+    <string name="month9">Wrzesień</string>
+    <string name="month10">Październik</string>
+    <string name="month11">Listopad</string>
+    <string name="month12">Grudzień</string>
     <string name="settings_theme_mode0">Systemowy</string>
     <string name="settings_theme_mode1">Jasny motyw</string>
     <string name="settings_theme_mode2">Ciemny motyw</string>
@@ -33,6 +45,7 @@
     <string name="addnewtask">Dodaj nowe zadanie</string>
     <string name="edit_alert_yes">Tak</string>
     <string name="edit_alert_cancel">Anuluj</string>
+    <string name="edit_alert_no">Nie</string>
     <string name="edit_alert_question">Usunąć kategorię i wszystkie należące do niej zadania?</string>
     <string name="editcategory_snack_deleted">Kategoria i wszystkie przynależne zadadania usunięte</string>
     <string name="add">Dodaj</string>
@@ -63,4 +76,7 @@
     <string name="cancel">Powrót</string>
     <string name="select_date">Wybierz datę</string>
     <string name="select_time">Ustaw godzinę</string>
+    <string name="autostartinfo">Proszę dodaj aplikację do autostartu aby zachować powiadomienia po restarcie telefonu. To ważne dla prawidłowego działania aplikacji</string>
+    <string name="autostartsecondq">Czy dodałeś aplikację do autostartu?</string>
+    <string name="week_number">Tydzień</string>
 </resources>

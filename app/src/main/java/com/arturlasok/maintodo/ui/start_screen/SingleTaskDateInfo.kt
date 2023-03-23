@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit
 
 @Composable
 fun SingleTaskDateInfo(item: ItemToDo, itemBefore: ItemToDo, itemNext: ItemToDo, firstVisibleIndexX: State<MutableState<Int>>, indexOfItem: Int, isDarkModeOn: Boolean) {
+
     if((item.dItemDeliveryTime!=0L && (TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)> TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()))
                 && TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime) != TimeUnit.MILLISECONDS.toDays(itemBefore.dItemDeliveryTime) && firstVisibleIndexX.value.value!=indexOfItem) || (itemNext.dItemTitle.isEmpty() && TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)> TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())
                 || (itemBefore.dItemTitle.isEmpty() && itemNext.dItemTitle.isEmpty()) || (indexOfItem == firstVisibleIndexX.value.value && itemNext.dItemCompleted == true && (TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())))
@@ -59,6 +60,6 @@ fun SingleTaskDateInfo(item: ItemToDo, itemBefore: ItemToDo, itemNext: ItemToDo,
                     )
             )
         }
-    }
 
+    }
 }
