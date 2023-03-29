@@ -27,10 +27,7 @@ class EditCategoryViewModel @Inject constructor(
     private val categoryUiState: CategoryUiState
 ) :ViewModel() {
 
-    init{
-        if(savedStateHandle.getStateFlow("selectedCategory","").value.isEmpty()) {  savedStateHandle["selectedCategory"] = categoryUiState.getSelectedCategoryToken() }
-        else { savedStateHandle.getStateFlow("selectedCategory","") }
-    }
+
     //selected category
     val selectedCategory = savedStateHandle.getStateFlow("selectedCategory","")
     //categoryName
@@ -47,6 +44,11 @@ class EditCategoryViewModel @Inject constructor(
 
     //categoryIconError
     private val categoryIconError = savedStateHandle.getStateFlow("categoryIconError","")
+
+    init{
+        if(savedStateHandle.getStateFlow("selectedCategory","").value.isEmpty()) {  savedStateHandle["selectedCategory"] = categoryUiState.getSelectedCategoryToken() }
+        else { savedStateHandle.getStateFlow("selectedCategory","") }
+    }
 
     val editCategoryState = combine(categoryName,selectedIcon,categoryDescription,categoryNameError, categoryIconError) { name, icon, description, nameError, iconError ->
         EditCategoryState(

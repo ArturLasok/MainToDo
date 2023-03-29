@@ -59,7 +59,9 @@
     <string name="no_tasks">Brak zadań do wykonania!</string>
     <string name="add_categories_first">Dodaj kategorię w pierwszej kolejności</string>
     <string name="delete_task_alert_question">Chcesz usunąć zadanie?</string>
+    <string name="delete_alltask_alert_question">Chcesz usunąć wszystkie potwierdzone zadania?</string>
     <string name="delete_task_snack_removed">Zadanie usunięte</string>
+    <string name="delete_alltasks_snack_removed">Potwierdzone zadania usunięte</string>
     <string name="edittask_screen">Edytuj zadanie</string>
     <string name="edittask_updated">Zadanie zaktualizowane</string>
     <string name="task_status_change_question">Potwierdzasz wykonanie zadania?</string>
@@ -76,7 +78,10 @@
     <string name="cancel">Powrót</string>
     <string name="select_date">Wybierz datę</string>
     <string name="select_time">Ustaw godzinę</string>
-    <string name="autostartinfo">Proszę dodaj aplikację do autostartu aby zachować powiadomienia po restarcie telefonu. To ważne dla prawidłowego działania aplikacji</string>
-    <string name="autostartsecondq">Czy dodałeś aplikację do autostartu?</string>
+    <string name="autostartinfo">Proszę dodaj aplikację do autostartu lub wyłącz optymalizację baterii aby zachować powiadomienia po restarcie telefonu. To ważne dla prawidłowego działania aplikacji</string>
+    <string name="autostartsecondq">Czy dodałeś aplikację do autostartu lub wyłączyłeś optymalizację baterii?</string>
+    <string name="taskfornow">Zadanie na teraz</string>
+    <string name="remindetask">Przypominam o zadaniu</string>
     <string name="week_number">Tydzień</string>
+    <string name="removeallcompleted">Usuń wszystkie potwierdzone</string>
 </resources>

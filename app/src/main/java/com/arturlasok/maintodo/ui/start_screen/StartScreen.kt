@@ -39,6 +39,9 @@ import com.arturlasok.maintodo.util.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.time.Clock
+import java.time.LocalTime
+import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
 
@@ -69,6 +72,7 @@ fun StartScreen(
     val newDateTimeState by startViewModel.newDateTimeState.collectAsState()
     val scope = rememberCoroutineScope()
     val removeTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
+    val removeAllTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
 
     val scrollToItemZero = rememberSaveable { mutableStateOf(false) }
     val isAtTopOfItemListColumn by remember {
@@ -338,8 +342,8 @@ fun StartScreen(
                                 ).asString(startViewModel.getApplication().applicationContext)
                             )
                             addAlarm(
-                                (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime-3600000),
-                                TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime-3600000),
+                                (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime),
+                                TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime),
                                 newTaskState.taskName,
                                 newTaskState.taskDesc,
                                 startViewModel.getLastItemSelected(),
@@ -500,6 +504,46 @@ fun StartScreen(
                     removeTaskAlert.value = Pair(false,-1)
                 }
             }
+            //Task list delete  All alert
+            if(removeAllTaskAlert.value.first) {
+                RemoveAlert(
+                    question =  UiText.StringResource(
+                        R.string.delete_alltask_alert_question,
+                        "no"
+                    ).asString() ,
+                    onYes = {
+                        //remove
+                        scope.launch {
+                            val deleteResponse = startViewModel.deleteAllCompletedTasks()
+                            deleteResponse.ok.let {
+                                if(it==true) {
+                                    removeAllTaskAlert.value = Pair(false,-1)
+                                    snackMessage(UiText.StringResource(
+                                        R.string.delete_alltasks_snack_removed,
+                                        "no"
+                                    ).asString(startViewModel.getApplication().applicationContext))
+
+                                }
+                            }
+                            deleteResponse.error.let {
+                                if (it != null) {
+                                    if(it.isNotEmpty()) {
+                                        removeAllTaskAlert.value = Pair(false,-1)
+                                        snackMessage(it)
+                                    }
+                                }
+                            }
+                        }
+
+                    },
+                    onCancel = {
+                        //cancel
+                        removeAllTaskAlert.value = Pair(false,-1) })
+                {
+                    //on dismiss
+                    removeAllTaskAlert.value = Pair(false,-1)
+                }
+            }
             //task list
             Log.i(TAG,"start recompose:")
 
@@ -575,7 +619,9 @@ fun StartScreen(
                     removeTaskAlert.value = Pair(true,itemId)
 
                 },
-
+                onRemoveAllClick = {
+                    removeAllTaskAlert.value = Pair(true,0)
+                },
                 confirmationTaskSetting = confirmationTaskSetting,
                 startScreenUiState = startScreenUiState,
                 lastItemSelected = startViewModel.getLastItemSelected()

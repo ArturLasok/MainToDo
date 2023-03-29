@@ -36,7 +36,7 @@ fun DateInfoForBox(
     days: List<String>
 ) {
 
-    Log.i(TAG,"DATEBOX RECOMPOSE")
+
     val completed =try { tasksList[derivedStateOf {  startViewModel.firstViItemIndex.value }.value ].dItemCompleted }
     catch (e:Exception) { false }
     val date =
@@ -44,8 +44,8 @@ fun DateInfoForBox(
             tasksList[startViewModel.firstViItemIndex.value].dItemDeliveryTime.let {
 
                 if (TimeUnit.MILLISECONDS.toDays(it) >= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())) {
-
-                    it
+it
+                   // TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(it))
                 } else {
                     System.currentTimeMillis()
 
@@ -55,16 +55,16 @@ fun DateInfoForBox(
              System.currentTimeMillis()
         }
 
-
+    Log.i(TAG,"DATEBOX RECOMPOSE ${millisToDateAndHour(date)}")
     Box(
         Modifier
             .fillMaxSize()
-            .padding(start = 4.dp, top = 1.dp)
+            .padding(start = 4.dp, top = 6.dp)
             .alpha(0.8f)
             .zIndex(0.9f), contentAlignment = Alignment.TopStart) {
         if(startViewModel.firstViItemIndex.value<=taskListSize) {
 
-        if(taskListSize>1 && tasksList.count { TimeUnit.MILLISECONDS.toDays(it.dItemDeliveryTime) <= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())  }>1 &&
+        if(taskListSize>1 && (tasksList.count { TimeUnit.MILLISECONDS.toDays(it.dItemDeliveryTime) <= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())  }>1 || tasksList.count { TimeUnit.MILLISECONDS.toDays(it.dItemDeliveryTime) > TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())  }>1) &&
 
             (
                     (TimeUnit.MILLISECONDS.toDays(startViewModel.actualItem.value.dItemDeliveryTime)<= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()) && TimeUnit.MILLISECONDS.toDays(startViewModel.nextItem.value.dItemDeliveryTime)<= TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis()))

@@ -8,6 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 
@@ -27,7 +28,8 @@ fun YesNoAlert(
         text = {
                Text(
                    text = question,
-                   style = MaterialTheme.typography.h1
+                   style = MaterialTheme.typography.h2,
+                   textAlign = TextAlign.Justify
                )
         },
         buttons = {

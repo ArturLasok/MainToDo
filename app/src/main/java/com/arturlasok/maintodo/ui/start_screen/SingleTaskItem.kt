@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
+import com.arturlasok.maintodo.interactors.util.convertMillisToHourFromGmt
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.internal.Contexts.getApplication
 import kotlinx.datetime.toKotlinLocalTime
@@ -44,13 +45,14 @@ fun SingleTaskItem(
     checkChange:(newVal:Boolean) -> Unit,
     deleteClick:(itemId: Long) -> Unit,
     editClick:(itemToken: String) -> Unit,
+    removeAll:() ->Unit,
     fullOpen:Boolean,
     fviChange:(id:Int) ->Unit,
     setOpen:(id:Long) ->Unit,
 
     ) {
 
-    Log.i(TAG,"ITEM recompose ${item.dItemTitle}")
+    Log.i(TAG,"ITEM recompose DATEBOX Calendar ${item.dItemTitle} ${millisToDate(item.dItemDeliveryTime)} /// ${millisToDate(TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)))} //-> ${convertMillisToHourFromGmt(item.dItemDeliveryTime)}")
     val weekOn = remember { mutableStateOf(false) }
     val changeTaskStatusAlert = rememberSaveable { mutableStateOf(false) }
     //Task ready alert!
@@ -76,7 +78,17 @@ fun SingleTaskItem(
             changeTaskStatusAlert.value =false
         }
     }
+    Column() {
 
+
+    RemoveAllTasks(
+        isDarkModeOn = isDarkModeOn,
+        itemBefore = itemBefore,
+        itemNext = itemNext,
+        item = item,
+        modifier = Modifier,
+        removeAll = { removeAll()}
+    )
     Row(modifier = Modifier.fillMaxWidth()) {
 
         Column(modifier = Modifier
@@ -376,7 +388,7 @@ fun SingleTaskItem(
 
 
                 }
-
+            }
             }
         }
         }

@@ -1,0 +1,107 @@
+{
+  "project_info": {
+    "project_number": "856067429157",
+    "project_id": "api-arcz",
+    "storage_bucket": "api-arcz.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856067429157:android:3f188ca111210f7bbd40cc",
+        "android_client_info": {
+          "package_name": "com.arturlasok.maintodo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "856067429157-5kjtiekaj2ls6omc4ev0hn5resnlrtj1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.arturlasok.maintodo",
+            "certificate_hash": "a51b39310f25c595a44f19d36621fe17724123db"
+          }
+        },
+        {
+          "client_id": "856067429157-fkdk2a84h28meg21cnllhfaeat0f3bbe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnxlC_3tgk32p8rLM4rDzx8yVAjnIESDU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "856067429157-fkdk2a84h28meg21cnllhfaeat0f3bbe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856067429157:android:de910e0ae75e578ebd40cc",
+        "android_client_info": {
+          "package_name": "com.arturlasok.plumanager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "856067429157-fkdk2a84h28meg21cnllhfaeat0f3bbe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnxlC_3tgk32p8rLM4rDzx8yVAjnIESDU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "856067429157-fkdk2a84h28meg21cnllhfaeat0f3bbe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-6396271874155408~9065760591"
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856067429157:android:5112657b247115e6bd40cc",
+        "android_client_info": {
+          "package_name": "com.arturlasok.speechtoplu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "856067429157-fkdk2a84h28meg21cnllhfaeat0f3bbe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnxlC_3tgk32p8rLM4rDzx8yVAjnIESDU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "856067429157-fkdk2a84h28meg21cnllhfaeat0f3bbe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-6396271874155408~8703810931"
+    }
+  ],
+  "configuration_version": "1"
+}

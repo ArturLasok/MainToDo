@@ -224,6 +224,30 @@ class RoomInter(
         }
 
     }
+    fun deleteAllItemsCompleted() : Flow<RoomDataState<Boolean>> = flow {
+        try {
+            itemDao.deleteAllCompletedTasks()
+            emit(RoomDataState.data_stored(true))
+
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+    }
+    fun deleteAllItemsCompletedWithCategory(token: String) : Flow<RoomDataState<Boolean>> = flow {
+        try {
+            itemDao.deleteAllCompletedTasksWithCategory(token)
+            emit(RoomDataState.data_stored(true))
+
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+
+    }
     //delete category
     fun deleteCategory(categoryToken: String) : Flow<RoomDataState<Boolean>> = flow {
         try {
@@ -250,7 +274,7 @@ class RoomInter(
         try {
 
 
-                val tasksList = itemDao.selectAllFromItemRoom()
+                val tasksList = itemDao.selectAllItemsNotCompleted()
 
 
 

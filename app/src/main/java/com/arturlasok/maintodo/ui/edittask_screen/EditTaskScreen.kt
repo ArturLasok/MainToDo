@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.ui.edittask_screen
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -31,8 +32,10 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.toKotlinLocalTime
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -109,14 +112,17 @@ fun EditTaskScreen(
                                         "no"
                                     ).asString(editTaskViewModel.getApplication().applicationContext)
                                 )
+
                                 addAlarm(
-                                    (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime-3600000),
-                                    TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime-3600000),
+                                    (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime),
+                                    TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime),
                                     state.itemName,
                                     state.itemDescription,
                                     editTaskViewModel.getLastItemSelected(),
                                     editTaskViewModel.getLastItemIdInRoom(),
                                 )
+
+
                                 //nav to start and last added category
                                 navigateTo(Screen.Start.route)
                             }

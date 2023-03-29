@@ -16,7 +16,10 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.toKotlinLocalTime
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalUnit
 import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 @Composable
@@ -49,7 +52,7 @@ fun TimePicker(
         ) { time ->
             // Do stuff with java.time.LocalDate object which is passed in
             setTime(TimeUnit.NANOSECONDS.toMillis(time.toNanoOfDay()))
-
+            Log.i(TAG,"Calendar ${LocalTime.ofNanoOfDay(time.toNanoOfDay()).hour}  / System current: ${millisToHour(System.currentTimeMillis())}")
         }
     }
 

@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.core.content.PermissionChecker.checkSelfPermission
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.datastore.core.DataStore
@@ -41,6 +42,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.compose.rememberNavController
 import com.arturlasok.maintodo.admob.AdMobMainBanner
 import com.arturlasok.maintodo.domain.model.ItemToDo
+import com.arturlasok.maintodo.interactors.util.*
 import com.arturlasok.maintodo.navigation.NavigationComponent
 import com.arturlasok.maintodo.ui.theme.MainToDoTheme
 import com.arturlasok.maintodo.util.*
@@ -59,6 +61,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDate.Companion.fromEpochDays
+import kotlinx.datetime.toKotlinLocalTime
+import java.time.*
+import java.time.temporal.TemporalAccessor
+import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
@@ -242,6 +251,25 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(key1 = true, block = {
                     viewModel.setScreenIsReady(true)
 
+
+                        viewModel.rescheduleAllAlarms(
+                            addAlarm = { item->
+                                addAlarm(
+                                    item.dItemRemindTime,
+                                    item.dItemDeliveryTime,
+                                    item.dItemTitle,
+                                    item.dItemDescription,
+                                    item.dItemToken,
+                                    item.dItemId ?: 0
+                                )
+                            }
+                        )
+
+
+
+
+
+
                 } )
                 //scaffoldState init
                 val scaffoldState = rememberScaffoldState()
@@ -290,7 +318,9 @@ class MainActivity : ComponentActivity() {
                             AutoStartInfo(
                                 autoStartAlert = autoStartAlert.value,
                                 closeAutoStartAlert = { autoStartAlert.value = false},
-                                is_autostart_set = autostartFromDataStore.value,
+                                //TODO
+                                //is_autostart_set = autostartFromDataStore.value,
+                                is_autostart_set = true,
                                 setAutostart = {
                                     lifecycleScope.launch {
                                         applicationContext.dataStore.edit { settings->
@@ -388,16 +418,16 @@ class MainActivity : ComponentActivity() {
     private fun addAlarm(time: Long, beganTime: Long, name: String, desc:String, token: String, taskId: Long) {
         //if remind time is before now no alarm!!!
         //add remind time if remind is after now() ( 1x ALARM )
-        if(time>System.currentTimeMillis()) {
+        if(time-((ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds)*1000)>System.currentTimeMillis()) {
 
-            Log.i(TAG,"REMIND ALARM alarm remind${millisToDateAndHour(time)}, beganTime: ${millisToDateAndHour(beganTime)}, Task name $name, token $token, id: ${taskId.unaryMinus()}")
+            Log.i(TAG,"REMIND ALARM alarm remind${convertMillisToHourFromGmt(time)} Task name $name, token $token, id: ${taskId.unaryMinus()}")
             makeAlarm(time,name,desc,token,taskId.unaryMinus())
 
         }
         //add alarm when task began is after now() ( 1x ALARM )
-        if(beganTime>System.currentTimeMillis()){
+        if(beganTime-((ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds)*1000)>System.currentTimeMillis()){
 
-            Log.i(TAG,"DELIVERY BEGAN ALARM alarm remind ${millisToDateAndHour(time)}, beganTime: ${millisToDateAndHour(beganTime)}, Task name $name, token $token, id: $taskId ")
+            Log.i(TAG,"Beg: ${beganTime} =? sys: ${System.currentTimeMillis()}DELIVERY BEGAN ALARM  beganTime GMT: ${convertMillisToHourFromGmt(beganTime)} Task name $name, token $token, id: $taskId ")
             makeAlarm(beganTime,name,desc,token,taskId)
 
         }
@@ -419,6 +449,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun makeAlarm(alarmTime: Long, taskName: String, taskDesc: String,taskToken: String, taskId: Long) {
+        Log.i(TAG,"ALARM TIME ZONE OFFSET(s): ${ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds}")
         val taskInfo = ItemToDo(dItemTitle = taskName, dItemId = taskId, dItemToken = taskToken, dItemDescription = taskDesc)
         // creating alarmManager instance
         val alarmManager = this@MainActivity?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -430,7 +461,7 @@ class MainActivity : ComponentActivity() {
         val mainActivityIntent = Intent(this@MainActivity, MainActivity::class.java)
         val basicPendingIntent = PendingIntent.getActivity(this@MainActivity, (taskInfo.dItemId?.toInt()?: 0), mainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
         // creating clockInfo instance
-        val clockInfo = AlarmManager.AlarmClockInfo(alarmTime, basicPendingIntent)
+        val clockInfo = AlarmManager.AlarmClockInfo(alarmTime-((ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds)*1000), basicPendingIntent)
         alarmManager.setAlarmClock(clockInfo, pendingIntent)
     }
     //PERMISSION FOR SCHEDULE EXACT ALARMS

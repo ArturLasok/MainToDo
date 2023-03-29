@@ -12,13 +12,17 @@ import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.RoomInter
 import com.arturlasok.maintodo.interactors.util.RoomDataState
+import com.arturlasok.maintodo.interactors.util.convertMillisToHourFromGmt
 import com.arturlasok.maintodo.ui.editcategory_screen.EditCategoryState
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.toKotlinLocalDate
 import kotlinx.datetime.toKotlinLocalTime
-import java.time.LocalDate
-import java.time.LocalTime
+import java.time.*
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -243,8 +247,11 @@ class EditTaskViewModel @Inject constructor(
                    dItemInfo = itemCategory.value,
                    dItemDescription = itemDescription.value,
                    dItemEdited = System.currentTimeMillis(),
-                   dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value-3600000),
-                   dItemRemindTime = (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value-3600000),
+                  dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value),
+                   dItemRemindTime = (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value),
+                   dItemWhyFailed = convertMillisToHourFromGmt((TimeUnit.DAYS.toMillis(taskDate.value)) +(taskTime.value))
+                  // dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value+(TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.system(ZoneId.of("UTC"))).toNanoOfDay())-TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.systemDefaultZone()).toNanoOfDay()))),
+                   //dItemRemindTime = if(notDate.value==0L) { 0L } else { (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value+(TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.system(ZoneId.of("UTC"))).toNanoOfDay())-TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.systemDefaultZone()).toNanoOfDay()))) },
                )
             )
 
