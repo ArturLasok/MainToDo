@@ -1,12 +1,14 @@
 package com.arturlasok.maintodo.ui.start_screen
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,13 +24,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
-import com.arturlasok.maintodo.interactors.util.convertMillisToHourFromGmt
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.util.*
-import dagger.hilt.android.internal.Contexts.getApplication
-import kotlinx.datetime.toKotlinLocalTime
-import java.time.DateTimeException
-import java.time.LocalTime
-import java.util.Date
 import java.util.concurrent.TimeUnit
 
 @Composable
@@ -52,8 +49,8 @@ fun SingleTaskItem(
 
     ) {
 
-    Log.i(TAG,"ITEM recompose DATEBOX Calendar ${item.dItemTitle} ${millisToDate(item.dItemDeliveryTime)} /// ${millisToDate(TimeUnit.DAYS.toMillis(TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)))} //-> ${convertMillisToHourFromGmt(item.dItemDeliveryTime)}")
-    val weekOn = remember { mutableStateOf(false) }
+
+
     val changeTaskStatusAlert = rememberSaveable { mutableStateOf(false) }
     //Task ready alert!
     if(changeTaskStatusAlert.value) {
@@ -172,10 +169,11 @@ fun SingleTaskItem(
                         Column() {
 
                             Row() {
+
                                 Text(
                                     //maxLines = if (fullOpen) 2 else 1,
-                                    text = if (item.dItemDeliveryTime != 0L && !fullOpen && TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>=TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())) {
-                                        "${millisToHour(item.dItemDeliveryTime)} "
+                                    text = if (item.dItemDeliveryTime != 0L && !fullOpen && TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>=TimeUnit.MILLISECONDS.toDays(MainTimeDate.systemCurrentTimeInMillis())) {
+                                        "${MainTimeDate.localFormTime(item.dItemDeliveryTime)} "
                                     } else {
                                        ""
                                     },
@@ -201,8 +199,8 @@ fun SingleTaskItem(
                                     maxLines = if (fullOpen) 2 else 1,
                                     overflow = TextOverflow.Ellipsis,
                                     text =  if (fullOpen) { if (item.dItemDeliveryTime != 0L) {
-                                        if(TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>=TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())) {
-                                        "${millisToHour(item.dItemDeliveryTime)} "+ item.dItemTitle} else { item.dItemTitle}
+                                        if(TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>=TimeUnit.MILLISECONDS.toDays(MainTimeDate.systemCurrentTimeInMillis())) {
+                                        "${MainTimeDate.localFormTime(item.dItemDeliveryTime)} "+ item.dItemTitle} else { item.dItemTitle}
 
 
                                     } else {
@@ -236,7 +234,7 @@ fun SingleTaskItem(
                             ) {
 
 
-                                if (item.dItemRemindTime > 0L && TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>=TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis())) {
+                                if (item.dItemRemindTime > 0L && TimeUnit.MILLISECONDS.toDays(item.dItemDeliveryTime)>=TimeUnit.MILLISECONDS.toDays(MainTimeDate.systemCurrentTimeInMillis())) {
                                     Row(Modifier.fillMaxWidth()) {
                                         //Spacer(modifier = Modifier.width(12.dp))
                                         Image(
@@ -267,13 +265,13 @@ fun SingleTaskItem(
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                             text = if (item.dItemRemindTime > 0L) {
-                                                millisToDateAndHour(item.dItemRemindTime)
+                                                MainTimeDate.localFormDateAndTime(item.dItemRemindTime)
                                             } else {
                                                 ""
                                             },
                                             style = MaterialTheme.typography.h5,
                                             fontWeight = FontWeight.Normal,
-                                            textDecoration = if (item.dItemCompleted || item.dItemRemindTime<System.currentTimeMillis()) {
+                                            textDecoration = if (item.dItemCompleted || item.dItemRemindTime<MainTimeDate.systemCurrentTimeInMillis()) {
                                                 TextDecoration.LineThrough
                                             } else {
                                                 TextDecoration.None

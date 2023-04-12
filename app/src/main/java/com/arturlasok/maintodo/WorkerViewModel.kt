@@ -7,6 +7,7 @@ import com.arturlasok.maintodo.cache.CategoryDao
 import com.arturlasok.maintodo.cache.ItemDao
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.RoomInter
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.util.TAG
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
@@ -30,7 +31,7 @@ class WorkerViewModel @Inject constructor(
 
            taskList.onEach { task->
 
-               if(task.dItemRemindTime>System.currentTimeMillis() || task.dItemDeliveryTime>System.currentTimeMillis()) {
+               if(task.dItemRemindTime>MainTimeDate.systemCurrentTimeInMillis() || task.dItemDeliveryTime>MainTimeDate.systemCurrentTimeInMillis()) {
                    Log.i(TAG,"Rescheduling task ${task.dItemTitle}")
                    addAlarm(task)
                }
@@ -40,4 +41,6 @@ class WorkerViewModel @Inject constructor(
 
 
     }
+
+
 }

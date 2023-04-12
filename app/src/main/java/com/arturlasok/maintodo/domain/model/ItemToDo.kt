@@ -15,7 +15,7 @@ data class ItemToDo(
     val dItemGroup: String = "",
     val dItemInfo: String = "",
     val dItemWhyFailed: String = "",
-    val dItemDeliveryTime: Long = 0L,
-    val dItemRemindTime: Long = 0L,
+    var dItemDeliveryTime: Long = 0L,
+    var dItemRemindTime: Long = 0L,
     val dItemLimitTime: Long = 0L
 ) : java.io.Serializable

@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.ItemToDo
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.util.*
 
 @Composable
@@ -29,7 +30,7 @@ fun ListInfos(
     modifier: Modifier,
 
     ) {
-    //Log.i(TAG,"item year ${(millisToYear(item.dItemDeliveryTime))} itembefor year${(millisToYear(itemBefore.dItemDeliveryTime))} ")
+
     Log.i(TAG,"ITEM recompose ${item.dItemTitle}")
 
 
@@ -46,7 +47,7 @@ fun ListInfos(
                 }, MaterialTheme.shapes.medium
             )
             //.padding(end = 8.dp)
-            .width(130.dp),
+            .width(150.dp),
         shape = MaterialTheme.shapes.medium,
             elevation = 10.dp
             )
@@ -62,13 +63,28 @@ fun ListInfos(
         //Month
         if(((millisToMonth(item.dItemDeliveryTime).toInt()> millisToMonth(itemBefore.dItemDeliveryTime).toInt()) || (millisToYear(item.dItemDeliveryTime)> millisToYear(itemBefore.dItemDeliveryTime)) )
             && !item.dItemCompleted
-            && (millisToMonth(item.dItemDeliveryTime).toInt()> millisToMonth(System.currentTimeMillis()).toInt() || (millisToYear(item.dItemDeliveryTime)> millisToYear(itemBefore.dItemDeliveryTime)))
+            && (millisToMonth(item.dItemDeliveryTime).toInt()> millisToMonth(MainTimeDate.systemCurrentTimeInMillis()).toInt() || (millisToYear(item.dItemDeliveryTime)> millisToYear(itemBefore.dItemDeliveryTime)))
         ) {
 
-            Text(
-                text = millisToYear(item.dItemDeliveryTime).toString()+" ${months[millisToMonth(item.dItemDeliveryTime).toInt()-1]} ",
-                style = MaterialTheme.typography.h5
-            )
+            if(((millisToMonth(item.dItemDeliveryTime).toInt()) < millisToMonth(MainTimeDate.systemCurrentTimeInMillis()).toInt()) &&  (millisToYear(item.dItemDeliveryTime)== millisToYear(MainTimeDate.systemCurrentTimeInMillis()))) {
+                Text(
+                    text = millisToYear(item.dItemDeliveryTime).toString() + " ${
+                        months[millisToMonth(
+                            MainTimeDate.systemCurrentTimeInMillis()
+                        ).toInt() - 1]
+                    } ",
+                    style = MaterialTheme.typography.h5
+                )
+            } else {
+                Text(
+                    text = millisToYear(item.dItemDeliveryTime).toString() + " ${
+                        months[millisToMonth(
+                            item.dItemDeliveryTime
+                        ).toInt() - 1]
+                    } ",
+                    style = MaterialTheme.typography.h5
+                )
+            }
         }
         else if((millisToMonth(item.dItemDeliveryTime).toInt()> millisToMonth(itemBefore.dItemDeliveryTime).toInt())
                 && !item.dItemCompleted && itemBefore.dItemDeliveryTime==0L) {
@@ -83,7 +99,7 @@ fun ListInfos(
         //Week
         if(((millisToWeekNumber(item.dItemDeliveryTime).toInt()> millisToWeekNumber(itemBefore.dItemDeliveryTime).toInt()) || (millisToYear(item.dItemDeliveryTime)> millisToYear(itemBefore.dItemDeliveryTime)) )
             && !item.dItemCompleted
-            && (millisToWeekNumber(item.dItemDeliveryTime).toInt()> millisToWeekNumber(System.currentTimeMillis()).toInt() || ((millisToYear(item.dItemDeliveryTime)> millisToYear(itemBefore.dItemDeliveryTime))&& itemBefore.dItemDeliveryTime!=0L))
+            && (millisToWeekNumber(item.dItemDeliveryTime).toInt()> millisToWeekNumber(MainTimeDate.systemCurrentTimeInMillis()).toInt() || ((millisToYear(item.dItemDeliveryTime)> millisToYear(itemBefore.dItemDeliveryTime))&& itemBefore.dItemDeliveryTime!=0L))
         ) {
 
             Text(
@@ -102,7 +118,7 @@ fun ListInfos(
                     text = UiText.StringResource(
                         R.string.week_number,
                         "asd"
-                    ).asString()+" ${millisToWeekNumber(System.currentTimeMillis())}",
+                    ).asString()+" ${millisToWeekNumber(MainTimeDate.systemCurrentTimeInMillis())}",
                     style = MaterialTheme.typography.h5
                 )
             }

@@ -29,11 +29,6 @@ object InteractorsModule {
         )
     }
 
-    @Singleton
-    @Provides
-    fun providesMainTimeDate(): MainTimeDate {
-        return MainTimeDate()
-    }
 
 
 }

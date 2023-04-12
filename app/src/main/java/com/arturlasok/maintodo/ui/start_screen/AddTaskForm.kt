@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.util.*
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.delay
@@ -37,7 +38,6 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun AddTaskForm(
     startViewModel: StartViewModel,
-    //newDateTimeState: NewDateTimeState,
     onNewDateChange:(date: Long) -> Unit,
     onNewTimeChange:(time: Long) -> Unit,
     onNewNotDateChange:(date: Long) -> Unit,
@@ -155,13 +155,14 @@ fun AddTaskForm(
                         DatePicker(
                             taskDataType = true,
                             isDarkModeOn = isDarkModeOn,
-                            taskLimitDate = LocalDate.ofEpochDay(1000000L),
+                            taskLimitDate = LocalDate.ofEpochDay(10000000L),
                             initialDate = LocalDate.ofEpochDay(newDateTimeState.taskDate),
                             light_img = R.drawable.calendar_light,
                             dark_img = R.drawable.calendar_dark,
                             modifier = Modifier,
                             setDate = {
                             //set new task date!
+
                             date ->  onNewDateChange(date)
                             },
                             dialogState = dialogStateDate
@@ -199,7 +200,7 @@ fun AddTaskForm(
                                 .fillMaxWidth()
                         ) {
                             Text(
-                                text = millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)),
+                                text = MainTimeDate.localFormDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)),
                                 style = MaterialTheme.typography.h3,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -292,7 +293,7 @@ fun AddTaskForm(
                                 .fillMaxWidth()
                             ) {
                             Text(
-                                text = millisToHourOfDay(newDateTimeState.taskTime),
+                                text = MainTimeDate.localFormTimeFromString(millisToHourOfDay(newDateTimeState.taskTime)+":00"),
                                 style = MaterialTheme.typography.h3,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -383,7 +384,7 @@ fun AddTaskForm(
                                     text = if (newDateTimeState.notDate == 0L) {
                                         UiText.StringResource(R.string.no_date,"asd").asString().uppercase()
                                     } else {
-                                        millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.notDate))
+                                        MainTimeDate.localFormDate(TimeUnit.DAYS.toMillis(newDateTimeState.notDate))
                                     },
                                     style = MaterialTheme.typography.h3,
                                     fontWeight = FontWeight.SemiBold
@@ -487,7 +488,7 @@ fun AddTaskForm(
                             ) {
 
                                 Text(
-                                    text = if(newDateTimeState.notDate!=0L) { millisToHourOfDay(newDateTimeState.notTime) } else
+                                    text = if(newDateTimeState.notDate!=0L) { MainTimeDate.localFormTimeFromString(millisToHourOfDay(newDateTimeState.notTime)) } else
                                     {
                                         UiText.StringResource(R.string.no_time,"asd").asString().uppercase()
                                     },

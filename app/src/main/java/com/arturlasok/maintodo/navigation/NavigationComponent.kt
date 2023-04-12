@@ -4,6 +4,7 @@ package com.arturlasok.maintodo.navigation
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -18,6 +19,8 @@ import com.arturlasok.maintodo.util.TAG
 
 @Composable
 fun NavigationComponent(
+    taskIdFromIntent: MutableState<Long>,
+    setTaskIdFromIntent:(id: Long) ->Unit,
     navController: NavHostController,
     addAlarm:(time: Long, beganTime:Long,name: String,desc:String, token: String, id:Long) -> Unit,
     removeAlarm:(id: Int) -> Unit,
@@ -46,6 +49,8 @@ fun NavigationComponent(
             }
             Log.i(TAG,"NAV--------------------------- recompose:")
             StartScreen(
+                taskIdFromIntent = taskIdFromIntent,
+                setTaskIdFromIntent =  { id-> setTaskIdFromIntent(id) },
                 addAlarm = { time,beganTime, name, desc, token, id ->  addAlarm(time,beganTime, name,desc,token, id) },
                 removeAlarm = { taskid-> removeAlarm(taskid) },
                 getPermission = { getPermission() },

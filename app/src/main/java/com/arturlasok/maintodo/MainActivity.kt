@@ -43,7 +43,10 @@ import androidx.navigation.compose.rememberNavController
 import com.arturlasok.maintodo.admob.AdMobMainBanner
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.util.*
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.convertMillisToHourFromGmt
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.utcTimeZoneOffsetMillis
 import com.arturlasok.maintodo.navigation.NavigationComponent
+import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.ui.theme.MainToDoTheme
 import com.arturlasok.maintodo.util.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -64,6 +67,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDate.Companion.fromEpochDays
 import kotlinx.datetime.toKotlinLocalTime
+import java.text.DateFormat
 import java.time.*
 import java.time.temporal.TemporalAccessor
 import java.util.*
@@ -84,6 +88,8 @@ class MainActivity : ComponentActivity() {
     lateinit var isOnline: isOnline
     //viewModel
     private val viewModel: MainActivityViewModel by viewModels()
+    //from intent task id
+    private val intentTaskId = mutableStateOf(0L)
     //snackbar controller
     private val snackbarController = SnackbarController(lifecycleScope)
     //Analytics
@@ -168,8 +174,8 @@ class MainActivity : ComponentActivity() {
         MobileAds.initialize(this) {}
         var adRequest = AdRequest.Builder().build()
 
-
-
+        //check intents
+        checkIntents(intent)
         // Update the uiState
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -255,8 +261,12 @@ class MainActivity : ComponentActivity() {
                         viewModel.rescheduleAllAlarms(
                             addAlarm = { item->
                                 addAlarm(
-                                    item.dItemRemindTime,
-                                    item.dItemDeliveryTime,
+                                    item.dItemRemindTime+ utcTimeZoneOffsetMillis(
+                                        millisToDateAndHour(item.dItemRemindTime)
+                                    ),
+                                    item.dItemDeliveryTime+ utcTimeZoneOffsetMillis(
+                                        millisToDateAndHour(item.dItemDeliveryTime)
+                                    ),
                                     item.dItemTitle,
                                     item.dItemDescription,
                                     item.dItemToken,
@@ -271,6 +281,14 @@ class MainActivity : ComponentActivity() {
 
 
                 } )
+                //intent task id is passed from notification
+                LaunchedEffect(key1 = intentTaskId.value, block = {
+                    if(intentTaskId.value>0) {
+                        navController.navigate(Screen.Start.route)
+
+                    }
+                } )
+
                 //scaffoldState init
                 val scaffoldState = rememberScaffoldState()
                 checkRodo()
@@ -332,6 +350,8 @@ class MainActivity : ComponentActivity() {
                                 getAutoStartPermission = { AutoStartPermissionHelper.getInstance().getAutoStartPermission(this@MainActivity) }
                             )
                             NavigationComponent(
+                                taskIdFromIntent = intentTaskId,
+                                setTaskIdFromIntent = { id-> intentTaskId.value = id },
                                 navController = navController,
                                 addAlarm = { time, beganTime, name, desc, token, id->
                                     autoStartAlert.value = true
@@ -381,7 +401,6 @@ class MainActivity : ComponentActivity() {
                                    }
                                 },
                                 changeDarkMode = { newVal ->
-                                    //TODO remove
                                     lifecycleScope.launch {
                                         applicationContext.dataStore.edit { settings->
                                             settings[IS_AUTOSTART] = false
@@ -414,20 +433,27 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        checkIntents(intent)
+    }
+    //onResume
+    override fun onResume() {
+
+        super.onResume()
+    }
     //ALARMS
     private fun addAlarm(time: Long, beganTime: Long, name: String, desc:String, token: String, taskId: Long) {
-        //if remind time is before now no alarm!!!
-        //add remind time if remind is after now() ( 1x ALARM )
-        if(time-((ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds)*1000)>System.currentTimeMillis()) {
 
-            Log.i(TAG,"REMIND ALARM alarm remind${convertMillisToHourFromGmt(time)} Task name $name, token $token, id: ${taskId.unaryMinus()}")
+            if(time>MainTimeDate.systemCurrentTimeInMillis()) {
+            //Log.i(TAG,"REMIND ALARM alarm remind${convertMillisToHourFromGmt(time)} Task name $name, token $token, id: ${taskId.unaryMinus()}")
             makeAlarm(time,name,desc,token,taskId.unaryMinus())
 
         }
-        //add alarm when task began is after now() ( 1x ALARM )
-        if(beganTime-((ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds)*1000)>System.currentTimeMillis()){
 
-            Log.i(TAG,"Beg: ${beganTime} =? sys: ${System.currentTimeMillis()}DELIVERY BEGAN ALARM  beganTime GMT: ${convertMillisToHourFromGmt(beganTime)} Task name $name, token $token, id: $taskId ")
+
+            if(beganTime>MainTimeDate.systemCurrentTimeInMillis()){
+            //Log.i(TAG,"Beg: ${beganTime} =? sys: ${MainTimeDate.systemCurrentTimeInMillis()} // ${convertMillisToHourFromGmt(MainTimeDate.systemCurrentTimeInMillis())}DELIVERY BEGAN ALARM  beganTime Local: ${convertMillisToHourFromGmt(beganTime)} Task name $name, token $token, id: $taskId ")
             makeAlarm(beganTime,name,desc,token,taskId)
 
         }
@@ -437,31 +463,32 @@ class MainActivity : ComponentActivity() {
 
     }
     private fun removeAlarm(id: Int) {
-        Log.i(TAG,"remove alarm $id")
+        //Log.i(TAG,"remove alarm $id")
         val alarmManager = this@MainActivity?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(this@MainActivity, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, id,  intent, PendingIntent.FLAG_IMMUTABLE)
-        val mainActivityIntent = Intent(this@MainActivity, MainActivity::class.java)
-        val basicPendingIntent = PendingIntent.getActivity(this@MainActivity, (id), mainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
-       // val clockInfo = AlarmManager.AlarmClockInfo(0L, basicPendingIntent)
+
         alarmManager.cancel(pendingIntent)
+
 
     }
 
     private fun makeAlarm(alarmTime: Long, taskName: String, taskDesc: String,taskToken: String, taskId: Long) {
-        Log.i(TAG,"ALARM TIME ZONE OFFSET(s): ${ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds}")
+        //Log.i(TAG,"ALARM TIME ZONE OFFSET(s): ${ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds}")
         val taskInfo = ItemToDo(dItemTitle = taskName, dItemId = taskId, dItemToken = taskToken, dItemDescription = taskDesc)
         // creating alarmManager instance
         val alarmManager = this@MainActivity?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
         // adding intent and pending intent to go to AlarmReceiver Class in future
         val intent = Intent(this@MainActivity, AlarmReceiver::class.java)
         intent.putExtra("task_info", taskInfo)
+        val pendingIntentX = PendingIntent.getBroadcast(this@MainActivity, (taskInfo.dItemId?.toInt()?: 0),  intent, PendingIntent.FLAG_IMMUTABLE)
+        alarmManager.cancel(pendingIntentX)
+        pendingIntentX.cancel()
         val pendingIntent = PendingIntent.getBroadcast(this@MainActivity, (taskInfo.dItemId?.toInt()?: 0),  intent, PendingIntent.FLAG_IMMUTABLE)
         val mainActivityIntent = Intent(this@MainActivity, MainActivity::class.java)
         val basicPendingIntent = PendingIntent.getActivity(this@MainActivity, (taskInfo.dItemId?.toInt()?: 0), mainActivityIntent, PendingIntent.FLAG_IMMUTABLE)
         // creating clockInfo instance
-        val clockInfo = AlarmManager.AlarmClockInfo(alarmTime-((ZoneId.systemDefault().rules.getOffset(Instant.now()).totalSeconds)*1000), basicPendingIntent)
+        val clockInfo = AlarmManager.AlarmClockInfo(alarmTime, basicPendingIntent)
         alarmManager.setAlarmClock(clockInfo, pendingIntent)
     }
     //PERMISSION FOR SCHEDULE EXACT ALARMS
@@ -503,6 +530,19 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+    //Check intents
+    fun checkIntents(intent: Intent?) {
+
+        if (intent != null) {
+            Log.i(TAG, "Take ${intent.toString()} // ${intent.getLongExtra("show_task",0)}")
+            val intentExtraTaskId = intent.getLongExtra("show_task",0)
+            if(intentExtraTaskId>0) {
+                intentTaskId.value = intentExtraTaskId
+
+            }
+        }
+
     }
 
 }

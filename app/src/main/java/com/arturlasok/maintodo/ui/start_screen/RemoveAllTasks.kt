@@ -49,19 +49,19 @@ fun RemoveAllTasks(
             )
             {
                 Row(
-                    modifier = Modifier.padding(6.dp).padding(end = 8.dp),
+                    modifier = Modifier.padding(6.dp).padding(end = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) { Text(text = " "+  UiText.StringResource(
+                    R.string.removeallcompleted,
+                    "no"
+                ).asString(), style = MaterialTheme.typography.h3)
                     TrashButton(
                         isDarkModeOn = isDarkModeOn,
                         modifier = Modifier,
                         onClick = { removeAll() }
                     )
-                    Text(text = " "+  UiText.StringResource(
-                        R.string.removeallcompleted,
-                        "no"
-                    ).asString(), style = MaterialTheme.typography.h3)
+
                 }
             }
         }

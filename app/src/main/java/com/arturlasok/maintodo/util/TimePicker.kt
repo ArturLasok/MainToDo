@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.MaterialDialogState
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
@@ -48,11 +49,11 @@ fun TimePicker(
             initialTime = initialTime,
             timeRange =
             if(acceptedDate == LocalDate.now().toEpochDay()) { LocalTime.now()..LocalTime.MAX } else { LocalTime.MIN..LocalTime.MAX},
-            is24HourClock = true
+            is24HourClock = MainTimeDate.dateIs24h()
         ) { time ->
             // Do stuff with java.time.LocalDate object which is passed in
-            setTime(TimeUnit.NANOSECONDS.toMillis(time.toNanoOfDay()))
-            Log.i(TAG,"Calendar ${LocalTime.ofNanoOfDay(time.toNanoOfDay()).hour}  / System current: ${millisToHour(System.currentTimeMillis())}")
+            setTime(TimeUnit.NANOSECONDS.toMillis(time.withSecond(0).toNanoOfDay()))
+            Log.i(TAG,"Calendar ${LocalTime.ofNanoOfDay(time.toNanoOfDay()).hour}  / System current: ${millisToHour(MainTimeDate.systemCurrentTimeInMillis())}")
         }
     }
 

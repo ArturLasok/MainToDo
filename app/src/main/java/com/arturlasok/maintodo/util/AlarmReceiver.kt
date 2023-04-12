@@ -21,18 +21,19 @@ class AlarmReceiver : BroadcastReceiver() {
 
 
     override fun onReceive(p0: Context?, p1: Intent?) {
-        Log.i(TAG,"alarm received")
+
         val manager = p0?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId="pl_channel"
         val channelName  = "pl_message"
 
         val task = p1?.getSerializableExtra("task_info") as? ItemToDo
-
+        Log.i(TAG,"alarm received ${task?.dItemTitle ?: "null title" }")
         val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
         manager.createNotificationChannel(channel)
         val intent = Intent(p0, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
+        intent.putExtra("show_task",task?.dItemId ?: 0)
         val pendingIntent: PendingIntent = PendingIntent.getActivity(p0, 0, intent, FLAG_UPDATE_CURRENT or FLAG_IMMUTABLE)
 
         val builder = NotificationCompat.Builder(p0, channelId)

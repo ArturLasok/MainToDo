@@ -104,12 +104,25 @@ fun TasksColumnLazy(
             .zIndex(1.0f), contentAlignment = Alignment.BottomCenter) {
             TransparencyBox(height = 20f, isDarkTheme = isDarkModeOn)
         }
+            LaunchedEffect(key1 = tasksList.size, block = {
 
-            LaunchedEffect(key1 = itemColumnState, block = {
                 snapshotFlow {
                     itemColumnState.firstVisibleItemIndex
                 }.collect {
-                    startViewModel.setfirstViIndex(it) }
+
+                    startViewModel.setfirstViIndex(it)
+
+                }
+            } )
+            LaunchedEffect(key1 = remember { derivedStateOf { itemColumnState.firstVisibleItemIndex } }, block = {
+
+                snapshotFlow {
+                    itemColumnState.firstVisibleItemIndex
+                }.collect {
+
+                    startViewModel.setfirstViIndex(it)
+
+                }
             } )
                 DateInfoForBox(
                     tasksList = tasksList,

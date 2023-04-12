@@ -1,6 +1,5 @@
 package com.arturlasok.maintodo.ui.start_screen
 
-import android.icu.util.UniversalTimeScale.toLong
 import android.util.Log
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -13,17 +12,19 @@ import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.RoomInter
 import com.arturlasok.maintodo.interactors.util.MainTimeDate
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.convertMillisToDayOfWeek
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.convertMillisToWeekNumber
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.epochDaysLocalNow
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.localFormDate
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.localTimeNowInMilliseconds
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.systemCurrentTimeInMillis
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.utcTimeZoneOffsetMillis
 import com.arturlasok.maintodo.interactors.util.RoomDataState
-import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_error
-import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_stored
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.toKotlinLocalTime
-import java.time.Clock
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
+import java.time.*
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -34,7 +35,6 @@ class StartViewModel @Inject constructor(
     private val roomInter: RoomInter,
     private val itemUiState: ItemUiState,
     private val categoryUiState: CategoryUiState,
-    private val mainTimeDate: MainTimeDate,
 ) : ViewModel() {
 
 
@@ -84,10 +84,10 @@ class StartViewModel @Inject constructor(
     // item list from db
     val tasksFromRoom = savedStateHandle.getStateFlow("tasks", mutableListOf<ItemToDo>())
     //DATE & TIME
-    private val taskDate = savedStateHandle.getStateFlow("taskDate",mainTimeDate.epochDaysLocalNow() )
+    private val taskDate = savedStateHandle.getStateFlow("taskDate", epochDaysLocalNow() )
     private val notDate = savedStateHandle.getStateFlow("notDate",0L)
-    //private val taskTime = savedStateHandle.getStateFlow("taskTime",TimeUnit.HOURS.toMillis(LocalTime.now().hour.toLong())+TimeUnit.MINUTES.toMillis(LocalTime.now().minute.toLong()))
-    private val taskTime = savedStateHandle.getStateFlow("taskTime",mainTimeDate.localTimeNowInMilliseconds())
+
+    private val taskTime = savedStateHandle.getStateFlow("taskTime",localTimeNowInMilliseconds())
     private val notTime = savedStateHandle.getStateFlow("notTime",0L)
     private val taskDateTimeError = savedStateHandle.getStateFlow("taskDateTimeError",0)
     //LAZY ITEM LIST
@@ -95,8 +95,7 @@ class StartViewModel @Inject constructor(
     val actualItem: MutableState<ItemToDo> = mutableStateOf(ItemToDo())
     val nextItem: MutableState<ItemToDo> = mutableStateOf(ItemToDo())
     val firstViItemIndex  = mutableStateOf(0)
-    //IS DATEINFOBOX VISIBILITY
-    val isDateBoxVisible = mutableStateOf(false)
+
     init {
         getCategoriesFromRoom()
         if(savedStateHandle.getStateFlow("selectedCategory","").value.isEmpty()) {  savedStateHandle["selectedCategory"] = categoryUiState.getSelectedCategoryToken() }
@@ -134,8 +133,8 @@ class StartViewModel @Inject constructor(
 
     //current date to start screen ui
     fun dateWithNameOfDayWeek() : String {
-        val timeInMilis =  mainTimeDate.systemCurrentTimeInMillis()
-        val dayOfWeek = mainTimeDate.convertMillisToDayOfWeek(timeInMilis)
+        val timeInMilis =  systemCurrentTimeInMillis()
+        val dayOfWeek = convertMillisToDayOfWeek(timeInMilis)
 
         val dayNames = listOf<String>(
             UiText.StringResource(R.string.day7,"asd").asString(application.applicationContext),
@@ -148,12 +147,12 @@ class StartViewModel @Inject constructor(
 
         )
 
-        return millisToDate(timeInMilis) + " " + dayNames[dayOfWeek-1]
+        return localFormDate(timeInMilis) + " " + dayNames[dayOfWeek-1]
 
     }
     //current week number
     fun weekNumber() : Int {
-        return mainTimeDate.convertMillisToWeekNumber(System.currentTimeMillis()).toInt()
+        return convertMillisToWeekNumber(systemCurrentTimeInMillis()).toInt()
     }
     //get application
     fun getApplication() : BaseApplication {
@@ -205,9 +204,18 @@ class StartViewModel @Inject constructor(
     @Suppress("UNCHECKED_CAST")
     fun getTaskItemsFromRoom(categoryToken: String) {
 
-        roomInter.getTasksFromRoom(categoryToken).onEach { roomDataState ->
+        roomInter.getTasksFromRoom(categoryToken).onEach {  roomDataState ->
 
             roomDataState.data_recived.let { it as MutableList<ItemToDo>
+                it.onEach {
+                    it.dItemDeliveryTime = it.dItemDeliveryTime+utcTimeZoneOffsetMillis(
+                        millisToDateAndHour(it.dItemDeliveryTime)
+                    )
+                    if(it.dItemRemindTime!=0L) {
+                    it.dItemRemindTime = it.dItemRemindTime+ utcTimeZoneOffsetMillis(
+                        millisToDateAndHour(it.dItemRemindTime)
+                    ) }
+                }
                 savedStateHandle["tasks"] = it.sortedBy { it.dItemDeliveryTime }
                     .sortedBy { it.dItemCompleted }
             }
@@ -388,19 +396,17 @@ class StartViewModel @Inject constructor(
                     dItemDescription = newTaskState.value.taskDesc,
                     dItemImportance = 1,
                     dItemCompleted = false,
-                    dItemAdded = System.currentTimeMillis(),
-                    dItemEdited = System.currentTimeMillis(),
-                    dItemImported = "false",
-                    dItemExported = "false",
+                    dItemAdded = systemCurrentTimeInMillis(),
+                    dItemEdited = systemCurrentTimeInMillis(),
+                    dItemImported =  "date:"+TimeUnit.DAYS.toMillis(taskDate.value),
+                    dItemExported =  "time:"+(taskTime.value),
                     dItemToken = getRandomToken(),
                     dItemGroup = "empty",
                     dItemInfo = newTaskState.value.taskCategory.toString(),
-                    dItemWhyFailed = "empty",
-                    dItemDeliveryTime = mainTimeDate.convertDaysToMillisecondsLong(taskDate.value.toInt())+taskTime.value,
-                    dItemRemindTime =  if(notDate.value==0L) { 0L } else { (TimeUnit.DAYS.toMillis(notDate.value))+notTime.value },
-                    //dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value+(TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.system(ZoneId.of("UTC"))).toNanoOfDay())-TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.systemDefaultZone()).toNanoOfDay()))),
-                    //dItemRemindTime = if(notDate.value==0L) { 0L } else { (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value+(TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.system(ZoneId.of("UTC"))).toNanoOfDay())-TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.systemDefaultZone()).toNanoOfDay())))},
-                    dItemLimitTime = System.currentTimeMillis()
+                    dItemWhyFailed = millisToDateAndHour((TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value)),
+                    dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value),
+                    dItemRemindTime = if(notDate.value==0L) { 0L } else { (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value)},
+                    dItemLimitTime = systemCurrentTimeInMillis()
                 )
             )
 
@@ -441,8 +447,8 @@ class StartViewModel @Inject constructor(
 
     //reset new task state
     fun resetNewTaskState(){
-            savedStateHandle["taskDate"] = mainTimeDate.epochDaysLocalNow()
-            savedStateHandle["taskTime"] = mainTimeDate.localTimeNowInMilliseconds()
+            savedStateHandle["taskDate"] = epochDaysLocalNow()
+            savedStateHandle["taskTime"] = localTimeNowInMilliseconds()
             savedStateHandle["notDate"] = 0L
             savedStateHandle["notTime"] = 0L
     }
@@ -452,7 +458,7 @@ class StartViewModel @Inject constructor(
         var data = RoomDataState.data_stored<Boolean>(true)
 
         if(taskItem.dItemDeliveryTime==0L) {
-            roomInter.insertTaskItemToRoom(taskItem.copy(dItemDeliveryTime = System.currentTimeMillis())).onEach { roomDataState ->
+            roomInter.insertTaskItemToRoom(taskItem.copy(dItemDeliveryTime = systemCurrentTimeInMillis())).onEach { roomDataState ->
 
                 data = roomDataState
 
@@ -494,6 +500,19 @@ class StartViewModel @Inject constructor(
                     roomInter.getTasksFromRoom(selectedCategory).onEach { roomDataState ->
 
                         roomDataState.data_recived.let { it as MutableList<ItemToDo>
+
+
+                            it.onEach {
+                                it.dItemDeliveryTime = it.dItemDeliveryTime+utcTimeZoneOffsetMillis(
+                                    millisToDateAndHour(it.dItemDeliveryTime)
+                                )
+                                if(it.dItemRemindTime!=0L) {
+                                    it.dItemRemindTime = it.dItemRemindTime+ utcTimeZoneOffsetMillis(
+                                        millisToDateAndHour(it.dItemRemindTime)
+                                    ) }
+                            }
+
+
                             savedStateHandle["tasks"] = it.sortedBy { it.dItemDeliveryTime }
                                 .sortedBy { it.dItemCompleted }
                         }
@@ -522,14 +541,15 @@ class StartViewModel @Inject constructor(
     }
     //set new DateTime
     fun setNewTaskDate(newTaskDate: Long) {
+        Log.i(TAG,"Alarm set new task day: ${newTaskDate}  localnow: ${epochDaysLocalNow()}")
         //if time of new task is older then time now it is reset to null 0L
-        if(newTaskDate== mainTimeDate.epochDaysLocalNow()) {
+        if(newTaskDate== epochDaysLocalNow()) {
 
 
-            if(taskTime.value.toInt()<mainTimeDate.localTimeNowInMilliseconds()) {
+            if(taskTime.value.toInt()<localTimeNowInMilliseconds()) {
 
                 //setNewTaskTime(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
-                setNewTaskTime(mainTimeDate.localTimeNowInMilliseconds())
+                setNewTaskTime(localTimeNowInMilliseconds())
             }
 
         }
@@ -550,7 +570,7 @@ class StartViewModel @Inject constructor(
             }
         }
         savedStateHandle["taskDate"] = newTaskDate
-        Log.i(TAG,"Calendar set date: ${TimeUnit.DAYS.toMillis(newTaskDate)}")
+        Log.i(TAG,"Calendar alarm set date: ${TimeUnit.DAYS.toMillis(newTaskDate)}")
     }
     fun setNewTaskTime(newTaskTime: Long) {
         //if date of notification is after new task date is not reset to date of task
@@ -569,10 +589,10 @@ class StartViewModel @Inject constructor(
     //set new notDateTime
     fun setNotTaskDate(newNotDate: Long) {
 
-        if(newNotDate== mainTimeDate.epochDaysLocalNow()) {
+        if(newNotDate== epochDaysLocalNow()) {
 
-            if(notTime.value.toInt()<mainTimeDate.localTimeNowInMilliseconds().toInt()) {
-                setNotTaskTime(mainTimeDate.localTimeNowInMilliseconds())
+            if(notTime.value.toInt()<localTimeNowInMilliseconds().toInt()) {
+                setNotTaskTime(localTimeNowInMilliseconds())
             }
 
 
@@ -598,12 +618,12 @@ class StartViewModel @Inject constructor(
             if((taskTime.value<newNotTime && (taskTime.value!=0L)) && LocalDate.ofEpochDay(taskDate.value).toEpochDay()==LocalDate.ofEpochDay(notDate.value).toEpochDay()) {
                 //setNotTaskTime(taskTime.value)
                 savedStateHandle["notTime"] = taskTime.value
-                Log.i(TAG,"sese12 NOTIFICATION TIME: ${millisToHour(taskTime.value)}")
+
             } else {savedStateHandle["notTime"] = newNotTime
-                Log.i(TAG,"sese12 NOTIFICATION TIME: ${millisToHour(newNotTime)}")
+
             }
         } else{ savedStateHandle["notTime"] = newNotTime
-            Log.i(TAG,"sese12 NOTIFICATION TIME: ${millisToHour(newNotTime)}")
+
         }
 
 
@@ -618,7 +638,7 @@ class StartViewModel @Inject constructor(
                 //nothing
 
             } else {
-                setNewTaskTime(mainTimeDate.localTimeNowInMilliseconds())
+                setNewTaskTime(localTimeNowInMilliseconds())
                 //setNewTaskTime(LocalTime.now().toKotlinLocalTime().toMillisecondOfDay().toLong())
 
             }
@@ -627,18 +647,21 @@ class StartViewModel @Inject constructor(
     fun getDatePickerInitialTaskDate() {
        if(taskDate.value!=0L)
         {
+            Log.i(TAG,"alarm calndar NOT set initial!")
             //nothing
        }
         else
         {
-            setNewTaskDate(mainTimeDate.epochDaysLocalNow())
+            Log.i(TAG,"alarm calndar set initial!")
+            setNewTaskDate(epochDaysLocalNow())
 
         }
+
     }
     fun getTimePickerInitialNotTime() {
         if (notTime.value == 0L) {
             if(notDate.value  != 0L) {
-                setNotTaskTime(mainTimeDate.localTimeNowInMilliseconds())  }
+                setNotTaskTime(localTimeNowInMilliseconds())  }
             else {
                //nothing NO TIME
             }
@@ -654,6 +677,7 @@ class StartViewModel @Inject constructor(
         }
     }
     fun setfirstViIndex(index: Int) {
+        Log.i(TAG,"DATEINFO: Cooooolect set")
         firstViItemIndex.value = index
         prevActNext()
     }

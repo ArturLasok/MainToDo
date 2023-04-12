@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.util
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -12,6 +13,9 @@ import com.arturlasok.maintodo.R
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.MaterialDialogState
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toKotlinLocalDate
+import kotlinx.datetime.toKotlinLocalDateTime
 import java.time.LocalDate
 
 @Composable
@@ -22,8 +26,7 @@ fun DatePicker(
     taskLimitDate: LocalDate,
     light_img: Int,
     dark_img: Int,
-    modifier: Modifier,
-    setDate:(date: Long) -> Unit,
+    modifier: Modifier,setDate:(date: Long) -> Unit,
     dialogState: MaterialDialogState
     ) {
 
@@ -63,7 +66,9 @@ fun DatePicker(
                      */
                    }
         }) { date ->
-            setDate(date.toEpochDay())
+
+            setDate(date.atTime(12,0,0).toLocalDate().toEpochDay())
+            Log.i(TAG,"epoche date alarm cal: ${date.atTime(12,0,0).toLocalDate().toEpochDay()}")
             // Do stuff with java.time.LocalDate object which is passed in
         }
     }

@@ -1,8 +1,6 @@
 package com.arturlasok.maintodo.ui.edittask_screen
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,18 +9,15 @@ import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.RoomInter
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.systemCurrentTimeInMillis
+import com.arturlasok.maintodo.interactors.util.MainTimeDate.utcTimeZoneOffsetMillis
 import com.arturlasok.maintodo.interactors.util.RoomDataState
-import com.arturlasok.maintodo.interactors.util.convertMillisToHourFromGmt
-import com.arturlasok.maintodo.ui.editcategory_screen.EditCategoryState
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
-import kotlinx.datetime.DateTimePeriod
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.toKotlinLocalDate
 import kotlinx.datetime.toKotlinLocalTime
-import java.time.*
-import java.util.Date
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -108,11 +103,19 @@ class EditTaskViewModel @Inject constructor(
                 try {
                     (roomDataState.data_recived as ItemToDo).let { itemToDo ->
 
+                            itemToDo.dItemDeliveryTime = itemToDo.dItemDeliveryTime+utcTimeZoneOffsetMillis(
+                                millisToDateAndHour(itemToDo.dItemDeliveryTime)
+                            )
+                        if(itemToDo.dItemRemindTime!=0L) {
+                        itemToDo.dItemRemindTime = itemToDo.dItemRemindTime+ utcTimeZoneOffsetMillis(
+                            millisToDateAndHour(itemToDo.dItemRemindTime)
+                        ) }
+
                         roomInter.getOneCategoryFromRoomWithToken(itemToDo.dItemInfo).onEach {
 
                             try {
                                 (it.data_recived as CategoryToDo).let { categoryToDo ->
-                                    Log.i(TAG,"item ssh: ${categoryToDo.dCatToken}")
+
                                     savedStateHandle["itemCategory"] = categoryToDo.dCatToken
                                 }
                             }
@@ -132,14 +135,25 @@ class EditTaskViewModel @Inject constructor(
                         savedStateHandle["itemDescription"] = itemToDo.dItemDescription
 
 
-                      savedStateHandle["taskDate"] = TimeUnit.MILLISECONDS.toDays(itemToDo.dItemDeliveryTime)
+                      savedStateHandle["taskDate"] = LocalDate.parse(millisToDate(itemToDo.dItemDeliveryTime)).toEpochDay()
+
 
                       savedStateHandle["taskTime"] = LocalTime.parse(millisToHour(itemToDo.dItemDeliveryTime)).toKotlinLocalTime().toMillisecondOfDay()
 
-                      savedStateHandle["notDate"] =  TimeUnit.MILLISECONDS.toDays(itemToDo.dItemRemindTime)
+                      if(itemToDo.dItemRemindTime>0L) {
+                          savedStateHandle["notDate"] =
+                              LocalDate.parse(millisToDate(itemToDo.dItemRemindTime)).toEpochDay()
 
-                       savedStateHandle["notTime"] = LocalTime.parse(millisToHour(itemToDo.dItemRemindTime)).toKotlinLocalTime().toMillisecondOfDay()
+                          savedStateHandle["notTime"] =
+                              LocalTime.parse(millisToHour(itemToDo.dItemRemindTime))
+                                  .toKotlinLocalTime().toMillisecondOfDay()
+                      } else {
+                          savedStateHandle["notDate"] =
+                             0L
 
+                          savedStateHandle["notTime"] =
+                              0L
+                      }
                     }
                 } catch (e: Exception) {
 
@@ -246,12 +260,12 @@ class EditTaskViewModel @Inject constructor(
                    dItemTitle = itemName.value,
                    dItemInfo = itemCategory.value,
                    dItemDescription = itemDescription.value,
-                   dItemEdited = System.currentTimeMillis(),
-                  dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value),
-                   dItemRemindTime = (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value),
-                   dItemWhyFailed = convertMillisToHourFromGmt((TimeUnit.DAYS.toMillis(taskDate.value)) +(taskTime.value))
-                  // dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value+(TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.system(ZoneId.of("UTC"))).toNanoOfDay())-TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.systemDefaultZone()).toNanoOfDay()))),
-                   //dItemRemindTime = if(notDate.value==0L) { 0L } else { (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value+(TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.system(ZoneId.of("UTC"))).toNanoOfDay())-TimeUnit.NANOSECONDS.toMillis(LocalTime.now(Clock.systemDefaultZone()).toNanoOfDay()))) },
+                   dItemEdited = systemCurrentTimeInMillis(),
+                  //dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value),
+                  // dItemRemindTime = (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value),
+                   dItemWhyFailed = "",
+                   dItemDeliveryTime = (TimeUnit.DAYS.toMillis(taskDate.value))+(taskTime.value),
+                   dItemRemindTime = if(notDate.value==0L) { 0L } else { (TimeUnit.DAYS.toMillis(notDate.value))+(notTime.value) },
                )
             )
 
