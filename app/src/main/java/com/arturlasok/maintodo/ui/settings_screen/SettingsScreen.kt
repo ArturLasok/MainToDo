@@ -112,9 +112,17 @@ fun SettingsScreen(
                     .background(MaterialTheme.colors.primary))
                 //Additional information
                 Column(modifier = Modifier.padding(12.dp)) {
-
                     Text(
-                        "AutoStart Library github.com/judemanutd/AutoStarter",
+                        "Compose Material Dialogs https://github.com/vanpra/compose-material-dialogs\n",
+                        style = MaterialTheme.typography.h4,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable(onClick = {
+                            runLink("https://github.com/vanpra/compose-material-dialogs")
+                        }),
+                        color = MaterialTheme.colors.onSurface
+                    )
+                    Text(
+                        "AutoStart Library github.com/judemanutd/AutoStarter\n",
                         style = MaterialTheme.typography.h4,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable(onClick = {
@@ -124,7 +132,7 @@ fun SettingsScreen(
                     )
 
                     Text(
-                        "Icons from flaticon https://www.flaticon.com",
+                        "Icons from flaticon https://www.flaticon.com\n",
                         style = MaterialTheme.typography.h4,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable(onClick = {
@@ -132,7 +140,7 @@ fun SettingsScreen(
                         }),
                         color = MaterialTheme.colors.onSurface
                     )
-                    Text("Icons created by Freepik - https://www.freepik.com",
+                    Text("Icons created by Freepik - https://www.freepik.com\n",
                         style = MaterialTheme.typography.h4,
                         textDecoration = TextDecoration.Underline,
                         modifier = Modifier.clickable(onClick = {

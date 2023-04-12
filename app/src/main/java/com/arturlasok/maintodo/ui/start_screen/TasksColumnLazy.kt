@@ -34,6 +34,7 @@ fun TasksColumnLazy(
     onClickEdit:(itemToken: String) -> Unit,
     onClickCheck:(item:ItemToDo, newVal:Boolean, listIndex: Int, nearIndex: Int) -> Unit,
     onClickDelete:(itemId: Long) -> Unit,
+    onRemoveAllClick:() -> Unit,
     confirmationTaskSetting: Boolean,
     lastItemSelected: String,
     startScreenUiState: StartScreenState,
@@ -103,12 +104,25 @@ fun TasksColumnLazy(
             .zIndex(1.0f), contentAlignment = Alignment.BottomCenter) {
             TransparencyBox(height = 20f, isDarkTheme = isDarkModeOn)
         }
+            LaunchedEffect(key1 = tasksList.size, block = {
 
-            LaunchedEffect(key1 = itemColumnState, block = {
                 snapshotFlow {
                     itemColumnState.firstVisibleItemIndex
                 }.collect {
-                    startViewModel.setfirstViIndex(it) }
+
+                    startViewModel.setfirstViIndex(it)
+
+                }
+            } )
+            LaunchedEffect(key1 = remember { derivedStateOf { itemColumnState.firstVisibleItemIndex } }, block = {
+
+                snapshotFlow {
+                    itemColumnState.firstVisibleItemIndex
+                }.collect {
+
+                    startViewModel.setfirstViIndex(it)
+
+                }
             } )
                 DateInfoForBox(
                     tasksList = tasksList,
@@ -142,22 +156,17 @@ fun TasksColumnLazy(
 
             ) { index, item ->
        //         Log.i(TAG,"TASK alarm recompose ${item.dItemTitle}")
-/*
-                ListInfos(
-                    months = startViewModel.months,
-                    firstVisibleIndexX = derivedStateOf {  startViewModel.firstViItemIndex },
-                    itemBefore = if(index>0) { tasksList[index-1] } else ItemToDo(),
-                    itemNext = try {
-                        tasksList[index + 1]
-                    } catch (e:Exception) { ItemToDo()},
-                    item = item,
-                    modifier = Modifier,
 
 
-                    )
 
 
- */
+                Box(contentAlignment = Alignment.TopCenter, modifier = Modifier
+                    .padding(top = 0.dp)
+                    .defaultMinSize(65.dp)){
+                    Box(modifier = Modifier.padding(top=5.dp)) {
+
+
+
 
                 SingleTaskItem(
                     firstVisibleIndexX = derivedStateOf {  startViewModel.firstViItemIndex },
@@ -188,6 +197,7 @@ fun TasksColumnLazy(
                     },
                     deleteClick = { itemId ->  onClickDelete(itemId) },
                     editClick = { itemToken -> onClickEdit(itemToken) },
+                    removeAll = { onRemoveAllClick() },
                     fullOpen = item.dItemId == openId.value && !item.dItemCompleted,
                     fviChange = { id -> startViewModel.setfirstViIndex(id); Log.i(TAG,"fvi change!!!!!! ${id}") },
                 ) { id ->
@@ -197,14 +207,33 @@ fun TasksColumnLazy(
                         openId.value = id
                     }
                 }
+                    }
+                ListInfos(
+                    isDarkModeOn = isDarkModeOn,
+                    months = startViewModel.months,
+                    firstVisibleIndexX = derivedStateOf {  startViewModel.firstViItemIndex },
+                    itemBefore = if(index>0) { tasksList[index-1] } else ItemToDo(),
+                    itemNext = try {
+                        tasksList[index + 1]
+                    } catch (e:Exception) { ItemToDo()},
+                    item = item,
+                    modifier = Modifier,
+
+
+                    )
+
+
+
+                }
 
 
             }
-            item { 
+            item {
                 Spacer(modifier = Modifier
                     .fillMaxWidth()
                     .height(80.dp))
             }
+
         }
 
             //Item animate to last added or edited item
@@ -224,7 +253,7 @@ fun TasksColumnLazy(
             }
 
 
-    }
+        }
     }
 }
 

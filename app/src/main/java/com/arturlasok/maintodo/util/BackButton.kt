@@ -30,31 +30,7 @@ fun BackButton(
     onClick:() -> Unit
 )
 {
-    /*
-    Surface(
-        color = Color.Transparent,
-        modifier = Modifier.width(48.dp).height(34.dp).border(1.dp, MaterialTheme.colors.primary, MaterialTheme.shapes.large)
-    ) {
 
-        Image(
-            bitmap = ImageBitmap.imageResource(
-                id = if(isDarkModeOn) { R.drawable.left_arrow } else { R.drawable.left_arrow }
-            ),
-            modifier = modifier
-                .size(
-                    24.dp,
-                    24.dp
-                )
-                .padding(0.dp)
-                .alpha(0.8f)
-                .clickable(onClick = { onClick() })
-
-            ,
-            contentDescription = "Back",
-            colorFilter = if(isDarkModeOn) { ColorFilter.tint(Color.White) } else { ColorFilter.tint(Color.Black) }
-        )
-
-         */
         Button(
             onClick = {
                 onClick()
@@ -71,7 +47,6 @@ fun BackButton(
 
                 )
         }
-   // }
 
 
 

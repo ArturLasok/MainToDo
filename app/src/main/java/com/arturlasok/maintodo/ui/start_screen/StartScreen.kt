@@ -5,28 +5,21 @@ import android.content.Context
 import android.content.res.Configuration
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
-import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -34,8 +27,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.util.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -45,6 +40,8 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StartScreen(
+    taskIdFromIntent: MutableState<Long>,
+    setTaskIdFromIntent:(id: Long) ->Unit,
     addAlarm:(time: Long,beganTime: Long, name: String,desc:String, token: String, id: Long) -> Unit,
     removeAlarm:(taskid: Int) -> Unit,
     getPermission:() ->Unit,
@@ -69,6 +66,7 @@ fun StartScreen(
     val newDateTimeState by startViewModel.newDateTimeState.collectAsState()
     val scope = rememberCoroutineScope()
     val removeTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
+    val removeAllTaskAlert = rememberSaveable { mutableStateOf(Pair(false,-1L)) }
 
     val scrollToItemZero = rememberSaveable { mutableStateOf(false) }
     val isAtTopOfItemListColumn by remember {
@@ -76,21 +74,35 @@ fun StartScreen(
             itemColumnState.firstVisibleItemIndex == 0 && itemColumnState.firstVisibleItemScrollOffset == 0
         }
     }
-/*
-    LaunchedEffect(key1 = newDateTimeState, block = {
-        Log.i(TAG,"alarm task date: ${millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate))}")
-        Log.i(TAG,"alarm task hour: ${millisToHourOfDay(newDateTimeState.taskTime)}")
-        Log.i(TAG,"alarm notifi date: ${millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.notDate))}")
-        Log.i(TAG,"alarm notifi hour: ${millisToHourOfDay(newDateTimeState.notTime)}")
 
-        Log.i(TAG,"->>>>>>> alarm sum task date & hour: ${millisToDateAndHour((TimeUnit.DAYS.toMillis(newDateTimeState.taskDate))+(newDateTimeState.taskTime-3600000))}")
-        Log.i(TAG,"->>>>>>> alarm sum not date &  hour: ${millisToDateAndHour((TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime-3600000))}")
+    //intent task id is passed from notification
+    LaunchedEffect(key1 = taskIdFromIntent.value, block = {
+        if(taskIdFromIntent.value>0L) {
+
+            Log.i(TAG,"Take Start screen is open and set category all ${taskIdFromIntent.value}")
+            startViewModel.setSelectedCategory("")
+            for(i in 1..3){
+                val item =  startViewModel.tasksFromRoom.value.find {
+                    it.dItemId == taskIdFromIntent.value
+                } ?: ItemToDo()
+
+                val ii = startViewModel.tasksFromRoom.value.indexOf(item)
+                Log.i(TAG,"Take scroll to task try $i for item ${taskIdFromIntent.value} ii: $ii // item: ${item.dItemTitle}")
+                delay(1000)
+                if(ii>0) {
+                    Log.i(TAG,"Take FOUNDED! and scroll to task")
+                    setTaskIdFromIntent(0L)
+                    itemColumnState.scrollToItem(ii)
+                    break
+
+                }
+            }
+
+
+
+
+        }
     } )
-
-
- */
-    //scroll to top of item list Log.i(TAG,"start recompose:")
-
     LaunchedEffect(key1 = scrollToItemZero.value, block ={
         if(scrollToItemZero.value) {
             try {
@@ -158,7 +170,13 @@ fun StartScreen(
 
                         },
                         modifier = Modifier
-                            .alpha(if(!isAtTopOfItemListColumn && startScreenUiState == StartScreenState.Welcome) { 0.7f } else { 0.3f })
+                            .alpha(
+                                if (!isAtTopOfItemListColumn && startScreenUiState == StartScreenState.Welcome) {
+                                    0.7f
+                                } else {
+                                    0.3f
+                                }
+                            )
                             .zIndex(1.0f)
                             .padding(10.dp)
 
@@ -338,8 +356,12 @@ fun StartScreen(
                                 ).asString(startViewModel.getApplication().applicationContext)
                             )
                             addAlarm(
-                                (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime-3600000),
-                                TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime-3600000),
+                                (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime+MainTimeDate.utcTimeZoneOffsetMillis(
+                                    millisToDateAndHour(TimeUnit.DAYS.toMillis(newDateTimeState.notDate)+newDateTimeState.notTime)
+                                )),
+                                TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime+MainTimeDate.utcTimeZoneOffsetMillis(
+                                    millisToDateAndHour(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+newDateTimeState.taskTime)
+                                )),
                                 newTaskState.taskName,
                                 newTaskState.taskDesc,
                                 startViewModel.getLastItemSelected(),
@@ -500,6 +522,46 @@ fun StartScreen(
                     removeTaskAlert.value = Pair(false,-1)
                 }
             }
+            //Task list delete  All alert
+            if(removeAllTaskAlert.value.first) {
+                RemoveAlert(
+                    question =  UiText.StringResource(
+                        R.string.delete_alltask_alert_question,
+                        "no"
+                    ).asString() ,
+                    onYes = {
+                        //remove
+                        scope.launch {
+                            val deleteResponse = startViewModel.deleteAllCompletedTasks()
+                            deleteResponse.ok.let {
+                                if(it==true) {
+                                    removeAllTaskAlert.value = Pair(false,-1)
+                                    snackMessage(UiText.StringResource(
+                                        R.string.delete_alltasks_snack_removed,
+                                        "no"
+                                    ).asString(startViewModel.getApplication().applicationContext))
+
+                                }
+                            }
+                            deleteResponse.error.let {
+                                if (it != null) {
+                                    if(it.isNotEmpty()) {
+                                        removeAllTaskAlert.value = Pair(false,-1)
+                                        snackMessage(it)
+                                    }
+                                }
+                            }
+                        }
+
+                    },
+                    onCancel = {
+                        //cancel
+                        removeAllTaskAlert.value = Pair(false,-1) })
+                {
+                    //on dismiss
+                    removeAllTaskAlert.value = Pair(false,-1)
+                }
+            }
             //task list
             Log.i(TAG,"start recompose:")
 
@@ -575,7 +637,9 @@ fun StartScreen(
                     removeTaskAlert.value = Pair(true,itemId)
 
                 },
-
+                onRemoveAllClick = {
+                    removeAllTaskAlert.value = Pair(true,0)
+                },
                 confirmationTaskSetting = confirmationTaskSetting,
                 startScreenUiState = startScreenUiState,
                 lastItemSelected = startViewModel.getLastItemSelected()

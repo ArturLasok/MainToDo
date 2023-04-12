@@ -1,5 +1,6 @@
 package com.arturlasok.maintodo.ui.edittask_screen
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,15 +25,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.admob.AdMobBigBanner
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.navigation.Screen
 import com.arturlasok.maintodo.ui.start_screen.*
 import com.arturlasok.maintodo.util.*
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.datetime.toKotlinLocalDate
 import kotlinx.datetime.toKotlinLocalTime
+import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -109,14 +114,21 @@ fun EditTaskScreen(
                                         "no"
                                     ).asString(editTaskViewModel.getApplication().applicationContext)
                                 )
+
                                 addAlarm(
-                                    (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime-3600000),
-                                    TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime-3600000),
+                                    (TimeUnit.DAYS.toMillis(newDateTimeState.notDate))+(newDateTimeState.notTime+MainTimeDate.utcTimeZoneOffsetMillis(
+                                        millisToDateAndHour(TimeUnit.DAYS.toMillis(newDateTimeState.notDate)+newDateTimeState.notTime)
+                                    )),
+                                    TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+(newDateTimeState.taskTime+MainTimeDate.utcTimeZoneOffsetMillis(
+                                        millisToDateAndHour(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+newDateTimeState.taskTime)
+                                    )),
                                     state.itemName,
                                     state.itemDescription,
                                     editTaskViewModel.getLastItemSelected(),
                                     editTaskViewModel.getLastItemIdInRoom(),
                                 )
+
+
                                 //nav to start and last added category
                                 navigateTo(Screen.Start.route)
                             }
@@ -218,6 +230,7 @@ fun EditTaskScreen(
                         setDate = {
                             //set new task date!
                                 date ->  editTaskViewModel.setNewTaskDate(date)
+                            Log.i(TAG,"epoche set: ${date}")
                         },
                         dialogState = dialogStateDate
                     )
@@ -253,8 +266,12 @@ fun EditTaskScreen(
                             .height(48.dp)
                             .fillMaxWidth()
                     ) {
+                        Log.i(TAG,"epoche: ${LocalDate.ofEpochDay(newDateTimeState.taskDate).toEpochDay()}  // ${newDateTimeState.taskDate} // ${TimeUnit.MILLISECONDS.toDays(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate))}")
                         Text(
-                            text = millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)),
+                            text =  MainTimeDate.localFormDate(TimeUnit.DAYS.toMillis(newDateTimeState.taskDate)+MainTimeDate.utcTimeZoneOffsetMillis(
+                                millisToDateAndHour(newDateTimeState.taskDate+newDateTimeState.taskTime)
+                            )),
+                            //text = millisToDate(LocalDate.ofEpochDay(newDateTimeState.taskDate).toEpochDay()),
                             style = MaterialTheme.typography.h3,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -347,7 +364,7 @@ fun EditTaskScreen(
                             .fillMaxWidth()
                     ) {
                         Text(
-                            text = millisToHourOfDay(newDateTimeState.taskTime),
+                            text = MainTimeDate.localFormTimeFromString(millisToHourOfDay(newDateTimeState.taskTime)),
                             style = MaterialTheme.typography.h3,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -377,11 +394,12 @@ fun EditTaskScreen(
         ) {
             Column(modifier = Modifier.fillMaxWidth(0.5f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
+
                     DatePicker(
                         taskDataType = false,
                         isDarkModeOn = isDarkModeOn,
                         taskLimitDate = LocalDate.ofEpochDay(newDateTimeState.taskDate),
-                        initialDate = if(newDateTimeState.notDate!=0L)
+                        initialDate = if(newDateTimeState.notDate>0L)
                         { LocalDate.ofEpochDay(newDateTimeState.notDate) }
                         else
                         {
@@ -435,10 +453,12 @@ fun EditTaskScreen(
                             .fillMaxWidth()
                     ) {
                         Text(
-                            text = if (newDateTimeState.notDate == 0L) {
+                            text = if (newDateTimeState.notDate <= 0L) {
                                 UiText.StringResource(R.string.no_date,"asd").asString().uppercase()
                             } else {
-                                millisToDate(TimeUnit.DAYS.toMillis(newDateTimeState.notDate))
+                                MainTimeDate.localFormDate(TimeUnit.DAYS.toMillis(newDateTimeState.notDate)+MainTimeDate.utcTimeZoneOffsetMillis(
+                                    millisToDateAndHour(newDateTimeState.notDate+newDateTimeState.notTime)
+                                ))
                             },
                             style = MaterialTheme.typography.h3,
                             fontWeight = FontWeight.SemiBold
@@ -542,7 +562,7 @@ fun EditTaskScreen(
                     ) {
 
                         Text(
-                            text = if(newDateTimeState.notDate!=0L) { millisToHourOfDay(newDateTimeState.notTime) } else
+                            text = if(newDateTimeState.notDate!=0L) { MainTimeDate.localFormTimeFromString(millisToHourOfDay(newDateTimeState.notTime)) } else
                             {
                                 UiText.StringResource(R.string.no_time,"asd").asString().uppercase()
                             },

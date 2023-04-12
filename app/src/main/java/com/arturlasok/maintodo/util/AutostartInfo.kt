@@ -21,7 +21,9 @@ fun AutoStartInfo(
         RemoveAlert(question = UiText.StringResource(
             R.string.autostartinfo,
             "no"
-        ).asString(), onYes = { getAutoStartPermission(); secondQ.value = true }, onCancel = { closeAutoStartAlert() }) {
+        ).asString(), onYes = {
+            //getAutoStartPermission();
+            secondQ.value = true }, onCancel = { closeAutoStartAlert() }) {
 
         }
     }

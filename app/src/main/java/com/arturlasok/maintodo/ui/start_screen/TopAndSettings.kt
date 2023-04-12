@@ -1,5 +1,7 @@
 package com.arturlasok.maintodo.ui.start_screen
 
+import android.nfc.Tag
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -19,6 +21,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import com.arturlasok.maintodo.R
 import com.arturlasok.maintodo.navigation.Screen
+import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.UiText
 import kotlinx.coroutines.delay
 

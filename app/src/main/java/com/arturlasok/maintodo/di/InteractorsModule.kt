@@ -3,12 +3,11 @@ package com.arturlasok.maintodo.di
 import com.arturlasok.maintodo.cache.CategoryDao
 import com.arturlasok.maintodo.cache.ItemDao
 import com.arturlasok.maintodo.interactors.RoomInter
+import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.util.ItemUiState
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.scopes.ViewModelScoped
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -29,6 +28,7 @@ object InteractorsModule {
             itemUiState = itemUiState
         )
     }
+
 
 
 }

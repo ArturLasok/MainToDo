@@ -59,7 +59,9 @@
     <string name="no_tasks">You have no tasks to do!</string>
     <string name="add_categories_first">First add task categories</string>
     <string name="delete_task_alert_question">Want to delete a task?</string>
+    <string name="delete_alltask_alert_question">You want to delete all confirmed tasks?</string>
     <string name="delete_task_snack_removed">The task has been deleted</string>
+    <string name="delete_alltasks_snack_removed">Tasks have been deleted</string>
     <string name="edittask_screen">Edit task</string>
     <string name="edittask_updated">Task updated</string>
     <string name="task_status_change_question">Do you confirm that the task has been completed?</string>
@@ -76,7 +78,10 @@
     <string name="cancel">Cancel</string>
     <string name="select_date">Select date</string>
     <string name="select_time">Select time</string>
-    <string name="autostartinfo">Please add the app to autostart to keep alerts after phone reboot. This is very important for the proper functioning of the application.</string>
-    <string name="autostartsecondq">Have you added the application to autostart?</string>
+    <string name="autostartinfo">Please add the app to autostart and disable battery optimization to keep alerts after phone reboot. This is very important for the proper functioning of the application.</string>
+    <string name="autostartsecondq">Have you added the application to autostart or disable battery optimization?</string>
     <string name="week_number">Week</string>
+    <string name="taskfornow">Task for now</string>
+    <string name="remindetask">Future task reminder</string>
+    <string name="removeallcompleted">Remove all completed</string>
 </resources>
