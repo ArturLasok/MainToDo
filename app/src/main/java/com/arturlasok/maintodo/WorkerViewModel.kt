@@ -42,5 +42,11 @@ class WorkerViewModel @Inject constructor(
 
     }
 
+    fun acceptTask(task_id:Long) {
+        Log.i(TAG,"Accept task from notification $task_id")
+        roomInter.updateTaskItemCompletionTaskId(task_id).launchIn(viewModelScope)
+
+    }
+
 
 }

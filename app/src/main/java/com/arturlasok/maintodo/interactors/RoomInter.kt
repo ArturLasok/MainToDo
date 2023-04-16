@@ -125,7 +125,18 @@ class RoomInter(
             emit(RoomDataState.data_error("room_error"))
         }
     }
+    //update task item completion
+    fun updateTaskItemCompletionTaskId(taskId: Long) : Flow<RoomDataState<Boolean>> = flow {
+        try {
 
+            itemDao.updateItemCompleteInRoomWithTaskId(true,taskId)
+            emit(RoomDataState.data_stored(true))
+        }
+        catch(e:Exception) {
+
+            emit(RoomDataState.data_error("room_error"))
+        }
+    }
     //insert task item to Database with category token
     fun insertTaskItemToRoom(taskItem: ItemToDo) : Flow<RoomDataState<Boolean>> = flow {
 

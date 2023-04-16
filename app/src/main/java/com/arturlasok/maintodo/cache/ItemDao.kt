@@ -36,6 +36,9 @@ interface ItemDao {
     @Query("UPDATE item_room SET item_completed=:new_completed_value WHERE item_token=:item_token")
     suspend fun updateItemCompleteInRoom(new_completed_value: Boolean,item_token: String)
 
+    @Query("UPDATE item_room SET item_completed=:new_completed_value WHERE item_id_room=:item_id")
+    suspend fun updateItemCompleteInRoomWithTaskId(new_completed_value: Boolean,item_id: Long)
+
     @Query("SELECT count(*) FROM item_room WHERE item_info=:category_token and item_completed=0")
     fun countAllFromItemRoomWithCategoryToken(category_token:String) : Flow<Int>
 

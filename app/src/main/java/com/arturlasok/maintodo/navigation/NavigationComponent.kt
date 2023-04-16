@@ -20,6 +20,7 @@ import com.arturlasok.maintodo.util.TAG
 @Composable
 fun NavigationComponent(
     taskIdFromIntent: MutableState<Long>,
+    taskIdToConfirm: Int,
     setTaskIdFromIntent:(id: Long) ->Unit,
     navController: NavHostController,
     addAlarm:(time: Long, beganTime:Long,name: String,desc:String, token: String, id:Long) -> Unit,
@@ -49,6 +50,7 @@ fun NavigationComponent(
             }
             Log.i(TAG,"NAV--------------------------- recompose:")
             StartScreen(
+                taskIdToConfirm= taskIdToConfirm,
                 taskIdFromIntent = taskIdFromIntent,
                 setTaskIdFromIntent =  { id-> setTaskIdFromIntent(id) },
                 addAlarm = { time,beganTime, name, desc, token, id ->  addAlarm(time,beganTime, name,desc,token, id) },

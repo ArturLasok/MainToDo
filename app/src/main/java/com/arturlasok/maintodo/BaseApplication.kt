@@ -11,6 +11,7 @@ import androidx.work.Configuration
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.util.MainTimeDate
 import com.arturlasok.maintodo.interactors.util.MainTimeDate.convertMillisToHourFromGmt
+import com.arturlasok.maintodo.ui.start_screen.StartViewModel
 import com.arturlasok.maintodo.util.AlarmReceiver
 import com.arturlasok.maintodo.util.TAG
 import com.arturlasok.maintodo.util.millisToDateAndHour
@@ -42,6 +43,12 @@ class BaseApplication : Application(),Configuration.Provider {
             )
         }
     )
+
+
+    }
+    fun acceptTask(task_id: Long) {
+
+        workerViewModel.acceptTask(task_id)
 
 
     }

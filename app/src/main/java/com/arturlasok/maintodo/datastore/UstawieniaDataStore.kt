@@ -15,4 +15,8 @@ class UstawieniaDataStore @Inject constructor(app: BaseApplication) {
 
     val APP_ADDED_TO_AUTOSTART = booleanPreferencesKey("app_added_to_autostart")
 
+    val IS_APP_OPEN = booleanPreferencesKey("is_app_open")
+
+    val CONFIRM_TASK = intPreferencesKey("confirm_task")
+
 }

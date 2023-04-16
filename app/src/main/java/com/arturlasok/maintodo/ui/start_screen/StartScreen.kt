@@ -23,8 +23,11 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.arturlasok.maintodo.R
+import com.arturlasok.maintodo.dataStore
 import com.arturlasok.maintodo.domain.model.CategoryToDo
 import com.arturlasok.maintodo.domain.model.ItemToDo
 import com.arturlasok.maintodo.interactors.util.MainTimeDate
@@ -40,6 +43,7 @@ import java.util.concurrent.TimeUnit
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun StartScreen(
+    taskIdToConfirm: Int,
     taskIdFromIntent: MutableState<Long>,
     setTaskIdFromIntent:(id: Long) ->Unit,
     addAlarm:(time: Long,beganTime: Long, name: String,desc:String, token: String, id: Long) -> Unit,
@@ -51,7 +55,7 @@ fun StartScreen(
     confirmationTaskSetting: Boolean,
     snackMessage: (snackMessage:String) -> Unit,
 ) {
-
+    val CONFIRM_TASK = intPreferencesKey("confirm_task")
     val response = remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -74,10 +78,21 @@ fun StartScreen(
             itemColumnState.firstVisibleItemIndex == 0 && itemColumnState.firstVisibleItemScrollOffset == 0
         }
     }
+    LaunchedEffect(key1 = taskIdToConfirm, block = {
 
+
+        if(taskIdToConfirm>0) {
+            Log.i(TAG,"Task to confirm in START SCREEN >>>>> $taskIdToConfirm <<<<<<<<<")
+            startViewModel.updateTaskItemDataStoreId(selectedCategory)
+            startViewModel.getApplication().dataStore.edit {
+                it[CONFIRM_TASK] = 0
+            }
+        }
+
+    })
     //intent task id is passed from notification
     LaunchedEffect(key1 = taskIdFromIntent.value, block = {
-        if(taskIdFromIntent.value>0L) {
+        if(taskIdFromIntent.value!=0L) {
 
             Log.i(TAG,"Take Start screen is open and set category all ${taskIdFromIntent.value}")
             startViewModel.setSelectedCategory("")

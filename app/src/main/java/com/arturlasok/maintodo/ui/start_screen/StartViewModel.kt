@@ -20,6 +20,8 @@ import com.arturlasok.maintodo.interactors.util.MainTimeDate.localTimeNowInMilli
 import com.arturlasok.maintodo.interactors.util.MainTimeDate.systemCurrentTimeInMillis
 import com.arturlasok.maintodo.interactors.util.MainTimeDate.utcTimeZoneOffsetMillis
 import com.arturlasok.maintodo.interactors.util.RoomDataState
+import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_error
+import com.arturlasok.maintodo.interactors.util.RoomDataState.Companion.data_stored
 import com.arturlasok.maintodo.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -486,6 +488,38 @@ class StartViewModel @Inject constructor(
                 .joinToString("")
         }
         return "$unixTime"+"time"+random.invoke()
+    }
+    //update task from accept data store id
+    @Suppress("UNCHECKED_CAST")
+    suspend fun updateTaskItemDataStoreId(selectedCategory: String)  {
+
+                    //getTaskItemsFromRoom(selectedCategory)
+                    roomInter.getTasksFromRoom(selectedCategory).onEach { roomDataState ->
+
+                        roomDataState.data_recived.let { it as MutableList<ItemToDo>
+
+
+                            it.onEach {
+                                it.dItemDeliveryTime = it.dItemDeliveryTime+utcTimeZoneOffsetMillis(
+                                    millisToDateAndHour(it.dItemDeliveryTime)
+                                )
+                                if(it.dItemRemindTime!=0L) {
+                                    it.dItemRemindTime = it.dItemRemindTime+ utcTimeZoneOffsetMillis(
+                                        millisToDateAndHour(it.dItemRemindTime)
+                                    ) }
+                            }
+
+
+                            savedStateHandle["tasks"] = it.sortedBy { it.dItemDeliveryTime }
+                                .sortedBy { it.dItemCompleted }
+                        }
+                        Log.i(TAG,"response GETTED!")
+                    }.launchIn(viewModelScope).join()
+
+
+
+
+
     }
     //update task item Completion in room
     @Suppress("UNCHECKED_CAST")

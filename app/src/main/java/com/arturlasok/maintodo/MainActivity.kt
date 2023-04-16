@@ -97,6 +97,11 @@ class MainActivity : ComponentActivity() {
     //Rodo check
     private lateinit var consentInformation: ConsentInformation
     private lateinit var consentForm: ConsentForm
+
+
+
+
+
     fun checkRodo() {
         // ADMOB RODO
         val params = ConsentRequestParameters.Builder()
@@ -153,7 +158,7 @@ class MainActivity : ComponentActivity() {
 
           }
         }
-        //Data Store app added to autostart
+//Data Store app added to autostart
         val IS_AUTOSTART = booleanPreferencesKey("app_added_to_autostart")
         val autostartFromStore: Flow<Boolean> = applicationContext.dataStore.data.map { pref->
             pref[IS_AUTOSTART] ?: false
@@ -167,6 +172,16 @@ class MainActivity : ComponentActivity() {
         val IS_DARK_THEME = intPreferencesKey("dark_theme_on")
         val dataFromStore : Flow<Int> =  applicationContext.dataStore.data.map { pref->
             pref[IS_DARK_THEME] ?: 0
+        }
+        //Data is app open?
+        val IS_APP_OPEN = booleanPreferencesKey("is_app_open")
+        val isAppOpenFromStore : Flow<Boolean> =  applicationContext.dataStore.data.map { pref->
+            pref[IS_APP_OPEN] ?: false
+        }
+        //Data task confirm id
+        val CONFIRM_TASK = intPreferencesKey("confirm_task")
+        val confirmFromStore : Flow<Int> =  applicationContext.dataStore.data.map { pref->
+            pref[CONFIRM_TASK] ?: 0
         }
         //Internet On?
         isOnline.runit()
@@ -213,6 +228,10 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             //accompanist for system bars controller
             val systemUiController = rememberSystemUiController()
+            // dataStore is app open
+            val dataStoreAppOpen = isAppOpenFromStore.collectAsState(initial = false)
+            // dataStore task to confirm
+            val dataStoreTaskToConfirm = confirmFromStore.collectAsState(initial = 0)
             // data store for dark theme
             val dataStoreDarkTheme = dataFromStore.collectAsState(0)
             //confirmation task setting
@@ -283,7 +302,7 @@ class MainActivity : ComponentActivity() {
                 } )
                 //intent task id is passed from notification
                 LaunchedEffect(key1 = intentTaskId.value, block = {
-                    if(intentTaskId.value>0) {
+                    if(intentTaskId.value!=0L) {
                         navController.navigate(Screen.Start.route)
 
                     }
@@ -350,6 +369,7 @@ class MainActivity : ComponentActivity() {
                                 getAutoStartPermission = { AutoStartPermissionHelper.getInstance().getAutoStartPermission(this@MainActivity) }
                             )
                             NavigationComponent(
+                                taskIdToConfirm = dataStoreTaskToConfirm.value,
                                 taskIdFromIntent = intentTaskId,
                                 setTaskIdFromIntent = { id-> intentTaskId.value = id },
                                 navController = navController,
@@ -439,8 +459,28 @@ class MainActivity : ComponentActivity() {
     }
     //onResume
     override fun onResume() {
+        /*
+        lifecycleScope.launch {
+            applicationContext.dataStore.edit { settings->
+                settings[IS_APP_OPEN] = true
+            }
+        }
 
+         */
         super.onResume()
+
+    }
+    //onDestroy
+    override fun onDestroy() {
+        /*
+        lifecycleScope.launch {
+            applicationContext.dataStore.edit { settings->
+                settings[IS_APP_OPEN] = false
+            }
+        }
+
+         */
+        super.onDestroy()
     }
     //ALARMS
     private fun addAlarm(time: Long, beganTime: Long, name: String, desc:String, token: String, taskId: Long) {
@@ -537,7 +577,7 @@ class MainActivity : ComponentActivity() {
         if (intent != null) {
             Log.i(TAG, "Take ${intent.toString()} // ${intent.getLongExtra("show_task",0)}")
             val intentExtraTaskId = intent.getLongExtra("show_task",0)
-            if(intentExtraTaskId>0) {
+            if(intentExtraTaskId!=0L) {
                 intentTaskId.value = intentExtraTaskId
 
             }
