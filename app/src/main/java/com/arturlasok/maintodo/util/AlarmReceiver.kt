@@ -65,8 +65,14 @@ class AlarmReceiver : BroadcastReceiver() {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setContentIntent(pendingIntent).setAutoCancel(true)
-                .addAction(R.drawable.bin_dark,"OZNACZ JAKO WYKONANE",acceptPendingIntent)
-                .addAction(R.drawable.more,"ZAMKNIJ",closePendingIntent)
+                .addAction(R.drawable.bin_dark, UiText.StringResource(
+                    R.string.makecompleted,
+                    "asd"
+                ).asString(context = p0.applicationContext),acceptPendingIntent)
+                .addAction(R.drawable.more,UiText.StringResource(
+                    R.string.makeclose,
+                    "asd"
+                ).asString(context = p0.applicationContext),closePendingIntent)
                  manager.notify(task?.dItemId?.toInt() ?: 0,builder.build())
                 task.dItemId.unaryMinus()?.let { manager.cancel(it.toInt()); Log.i(TAG,"task notification close $it") }
         }
@@ -81,7 +87,10 @@ class AlarmReceiver : BroadcastReceiver() {
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setContentIntent(pendingIntent).setAutoCancel(true)
                 //.addAction(R.drawable.bin_dark,"OZNACZ JAKO WYKONANE",acceptPendingIntent)
-                .addAction(R.drawable.more,"ZAMKNIJ",closePendingIntent)
+                .addAction(R.drawable.more,UiText.StringResource(
+                    R.string.makeclose,
+                    "asd"
+                ).asString(context = p0.applicationContext),closePendingIntent)
             manager.notify(task?.dItemId?.toInt() ?: 0,builder.build())
         }
 

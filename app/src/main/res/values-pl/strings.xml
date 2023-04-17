@@ -84,4 +84,6 @@
     <string name="remindetask">Przypominam o zadaniu</string>
     <string name="week_number">Tydzień</string>
     <string name="removeallcompleted">Usuń wszystkie potwierdzone</string>
+    <string name="makecompleted">OZNACZ JAKO WYKONANE</string>
+    <string name="makeclose">ZAMKNIJ</string>
 </resources>

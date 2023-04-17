@@ -84,4 +84,6 @@
     <string name="taskfornow">Task for now</string>
     <string name="remindetask">Future task reminder</string>
     <string name="removeallcompleted">Remove all completed</string>
+    <string name="makecompleted">MARK AS COMPLETED</string>
+    <string name="makeclose">CLOSE</string>
 </resources>
